@@ -1,0 +1,12 @@
+*
+!/**/
+!*.*
+!Makefile
+**/*.o
+**/*.replace
+
+
+
+# *       #ignore all
+# !/**/   #don't ignore any dir
+# !*.*    #don't ignore files with .(with extension)
