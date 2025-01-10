@@ -39,5 +39,5 @@ echo "Pushing changes to the repository..."
 git push
 
 # Confirmation message
-echo "Done! Changes have been pushed with author email: $NEW_AUTHOR_EMAIL."
+echo "Done! Changes have been pushed with author email: $NEW_AUTHOR_EMAIL"
 
