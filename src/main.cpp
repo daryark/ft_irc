@@ -5,11 +5,10 @@
 #include <unistd.h>      // Для close
 
 
-#include "Port.hpp"
+#include "Server.hpp"
 // #include "../Irc.hpp"
 
 
-//Accept a call ?
 //Close the listening socket
 //While recieving - display the message, echo message
 //Close socket 
@@ -31,9 +30,9 @@ int main(int argc, char **argv)
     //  it identifies some program/process on a machine ex: Port 80 = http)
     sockaddr_in servAddr;
     servAddr.sin_family = AF_INET;
-    servAddr.sin_port = htons(PORT);//IRC standard. *
+    servAddr.sin_port = htons(argv[1]);//IRC standard. *
     inet_pton(AF_INET, "0.0.0.0", &servAddr.sin_addr);
-    if (bind(servSockListen, &servAddr, sizeof(servAddr)) == -1) //bind socket fd to servAddr and it's size to reserve amnt of memory for it
+    if (bind(servSockListen, (sockaddr*)&servAddr, sizeof(servAddr)) == -1) //bind socket fd to servAddr and it's size to reserve amnt of memory for it
     {
         std::cerr << "Can't bind IP/port" << std::endl;
         close(servSockListen);
@@ -46,7 +45,19 @@ int main(int argc, char **argv)
         close(servSockListen);
         return -3;
     }
-    std::cout << GREEN << "Server runs on port: " << PORT << RE << std::endl;
+    std::cout << GREEN << "Server runs on port: " << argv[1] << RE << std::endl;
+    //Accept a call
+    sockaddr_in client;
+    // socklen_t   clientSize;
+
+    int clientSocket = accept(servSockListen, (sockaddr*)&client, sizeof(client));
+    if (clientSocket == -1)
+    {
+        std::cerr << "Problem with client connecting!" << std::endl;
+        return -4;
+    }
+
+
 }
 
     

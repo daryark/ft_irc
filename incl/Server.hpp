@@ -9,8 +9,6 @@
 #include <arpa/inet.h>   // htons
 #include <poll.h>		 // pollfd
 
-PORT = 6667
-
 // class Channel;
 // class Client;
 
