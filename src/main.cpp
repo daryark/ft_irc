@@ -3,13 +3,12 @@
 #include <cstring>       // Для memset
 #include <cstdlib>       // Для exit
 #include <unistd.h>      // Для close
-#include <sys/socket.h>  // Для socket, bind, listen, accept
-#include <netinet/in.h>  // Для sockaddr_in
-#include <arpa/inet.h>   // Для htons
+
+
+#include "Port.hpp"
 // #include "../Irc.hpp"
 
 
-//Mark the socket for listening in
 //Accept a call ?
 //Close the listening socket
 //While recieving - display the message, echo message
@@ -19,8 +18,9 @@ int main(int argc, char **argv)
     if (argc != 3) {
         std::cerr << "try again " << std::endl;
         return 1;
+    }
     //Create a socket (endpoint for communication btw two devices/processes)
-    int servSockListen = socket(AF_INET, SOCK_STREAM, 0);
+    int servSockListen = socket(AF_INET, SOCK_STREAM, 0); //*serv._server_socket_fd
     if (servSockListen == -1)
     {
         std::cerr << "Can't create socket!" << std::endl;
@@ -29,11 +29,25 @@ int main(int argc, char **argv)
     //Bind the socket to IP / port (endpoint for network communication. 
     //  Port is being used by sockets to send the data. 
     //  it identifies some program/process on a machine ex: Port 80 = http)
-    sockaddr_in servHint;
-    servHint.sin_family = AF_INET;
-    servHint.sin_port = htons(54000); //rand num from all available
-    
+    sockaddr_in servAddr;
+    servAddr.sin_family = AF_INET;
+    servAddr.sin_port = htons(PORT);//IRC standard. *
+    inet_pton(AF_INET, "0.0.0.0", &servAddr.sin_addr);
+    if (bind(servSockListen, &servAddr, sizeof(servAddr)) == -1) //bind socket fd to servAddr and it's size to reserve amnt of memory for it
+    {
+        std::cerr << "Can't bind IP/port" << std::endl;
+        close(servSockListen);
+        return -2;
     }
+    //Mark the socket for listening in
+    if (listen(servSockListen, SOMAXCONN) == -1) //max amnt of connections in queue before the next ones are refused
+    {
+        std::cerr << "Can't listen" << std::endl;
+        close(servSockListen);
+        return -3;
+    }
+    std::cout << GREEN << "Server runs on port: " << PORT << RE << std::endl;
+}
 
     
 
@@ -48,16 +62,27 @@ int main(int argc, char **argv)
 
 
 //*sockaddr_in - struct describing sock addr (in) - for internet IPv4
+//  servAddr.sin_addr.s_addr = INADDR_ANY is equal to: inet_pton(servSockListen, AF_INET, "0.0.0.0", &servAddr.sin_addr);
+// both in prev line says that: 
+//      inet_pton: Converts the human-readable IP address "0.0.0.0" into a binary and stores it in servAddr.sin_addr
+//          "0.0.0.0" is a special address that tells the socket to bind to all available network interfaces on the host machine.
+//          This means the socket will accept connections from any IP addr.
 
-//*htons() - host to network short. use this bcs of big/little endian and differences of understanding nums > 256.
+
+//*htons() - host to network short. computer to-> network order of bytes changed
+//  use this bcs of big/little endian and differences in computer and network order of bytes reading in nums
+
 //  That fn will change it depending on whatever type of machine it is in
 //  there is also ntohs() backwards fn to transform, is used later.
+//? 6667 standard IRC PORT. to avoid need of root priviliges 
+//0–1023 (Well-Known Ports): Reserved for system and well-known services (e.g., HTTP on port 80, SSH on port 22). 
+//  You generally cannot use these without superuser privileges.
+//1024–49151 (Registered Ports): These ports are registered for specific services but can also be used by applications.
+//9152–65535 (Dynamic/Private Ports): These are typically used for temporary or dynamic allocations.
+//  Choosing a port in this range minimizes the risk of conflicts with known services.
 
 
-
-
-
-
+//
 
 
 
