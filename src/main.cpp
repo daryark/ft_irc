@@ -78,7 +78,7 @@ int main(int argc, char **argv)
 //0–1023 (Well-Known Ports): Reserved for system and well-known services (e.g., HTTP on port 80, SSH on port 22). 
 //  You generally cannot use these without superuser privileges.
 //1024–49151 (Registered Ports): These ports are registered for specific services but can also be used by applications.
-//9152–65535 (Dynamic/Private Ports): These are typically used for temporary or dynamic allocations.
+//9152–65535 (Dynamic/Private Ports): These are typically used for temporary or dynamic allocations by OS.
 //  Choosing a port in this range minimizes the risk of conflicts with known services.
 
 
