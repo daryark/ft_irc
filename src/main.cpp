@@ -18,6 +18,7 @@ int main(int argc, char **argv)
         std::cerr << "try again " << std::endl;
         return 1;
     }
+    Server  serv(av[1], av[2]);
     //Create a socket (endpoint for communication btw two devices/processes)
     int servSockListen = socket(AF_INET, SOCK_STREAM, 0); //*serv._server_socket_fd
     if (servSockListen == -1)
@@ -48,7 +49,9 @@ int main(int argc, char **argv)
     std::cout << GREEN << "Server runs on port: " << argv[1] << RE << std::endl;
     //Accept a call
     sockaddr_in client;
-    // socklen_t   clientSize;
+    // socklen_t   clientSize
+    char host[NI_MAXHOST];
+    char svc[NI_MAXSERV];
 
     int clientSocket = accept(servSockListen, (sockaddr*)&client, sizeof(client));
     if (clientSocket == -1)
