@@ -9,9 +9,7 @@
 // #include "../Irc.hpp"
 
 
-//Close the listening socket
-//While recieving - display the message, echo message
-//Close socket 
+//?ex:  ./ircserv <port> <password>
 int main(int argc, char **argv)
 {
     if (argc != 3) {
@@ -30,9 +28,16 @@ int main(int argc, char **argv)
     //  Port is being used by sockets to send the data. 
     //  it identifies some program/process on a machine ex: Port 80 = http)
     sockaddr_in servAddr;
+    std::memset(&servAddr, 0, sizeof(&servAddr)); 
     servAddr.sin_family = AF_INET;
     servAddr.sin_port = htons(argv[1]);//IRC standard. *
-    inet_pton(AF_INET, "0.0.0.0", &servAddr.sin_addr);
+    if (inet_pton(AF_INET, "0.0.0.0", &servAddr.sin_addr) > 0)
+    {
+        //! if i really need this check. understand in my case!
+        std::cerr << "Some mess with transforming inet_pton to network type address" << std::endl;
+        return -1;
+    }
+     //sets internet addr(servAddr.sin_addr) can be any.//“presentation to network” of addr
     if (bind(servSockListen, (sockaddr*)&servAddr, sizeof(servAddr)) == -1) //bind socket fd to servAddr and it's size to reserve amnt of memory for it
     {
         std::cerr << "Can't bind IP/port" << std::endl;
@@ -47,7 +52,7 @@ int main(int argc, char **argv)
         return -3;
     }
     std::cout << GREEN << "Server runs on port: " << argv[1] << RE << std::endl;
-    //Accept a call
+    //!Accept a call
     sockaddr_in client;
     // socklen_t   clientSize
     char host[NI_MAXHOST];
@@ -59,6 +64,9 @@ int main(int argc, char **argv)
         std::cerr << "Problem with client connecting!" << std::endl;
         return -4;
     }
+    //!Close the listening socket
+    //!While recieving - display the message, echo message
+    //!Close socket
 
 
 }
@@ -81,7 +89,9 @@ int main(int argc, char **argv)
 //      inet_pton: Converts the human-readable IP address "0.0.0.0" into a binary and stores it in servAddr.sin_addr
 //          "0.0.0.0" is a special address that tells the socket to bind to all available network interfaces on the host machine.
 //          This means the socket will accept connections from any IP addr.
-
+//?memset and sockaddr_in.sin_zero
+//memset - fills servAddr struct with '0' chars. 
+//bcs of servAddr.sin_zero (which is 8 byte len) added to broaden the struct len, to backwards compatability with sockaddr struct where data field is longer
 
 //*htons() - host to network short. computer to-> network order of bytes changed
 //  use this bcs of big/little endian and differences in computer and network order of bytes reading in nums
@@ -97,12 +107,6 @@ int main(int argc, char **argv)
 
 
 //
-
-
-
-
-
-
 
 
 
