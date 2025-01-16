@@ -1,22 +1,45 @@
-#include <iostream>
-
-#include <cstring>       // Для memset
-#include <cstdlib>       // Для exit
-#include <unistd.h>      // Для close
-
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.cpp                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/01/15 20:09:44 by dyarkovs          #+#    #+#             */
+/*   Updated: 2025/01/16 14:08:42 by dyarkovs         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "Server.hpp"
-// #include "../Irc.hpp"
 
+void    ft_irc(Server& serv)
+{
+    try {
+        serv.init();
+    }
+    catch (std::exception e) {
+        std::cout << U_RED << e.what() << RE << std::endl;
+    }
+    return ;
+}
 
 //?ex:  ./ircserv <port> <password>
 int main(int argc, char **argv)
 {
     if (argc != 3) {
-        std::cerr << "try again " << std::endl;
+        std::cerr << RED << "usage: ./ircserv <port> <password>" << RE << std::endl;
         return 1;
     }
-    Server  serv(av[1], av[2]);
+    int port = atoi(argv[1]);
+    if ( port < 1024 || port > 65535)
+    {
+        std::cerr << RED << "Port is not valid: '" << port << "'. Must be in range: 1024 - 65535" << RE << std::endl;
+        return (1);
+    }
+    Server  serv(port, av[2]);
+    ft_irc(serv);
+    return 0;
+    
     //Create a socket (endpoint for communication btw two devices/processes)
     int servSockListen = socket(AF_INET, SOCK_STREAM, 0); //*serv._server_socket_fd
     if (servSockListen == -1)
@@ -30,14 +53,9 @@ int main(int argc, char **argv)
     sockaddr_in servAddr;
     std::memset(&servAddr, 0, sizeof(&servAddr)); 
     servAddr.sin_family = AF_INET;
-    servAddr.sin_port = htons(argv[1]);//IRC standard. *
-    if (inet_pton(AF_INET, "0.0.0.0", &servAddr.sin_addr) > 0)
-    {
-        //! if i really need this check. understand in my case!
-        std::cerr << "Some mess with transforming inet_pton to network type address" << std::endl;
-        return -1;
-    }
-     //sets internet addr(servAddr.sin_addr) can be any.//“presentation to network” of addr
+    servAddr.sin_port = htons(argv[1]);
+    inet_pton(AF_INET, "0.0.0.0", &servAddr.sin_addr);
+     //sets internet addr(servAddr.sin_addr) can be any.//“presentation/printable to network” of addr
     if (bind(servSockListen, (sockaddr*)&servAddr, sizeof(servAddr)) == -1) //bind socket fd to servAddr and it's size to reserve amnt of memory for it
     {
         std::cerr << "Can't bind IP/port" << std::endl;
@@ -55,8 +73,6 @@ int main(int argc, char **argv)
     //!Accept a call
     sockaddr_in client;
     // socklen_t   clientSize
-    char host[NI_MAXHOST];
-    char svc[NI_MAXSERV];
 
     int clientSocket = accept(servSockListen, (sockaddr*)&client, sizeof(client));
     if (clientSocket == -1)
@@ -64,62 +80,29 @@ int main(int argc, char **argv)
         std::cerr << "Problem with client connecting!" << std::endl;
         return -4;
     }
+
+    char clientHosts[NI_MAXHOST]; //client's host name (ip or site name)
+    char clientPorts[NI_MAXSERV]; //service name(port)
+    memset(clientHosts, 0, NI_MAXHOST);
+    memset(clientHosts, 0, NI_MAXSERV);
+
+    int res = getnameinfo((sockaddr*)&client, sizeof(client), 
+        clientHosts, NI_MAXHOST, clientPorts, NI_MAXSERV);
+    if (res)
+    {
+        std::cout << clientHosts << " connected on " << clientPorts << std::endl;
+    }
+    else
+    {
+        inet_ntop()
+    }
     //!Close the listening socket
     //!While recieving - display the message, echo message
     //!Close socket
+    close(servSockListen);
 
 
 }
-
-    
-
-
-
-
-
-//*socket(AF_INET, SOCK_STREAM, 0);
-//  AF_INET specifies usage IPv4 protocol family
-//  SOCK_STREAM it defines that the socket is TCP type
-//  0 will choose default protocol (some options: IPPROTO_TCP (int 6), IPPROTO_UDP (17), IPPROTO_ICMP(1)-Internet Control Message Protocol (ICMP), typically with SOCK_RAW)
-
-
-//*sockaddr_in - struct describing sock addr (in) - for internet IPv4
-//  servAddr.sin_addr.s_addr = INADDR_ANY is equal to: inet_pton(servSockListen, AF_INET, "0.0.0.0", &servAddr.sin_addr);
-// both in prev line says that: 
-//      inet_pton: Converts the human-readable IP address "0.0.0.0" into a binary and stores it in servAddr.sin_addr
-//          "0.0.0.0" is a special address that tells the socket to bind to all available network interfaces on the host machine.
-//          This means the socket will accept connections from any IP addr.
-//?memset and sockaddr_in.sin_zero
-//memset - fills servAddr struct with '0' chars. 
-//bcs of servAddr.sin_zero (which is 8 byte len) added to broaden the struct len, to backwards compatability with sockaddr struct where data field is longer
-
-//*htons() - host to network short. computer to-> network order of bytes changed
-//  use this bcs of big/little endian and differences in computer and network order of bytes reading in nums
-
-//  That fn will change it depending on whatever type of machine it is in
-//  there is also ntohs() backwards fn to transform, is used later.
-//? 6667 standard IRC PORT. to avoid need of root priviliges 
-//0–1023 (Well-Known Ports): Reserved for system and well-known services (e.g., HTTP on port 80, SSH on port 22). 
-//  You generally cannot use these without superuser privileges.
-//1024–49151 (Registered Ports): These ports are registered for specific services but can also be used by applications.
-//9152–65535 (Dynamic/Private Ports): These are typically used for temporary or dynamic allocations by OS.
-//  Choosing a port in this range minimizes the risk of conflicts with known services.
-
-
-//
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
