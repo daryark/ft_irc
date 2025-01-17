@@ -1,38 +1,53 @@
 //*1.	socket(AF_INET, SOCK_STREAM, 0);
-//  AF_INET specifies usage IPv4 protocol family
-//  SOCK_STREAM it defines that the socket is TCP type
-//  0 will choose default protocol (some options: IPPROTO_TCP (int 6), IPPROTO_UDP (17), IPPROTO_ICMP(1)-Internet Control Message Protocol (ICMP), typically with SOCK_RAW)
+    AF_INET specifies usage IPv4 protocol family
+    SOCK_STREAM it defines that the socket is TCP type
+    0 will choose default protocol (some options: IPPROTO_TCP (int 6), IPPROTO_UDP (17), IPPROTO_ICMP(1)-Internet Control Message Protocol (ICMP), typically with SOCK_RAW)
 
 //*2.	setsockopt(_head_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(&opt));
-// _head_socket - server socket
-// &opt - void* bcs for other second param option this can be either (int* or struct linger*)
+    head_socket - server socket
+    opt - void* bcs for other second param option this can be either (int* or struct linger*)
 //? SO_REUSEADDR - allows to restart/run server fast. ->
-// OS puts socket in a "TIME_WAIT" state to ensure any data on the network are properly handled and don’t interfere with new connections.
-// ?After closing socket, OS keeps the port reserved for ~ 2–4 min.
+    S puts socket in a "TIME_WAIT" state to ensure any data on the network are properly handled and don’t interfere with new connections.
+    After closing socket, OS keeps the port reserved for ~ 2–4 min.
 
 
 //*3.	sockaddr_in - struct describing sock addr (in) - for internet IPv4
 //? servAddr.sin_addr.s_addr = INADDR_ANY is equal to: 
 //? inet_pton(servSockListen, AF_INET, "0.0.0.0", &servAddr.sin_addr);
-// both in prev line says that: 
-//      inet_pton: Converts the human-readable IP address "0.0.0.0" into a binary and stores it in servAddr.sin_addr
-//          "0.0.0.0" is a special address that tells the socket to bind to all available network interfaces on the host machine.
-//          This means the socket will accept connections from any IP addr.
+both in prev line says that: 
+    inet_pton: Converts the human-readable IP address "0.0.0.0" into a binary and stores it in servAddr.sin_addr
+        "0.0.0.0" is a special address that tells the socket to bind to all available network interfaces on the host machine.
+        This means the socket will accept connections from any IP addr.
 //?memset and sockaddr_in.sin_zero
-//memset - fills servAddr struct with '0' chars. 
-//bcs of servAddr.sin_zero (which is 8 byte len) added to broaden the struct len, to backwards compatability with sockaddr struct where data field is longer
+memset - fills servAddr struct with '0' chars. 
+bcs of servAddr.sin_zero (which is 8 byte len) added to broaden the struct len, to backwards compatability with sockaddr struct where data field is longer
 
 //*4.	htons() - host to network short. computer to-> network order of bytes changed
-//  use this bcs of big/little endian and differences in computer and network order of bytes reading in nums
-
-//  That fn will change it depending on whatever type of machine it is in
-//  there is also ntohs() backwards fn to transform, is used later.
+use this bcs of big/little endian and differences in computer and network order of bytes reading in nums
+That fn will change it depending on whatever type of machine it is in,
+there is also ntohs() backwards fn to transform, is used later.
 //? 6667 standard IRC PORT. to avoid need of root priviliges 
-//0–1023 (Well-Known Ports): Reserved for system and well-known services (e.g., HTTP on port 80, SSH on port 22). 
-//  You generally cannot use these without superuser privileges.
-//1024–49151 (Registered Ports): These ports are registered for specific services but can also be used by applications.
-//9152–65535 (Dynamic/Private Ports): These are typically used for temporary or dynamic allocations by OS.
-//  Choosing a port in this range minimizes the risk of conflicts with known services.
+    0–1023 (Well-Known Ports): Reserved for system and well-known services (e.g., HTTP on port 80, SSH on port 22). 
+You generally cannot use these without superuser privileges.
+    1024–49151 (Registered Ports): These ports are registered for specific services but can also be used by applications.
+    9152–65535 (Dynamic/Private Ports): These are typically used for temporary or dynamic allocations by OS.
+Choosing a port in this range minimizes the risk of conflicts with known services.
 
+//*           cast from sockaddr_in
+//*bind(_head_socket, (sockaddr*)&_addr, sizeof(_addr))
+binds socket fd to _addr and pass it's size to reserve amnt of memory for it.
 
-//bind(_head_socket, (sockaddr*)&_addr, sizeof(_addr)) socket fd to servAddr and pass it's size to reserve amnt of memory for it
+//*5 fcntl(fd, cmd_type, ...optional_arg) - usage, modes and so on.
+Configures file descriptor properties.
+In project usage:  Sets non-blocking for sockets. 
+F_SETFL - set some fd's property mode/flag
+flag: O_NONBLOCK - A non-blocking socket doesn’t wait (or "block") if there's nothing to read or write.
+    Instead, it immediately returns an error like EAGAIN or EWOULDBLOCK.
+//?Useful for servers handling multiple clients at once, so one slow client doesn’t freeze the whole system.
+if sending client is slow/not-connected - err returned.
+if recieving client is slow/not-connected monitor:
+    store msg in buffer of sender. + wait-when recieving client is available for write() into, again;
+
+//! write about std::runtime_error and STDEXCEPT
+//! write about std::exception catching by ref std::exception &e
+//! wirte about listen

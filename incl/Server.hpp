@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 20:09:46 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/01/15 21:19:07 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/01/17 18:36:26 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,12 +22,17 @@
 #include <arpa/inet.h>   // htons
 #include <poll.h>		 // pollfd
 #include <netdb.h>		 //NII_MAXHOST, NI_MAXSERV
+#include <fcntl.h>		 //fnctl - O_NONBLOCK mode
 #include <cstdlib>       //exit
 #include <unistd.h>      //close
 
 #include "../incl/colors.hpp"
 // class Channel;
 // class Client;
+
+#define PR_RUN		1
+#define PR_CLOSE	2
+#define PR_LISTEN	3
 
 class Server
 {
@@ -42,8 +47,9 @@ private:
 	// std::vector<pollfd> _pollfds; //
 	// bool _running; // флаг для остановки сервера.
 
-	Server &operator=(const Server &obj){};
-	Server(const Server &obj){return *this};
+	Server(const Server &obj){(void)obj;};
+	Server &operator=(const Server &obj){(void)obj; return *this;};
+	void				fancy_print(int opt);
 
 public:
 	Server(int port, std::string password);
