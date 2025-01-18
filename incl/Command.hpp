@@ -4,6 +4,18 @@
 #include <vector>
 #include <string>
 
+enum  CommandType{
+	USER = 1,
+	NICK,
+	PASS,
+	JOIN,
+	PRIVMSG,
+	PING,
+	PONG,
+	QUIT,
+	UNKNOWN
+};
+
 class Client;
 class Command
 {
@@ -20,5 +32,9 @@ public:
 
 	// metchods
 	void executeCommand();	
-	static Command parse(const std::string& input, Client* sender);
+	void parse(const std::string& input, Client* sender);
+	
+	
+	// static Command parse(const std::string& input, Client* sender);
+	enum CommandType getTypeCommand();
 };

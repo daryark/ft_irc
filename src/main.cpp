@@ -10,10 +10,10 @@
 
 int main(int argc, char **argv)
 {
-    if (argc != 3) {
-        std::cerr << "try again " << std::endl;
-        return 1;
-    }
+    // if (argc != 3) {
+    //     std::cerr << "try again " << std::endl;
+    //     return 1;
+    // }
 
     
 
@@ -29,14 +29,16 @@ int main(int argc, char **argv)
         perror("Ошибка создания сокета");
         exit(EXIT_FAILURE);
     }
-
     // 2. Настраиваем адрес сервера
     std::memset(&server_addr, 0, sizeof(server_addr)); // Инициализируем структуру нулями
     server_addr.sin_family = AF_INET;                 // Используем IPv4
     server_addr.sin_addr.s_addr = INADDR_ANY;         // Привязываем ко всем доступным интерфейсам
     server_addr.sin_port = htons(6667);               // Указываем порт (например, 6667)
 
+    std::cout << "Серверный сокет создан - " << INADDR_ANY <<  "  " << AF_INET << std::endl;
+    
     // 3. Привязываем сокет к адресу
+    
     if (bind(server_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
         perror("Ошибка привязки сокета");
         close(server_fd);

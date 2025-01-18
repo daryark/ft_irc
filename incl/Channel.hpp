@@ -10,9 +10,6 @@ class Channel
 private:
 	std::string _name;
 	std::string _topic;
-	
-	// std::set<int> _clients;
-	// std::set<int> _operators;
 
 	std::map<int, Client*> members;     
     std::map<int, Client*> operators;
@@ -21,7 +18,7 @@ private:
 	std::string _password;
 	
 	int _max_clients;
-	// bool _is_invite_only;
+	bool _is_invite_only;
 
 public:
 	Channel();

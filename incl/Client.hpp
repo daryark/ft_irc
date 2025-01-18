@@ -3,8 +3,12 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <algorithm>
 #include <netinet/in.h>
 
+#include "../incl/Command.hpp"
+
+// class Command;
 class Client
 {
 private:
@@ -25,7 +29,9 @@ private:
 public:
 	Client();
 	Client(int fd, const struct sockaddr_in &addr);
-
+	Client(int fd, std::string nickname, std::string username, 
+		std::string hostname, std::string servername, std::string realname);
+	
 	Client(const Client &obj);
 	Client &operator=(const Client &copy);
 	~Client();

@@ -20,7 +20,7 @@ private:
 	struct sockaddr_in _addr;
 
 	std::map<int, Client*> _clients; // int - fd_client and ptr to Client
-
+	// std::vector<Channel*> _channels; // ptr to Channel
 	std::map<std::string, Channel*> _channels; // name_channel and ptr to Channel
 
 	std::vector<pollfd> _pollfds; //
