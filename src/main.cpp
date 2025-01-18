@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 20:09:44 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/01/17 18:40:13 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/01/18 18:22:16 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@ void    ft_irc(Server& serv)
 {
     try {
         serv.init();
+        // serv.run(); not written yet
     }
     catch (std::exception& e) {
         std::cout << U_RED << e.what() << RE << std::endl;
