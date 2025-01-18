@@ -6,7 +6,7 @@
 /*   By: mperetia <mperetia@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 20:09:44 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/01/18 19:24:37 by mperetia         ###   ########.fr       */
+/*   Updated: 2025/01/18 19:49:09 by mperetia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,3 +94,4 @@ int main(int argc, char **argv)
 //     close(server_fd);
 // 	return 0;
 // }
+}

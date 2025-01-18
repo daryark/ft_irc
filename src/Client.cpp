@@ -64,7 +64,7 @@ Client::~Client()
 
 void Client::sendMessage(const std::string &message)
 {
-	Command::parse(message, this).executeCommand();
+	// Command::parse(message, this).executeCommand();
 	// send(_fd, message.c_str(), message.size(), 0);
 }
 
