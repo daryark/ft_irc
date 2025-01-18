@@ -1,43 +1,64 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Server.hpp                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mperetia <mperetia@student.42wolfsburg.de> +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/01/15 20:09:46 by dyarkovs          #+#    #+#             */
+/*   Updated: 2025/01/18 19:25:36 by mperetia         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #pragma once
 
 #include <iostream>
+#include <cstring>       // memset
 #include <vector>
 #include <map>
 
-#include <poll.h>		//  pollfd
-#include <netinet/in.h> //  sockaddr_in
+#include <sys/socket.h>  // socket, bind, listen, accept
+#include <netinet/in.h>  // sockaddr_in
+#include <arpa/inet.h>   // htons
+#include <netdb.h>		 //NII_MAXHOST, NI_MAXSERV
+#include <fcntl.h>		 //fnctl - O_NONBLOCK mode
+#include <poll.h>		 // pollfd
+#include <cstdlib>       //exit
+#include <unistd.h>      //close
 
+#include "../incl/colors.hpp"
+// class Channel;
+// class Client;
 
-class Channel;
-class Client;
+#define PR_RUN		1
+#define PR_CLOSE	2
+#define PR_LISTEN	3
 
 class Server
 {
 private:
-	int _port;
-	std::string _password;
-	int _server_socket_fd; // used fo bind(), listen(), accept()
-	struct sockaddr_in _addr;
+	int					_head_socket; // used fo bind(), listen(), accept()
+	int 				_port;
+	std::string 		_password;
+	struct sockaddr_in	_addr;
 
-	std::map<int, Client*> _clients; // int - fd_client and ptr to Client
-	// std::vector<Channel*> _channels; // ptr to Channel
-	std::map<std::string, Channel*> _channels; // name_channel and ptr to Channel
+	// std::map<int, Client*> _clients; // int - fd_client and ptr to Client
+	// std::map<std::string, Channel*> _channels; // name_channel and ptr to Channel
+	std::vector<pollfd> _pollfds;
 
-	std::vector<pollfd> _pollfds; //
-	
-	bool _running; // флаг для остановки сервера.
+	Server(const Server &obj){(void)obj;};
+	Server &operator=(const Server &obj){(void)obj; return *this;};
+	void				fancy_print(int opt);
 
 public:
-	Server();
-	Server(const Server &obj);
-	Server &operator=(const Server &obj);
+	Server(int port, std::string password);
 	~Server();
 
-	// metchods
-	void start();
-	void stop();
-	void handelNewConnection();
+	// methods
+	void	init();
+	void	run();
+	// void handelNewConnection();
 
 	// Channel *creatChannel(const std::string& name);
-	Channel *creatChannel(std::string name);
+	// Channel *creatChannel(std::string name);
 };

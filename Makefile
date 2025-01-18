@@ -1,15 +1,15 @@
 GREEN = \033[0;32m
 RE = \033[0m
 
-SRC =  main.cpp Irc.cpp
-HDR = Irc.hpp
+SRC =  main.cpp Server.cpp
+HDR = Server.hpp
 
 SRC_F = src/
 OBJ_F = obj/
 HDR_F = incl/
 
 HDR_PATHS = $(addprefix $(HDR_F), $(HDR))
-VPATH = $(SRC_F) #*don't forget to use it, OR specify src folder for compiler then - $(OBJ_F)%.o: $(SRC_F)%.cpp ...
+VPATH = $(SRC_F)
 OBJ = $(addprefix $(OBJ_F), $(SRC:%.cpp=%.o))
 
 CXX = c++
