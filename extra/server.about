@@ -10,19 +10,29 @@
     S puts socket in a "TIME_WAIT" state to ensure any data on the network are properly handled and don’t interfere with new connections.
     After closing socket, OS keeps the port reserved for ~ 2–4 min.
 
+//*3 fcntl(fd, cmd_type, ...optional_arg) - usage, modes and so on.
+Configures file descriptor properties.
+In project usage:  Sets non-blocking for sockets. 
+F_SETFL - set some fd's property mode/flag
+flag: O_NONBLOCK - A non-blocking socket doesn’t wait (or "block") if there's nothing to read or write.
+    Instead, it immediately returns an error like EAGAIN or EWOULDBLOCK.
+//?Useful for servers handling multiple clients at once, so one slow client doesn’t freeze the whole system.
+if sending client is slow/not-connected - err returned.
+if recieving client is slow/not-connected monitor:
+    store msg in buffer of sender. + wait-when recieving client is available for write() into, again;
 
-//*3.	sockaddr_in - struct describing sock addr (in) - for internet IPv4
+//*4.	sockaddr_in - struct describing sock addr (in) - for internet IPv4
 //? servAddr.sin_addr.s_addr = INADDR_ANY is equal to: 
 //? inet_pton(servSockListen, AF_INET, "0.0.0.0", &servAddr.sin_addr);
 both in prev line says that: 
     inet_pton: Converts the human-readable IP address "0.0.0.0" into a binary and stores it in servAddr.sin_addr
         "0.0.0.0" is a special address that tells the socket to bind to all available network interfaces on the host machine.
         This means the socket will accept connections from any IP addr.
-//?memset and sockaddr_in.sin_zero
+//?*memset and sockaddr_in.sin_zero
 memset - fills servAddr struct with '0' chars. 
 bcs of servAddr.sin_zero (which is 8 byte len) added to broaden the struct len, to backwards compatability with sockaddr struct where data field is longer
 
-//*4.	htons() - host to network short. computer to-> network order of bytes changed
+//*5.	htons() - host to network short. computer to-> network order of bytes changed
 use this bcs of big/little endian and differences in computer and network order of bytes reading in nums
 That fn will change it depending on whatever type of machine it is in,
 there is also ntohs() backwards fn to transform, is used later.
@@ -37,17 +47,22 @@ Choosing a port in this range minimizes the risk of conflicts with known service
 //*bind(_head_socket, (sockaddr*)&_addr, sizeof(_addr))
 binds socket fd to _addr and pass it's size to reserve amnt of memory for it.
 
-//*5 fcntl(fd, cmd_type, ...optional_arg) - usage, modes and so on.
-Configures file descriptor properties.
-In project usage:  Sets non-blocking for sockets. 
-F_SETFL - set some fd's property mode/flag
-flag: O_NONBLOCK - A non-blocking socket doesn’t wait (or "block") if there's nothing to read or write.
-    Instead, it immediately returns an error like EAGAIN or EWOULDBLOCK.
-//?Useful for servers handling multiple clients at once, so one slow client doesn’t freeze the whole system.
-if sending client is slow/not-connected - err returned.
-if recieving client is slow/not-connected monitor:
-    store msg in buffer of sender. + wait-when recieving client is available for write() into, again;
+//#6 aggregate initialization (initialization of all members of struct at once, IN THE SAME ORDER AS THEY SPEICFIED)
+//? ex:
+struct pollfd {
+    int     fd;       //first member
+    short   events;  //second member
+    short   revents; //third member
+}
+//? usage with aggregate init.
+pollfd serv_pollfd = {_head_socket, POLLIN, 0};
+so no need to assign each member with direct access like: serv_pollfd.fd = _head_socket and so on with each.
+//*pollfd
+When you initialize or reset a pollfd structure, the revents field should be cleared (set to 0)
+because it will be overwritten by the system when poll() is invoked.
 
 //! write about std::runtime_error and STDEXCEPT
 //! write about std::exception catching by ref std::exception &e
 //! wirte about listen
+
+https://github.com/markov199/ft_irc/blob/main/ft_irc/Server.cpp

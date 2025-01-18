@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 20:09:44 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/01/17 18:30:02 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/01/17 18:40:13 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,28 +40,7 @@ int main(int argc, char **argv)
     ft_irc(serv);
     return 0;
     
-    // //Create a socket (endpoint for communication btw two devices/processes)
-    // int servSockListen = socket(AF_INET, SOCK_STREAM, 0); //*serv._server_socket_fd
-    // if (servSockListen == -1)
-    // {
-    //     std::cerr << "Can't create socket!" << std::endl;
-    //     return -1;
-    // }
-    // //Bind the socket to IP / port (endpoint for network communication. 
-    // //  Port is being used by sockets to send the data. 
-    // //  it identifies some program/process on a machine ex: Port 80 = http)
-    // sockaddr_in servAddr;
-    // std::memset(&servAddr, 0, sizeof(&servAddr)); 
-    // servAddr.sin_family = AF_INET;
-    // servAddr.sin_port = htons(argv[1]);
-    // inet_pton(AF_INET, "0.0.0.0", &servAddr.sin_addr);
-    //  //sets internet addr(servAddr.sin_addr) can be any.//“presentation/printable to network” of addr
-    // if (bind(servSockListen, (sockaddr*)&servAddr, sizeof(servAddr)) == -1) //bind socket fd to servAddr and it's size to reserve amnt of memory for it
-    // {
-    //     std::cerr << "Can't bind IP/port" << std::endl;
-    //     close(servSockListen);
-    //     return -2;
-    // }
+    
     // //Mark the socket for listening in
     // if (listen(servSockListen, SOMAXCONN) == -1) //max amnt of connections in queue before the next ones are refused
     // {

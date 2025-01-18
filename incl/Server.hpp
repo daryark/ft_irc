@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 20:09:46 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/01/17 18:36:26 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/01/18 17:34:03 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,9 +20,9 @@
 #include <sys/socket.h>  // socket, bind, listen, accept
 #include <netinet/in.h>  // sockaddr_in
 #include <arpa/inet.h>   // htons
-#include <poll.h>		 // pollfd
 #include <netdb.h>		 //NII_MAXHOST, NI_MAXSERV
 #include <fcntl.h>		 //fnctl - O_NONBLOCK mode
+#include <poll.h>		 // pollfd
 #include <cstdlib>       //exit
 #include <unistd.h>      //close
 
@@ -44,8 +44,7 @@ private:
 
 	// std::map<int, Client*> _clients; // int - fd_client and ptr to Client
 	// std::map<std::string, Channel*> _channels; // name_channel and ptr to Channel
-	// std::vector<pollfd> _pollfds; //
-	// bool _running; // флаг для остановки сервера.
+	std::vector<pollfd> _pollfds;
 
 	Server(const Server &obj){(void)obj;};
 	Server &operator=(const Server &obj){(void)obj; return *this;};
@@ -55,10 +54,9 @@ public:
 	Server(int port, std::string password);
 	~Server();
 
-	// metchods
+	// methods
 	void	init();
-	// void start();
-	// void stop();
+	void	run();
 	// void handelNewConnection();
 
 	// Channel *creatChannel(const std::string& name);

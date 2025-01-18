@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 20:45:16 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/01/17 18:36:16 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/01/18 17:43:43 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,20 +32,30 @@ void    Server::init()
     if (setsockopt(_head_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1) //*2
         throw std::runtime_error("setsockopt");
     
-    if (fcntl(_head_socket,F_SETFL, O_NONBLOCK) == -1) //*5
+    if (fcntl(_head_socket,F_SETFL, O_NONBLOCK) == -1) //*3
         throw std::runtime_error("fcntl");
-    
-    std::memset(&_addr, 0, sizeof(_addr));//*3
+
+    std::memset(&_addr, 0, sizeof(_addr));//*4
     inet_pton(AF_INET, "0.0.0.0", &_addr.sin_addr);
-    _addr.sin_port = htons(_port);//*4
+    _addr.sin_port = htons(_port);//*5
     _addr.sin_family = AF_INET;
     if (bind(_head_socket, (sockaddr*)&_addr, sizeof(_addr)) == -1)
         throw std::runtime_error("bind");
     fancy_print(PR_RUN);
+
     if (listen(_head_socket, SOMAXCONN) == -1)
         throw std::runtime_error("listen");
     fancy_print(PR_LISTEN);
     
+}
+
+void    Server::run()
+{
+    pollfd serv_pollfd = {_head_socket, POLLIN, 0}; //#6
+    while (true)
+    {
+        
+    }
 }
 
 void    Server::fancy_print(int opt)
@@ -59,5 +69,4 @@ void    Server::fancy_print(int opt)
         << "´סּ" << B_RED << "︵" << B_BLUE "סּ`" << B_RED << "⊂ ༽" << RE << std::endl;
     else if (opt == PR_LISTEN)
         std::cout << B_CYAN << "Waiting for connections..." << RE << std::endl;
-
 }
