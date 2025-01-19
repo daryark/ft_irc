@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 20:45:16 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/01/18 18:23:35 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/01/19 23:11:06 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,14 +51,60 @@ void    Server::init()
 
 void    Server::run()
 {
-    pollfd serv_pollfd = {_head_socket, POLLIN, 0}; //#6
+    push_pollfd({_head_socket, POLLIN, 0}); //#6
+    // _pollfds.push_back(serv_pollfd);
+    //!sigint & sigstp signal catch here add
     while (true)
     {
-        // poll
-        //accept
-        //recv
-        //send
+        if (poll(_pollfds.data(), _pollfds.size(), 1000) < 0) //*7
+            break ;
+        for (int i = 0; i < _pollfds.size(); i++ )
+        {
+            if (_pollfds[i].revents & POLLIN) //*6.1
+            {
+                if (_pollfds[i].fd == _head_socket)
+                   accept_client();
+                else
+                    read_msg(i);
+            }
+            if (_pollfds[i].revents & POLLOUT)
+               send_msg(i);
+        }
+        //!find out, where and how i init map for all clinets overall, watch The Cherno map till end
+        //! maybe change addr ip of client from intet to int/ascii ?
+        //!new Client*
+        //!push to client map (insert or/and make_pair(what is last one))
     }
+}
+
+void    Server::read_msg(int i)
+{
+}
+
+void    Server::send_msg(int i)
+{
+    
+}
+
+void    Server::accept_client()
+{
+    sockaddr_in client;
+    std::memset(&client, 0, sizeof(client));
+    int client_sock = accept(_head_socket, (sockaddr*)&client, sizeof(client));
+    if (client_sock == -1)
+    {
+        std::cerr << RED << "Can't connect with new client" << RE << std::endl;
+        return ;
+    }
+    push_pollfd({client_sock, POLLIN | POLLOUT, 0});
+    
+}
+
+//------------------helpers--------------------
+
+void    Server::push_pollfd(pollfd pfd)
+{
+    _pollfds.push_back(pfd);
 }
 
 void    Server::fancy_print(int opt)

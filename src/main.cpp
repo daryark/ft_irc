@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 20:09:44 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/01/18 18:22:16 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/01/19 19:55:55 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ void    ft_irc(Server& serv)
 {
     try {
         serv.init();
-        // serv.run(); not written yet
+        serv.run();
     }
     catch (std::exception& e) {
         std::cout << U_RED << e.what() << RE << std::endl;
@@ -24,7 +24,7 @@ void    ft_irc(Server& serv)
     return ;
 }
 
-//?ex:  ./ircserv <port> <password>
+//#ex:  ./ircserv <port> <password>
 int main(int argc, char **argv)
 {
     if (argc != 3) {

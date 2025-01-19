@@ -49,7 +49,7 @@ binds socket fd to _addr and pass it's size to reserve amnt of memory for it.
 
 //#6 aggregate initialization (initialization of all members of struct at once, IN THE SAME ORDER AS THEY SPEICFIED)
 //? ex:
-struct pollfd {
+//*6 struct pollfd {
     int     fd;       //first member
     short   events;  //second member
     short   revents; //third member
@@ -57,12 +57,22 @@ struct pollfd {
 //? usage with aggregate init.
 pollfd serv_pollfd = {_head_socket, POLLIN, 0};
 so no need to assign each member with direct access like: serv_pollfd.fd = _head_socket and so on with each.
-//*pollfd
+//*6.1 pollfd
 When you initialize or reset a pollfd structure, the revents field should be cleared (set to 0)
-because it will be overwritten by the system when poll() is invoked.
+because it will be overwritten by the system when poll() is invoked (to POLLIN/POLLOUT/POLLERR) - the real event that will happen.
+//?The revents field is a bitmask that indicates the events that occurred for a file descriptor.
+Multiple events can occur at the same time (e.g., POLLIN, POLLOUT, POLLHUP), and they are stored as separate bits in the revents integer.
+
+//*7 poll(_pollfds.data(), _pollfds.size(), 1000);
+First param: poll work with direct pointer to data storage, not with vector, so we pass the pointer to data array stored in vector container.
+Third param: timeout in milliseconds that poll() should block waiting for a file descriptor to become ready.
+//?    The call will block until either:
+    •  a file descriptor becomes ready;
+    •  the call is interrupted by a signal handler; or
+    •  the timeout expires.
+//? return: num of elems in arr that has revents set to nonzero.
 
 //! write about std::runtime_error and STDEXCEPT
 //! write about std::exception catching by ref std::exception &e
 //! wirte about listen
 
-https://github.com/markov199/ft_irc/blob/main/ft_irc/Server.cpp

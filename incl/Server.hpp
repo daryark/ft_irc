@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 20:09:46 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/01/18 17:34:03 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/01/19 23:00:34 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,26 +37,32 @@
 class Server
 {
 private:
-	int					_head_socket; // used fo bind(), listen(), accept()
-	int 				_port;
-	std::string 		_password;
-	struct sockaddr_in	_addr;
+	int						_head_socket; // used fo bind(), listen(), accept()
+	int 					_port;
+	std::string 			_password;
+	struct sockaddr_in		_addr;
+	std::vector<pollfd> 	_pollfds;
+	std::map<int, Client*>	_clients; // int - fd_client and ptr to Client
 
-	// std::map<int, Client*> _clients; // int - fd_client and ptr to Client
 	// std::map<std::string, Channel*> _channels; // name_channel and ptr to Channel
-	std::vector<pollfd> _pollfds;
 
 	Server(const Server &obj){(void)obj;};
 	Server &operator=(const Server &obj){(void)obj; return *this;};
-	void				fancy_print(int opt);
+	//helpers
+	void					push_pollfd(pollfd);
+	void					fancy_print(int opt);
 
 public:
 	Server(int port, std::string password);
 	~Server();
 
 	// methods
-	void	init();
-	void	run();
+	void					init();
+	void					run();
+	void					accept_client();
+	void					read_msg();
+	void					send_msg();
+
 	// void handelNewConnection();
 
 	// Channel *creatChannel(const std::string& name);
