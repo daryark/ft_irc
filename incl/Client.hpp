@@ -8,9 +8,9 @@
 class Client
 {
 private:
-	int _fd;
-	struct sockaddr_in _addr;
-	std::string _ip;
+	const int _fd;
+	const struct sockaddr_in _addr;
+	// const std::string _ip;
 
 	// std::string _nickname;
 
@@ -22,12 +22,13 @@ private:
 	// std::vector<std::string> joined_channels;
 	// bool authenticated;
 
+	Client &operator=(const Client &){return *this;};
+
 public:
 	Client(int fd, const struct sockaddr_in &addr);
 	~Client();
 
 	Client(const Client &obj);
-	Client &operator=(const Client &obj);
 
 	// metchods
 	// void sendMessage(const std::string &message);
