@@ -1,8 +1,8 @@
 GREEN = \033[0;32m
 RE = \033[0m
 
-SRC =  main.cpp Server.cpp
-HDR = Server.hpp
+SRC =  main.cpp Server.cpp Client.cpp
+HDR = Server.hpp Client.hpp
 
 SRC_F = src/
 OBJ_F = obj/

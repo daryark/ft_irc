@@ -27,6 +27,8 @@
 #include <unistd.h>      //close
 
 #include "../incl/colors.hpp"
+#include "../incl/Client.hpp"
+
 // class Channel;
 // class Client;
 
@@ -42,14 +44,14 @@ private:
 	std::string 			_password;
 	struct sockaddr_in		_addr;
 	std::vector<pollfd> 	_pollfds;
-	std::map<int, Client*>	_clients; // int - fd_client and ptr to Client
+	std::map<int, Client>	_clients; // int - fd_client and ptr to Client
 
 	// std::map<std::string, Channel*> _channels; // name_channel and ptr to Channel
 
-	Server(const Server &obj){(void)obj;};
-	Server &operator=(const Server &obj){(void)obj; return *this;};
+	Server(const Server &){};
+	Server &operator=(const Server &){return *this;};
 	//helpers
-	void					push_pollfd(pollfd);
+	void					push_pollfd(int, short, short);
 	void					fancy_print(int opt);
 
 public:
@@ -60,8 +62,8 @@ public:
 	void					init();
 	void					run();
 	void					accept_client();
-	void					read_msg();
-	void					send_msg();
+	void					read_msg(int i);
+	void					send_msg(int i);
 
 	// void handelNewConnection();
 

@@ -12,16 +12,14 @@
 
 #include "../incl/Server.hpp"
 //* all the '*' explanation in extra/server.about file
-Server::Server(int port, std::string password): _port(port), _password(password)
-{
-
-}
+Server::Server(int port, std::string password): _port(port), _password(password){}
 
 Server::~Server()
 {
     close(_head_socket);
     fancy_print(PR_CLOSE);
 }
+
 void    Server::init()
 {
     _head_socket = socket(AF_INET, SOCK_STREAM, 0); //*1
@@ -51,14 +49,13 @@ void    Server::init()
 
 void    Server::run()
 {
-    push_pollfd({_head_socket, POLLIN, 0}); //#6
-    // _pollfds.push_back(serv_pollfd);
+    push_pollfd(_head_socket, POLLIN, 0); //#6
     //!sigint & sigstp signal catch here add
     while (true)
     {
-        if (poll(_pollfds.data(), _pollfds.size(), 1000) < 0) //*7
+        if (poll(_pollfds.data(), (int)_pollfds.size(), 1000) < 0) //*7
             break ;
-        for (int i = 0; i < _pollfds.size(); i++ )
+        for (int i = 0; i < (int)_pollfds.size(); i++ )
         {
             if (_pollfds[i].revents & POLLIN) //*6.1
             {
@@ -70,41 +67,51 @@ void    Server::run()
             if (_pollfds[i].revents & POLLOUT)
                send_msg(i);
         }
-        //!find out, where and how i init map for all clinets overall, watch The Cherno map till end
+        
         //! maybe change addr ip of client from intet to int/ascii ?
         //!new Client*
         //!push to client map (insert or/and make_pair(what is last one))
     }
 }
 
-void    Server::read_msg(int i)
-{
-}
-
-void    Server::send_msg(int i)
-{
-    
-}
-
 void    Server::accept_client()
 {
     sockaddr_in client;
+    socklen_t   clSize = sizeof(client);
     std::memset(&client, 0, sizeof(client));
-    int client_sock = accept(_head_socket, (sockaddr*)&client, sizeof(client));
+    int client_sock = accept(_head_socket, (sockaddr*)&client, &clSize);
     if (client_sock == -1)
     {
         std::cerr << RED << "Can't connect with new client" << RE << std::endl;
         return ;
     }
-    push_pollfd({client_sock, POLLIN | POLLOUT, 0});
-    
+    push_pollfd(client_sock, POLLIN | POLLOUT, 0);
+    //!people converted ip to human readable from client.sin_addr with inet_ntoa()...add if needed later and save in constructor.
+    _clients.insert(std::pair<int, Client>(client_sock, Client(client_sock, client)));
+    std::cout << B_GREEN << "New client connected on socket fd: " << client_sock << RE << std::endl;
+    //*send_msg() to newely connected client about the commands available to use
+}
+
+
+void    Server::read_msg(int i)
+{
+    (void)i;
+}
+
+void    Server::send_msg(int i)
+{
+    (void)i;
 }
 
 //------------------helpers--------------------
 
-void    Server::push_pollfd(pollfd pfd)
+void    Server::push_pollfd(int fd, short event, short revent)
 {
-    _pollfds.push_back(pfd);
+    pollfd new_pollfd;
+    new_pollfd.fd = fd;
+    new_pollfd.events = event;
+    new_pollfd.revents = revent;
+    _pollfds.push_back(new_pollfd);
 }
 
 void    Server::fancy_print(int opt)
