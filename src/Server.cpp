@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 20:45:16 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/01/19 23:11:06 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/01/25 20:57:31 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,6 +57,11 @@ void    Server::run()
             break ;
         for (int i = 0; i < (int)_pollfds.size(); i++ )
         {
+            if (_pollfds[i].revents & POLLHUP)
+             {   
+                disconnect_client(i); //!continue after disconnecting this client? or other clients can send some data through one poll loop at the same time???
+                continue;
+             }
             if (_pollfds[i].revents & POLLIN) //*6.1
             {
                 if (_pollfds[i].fd == _head_socket)
@@ -67,10 +72,6 @@ void    Server::run()
             if (_pollfds[i].revents & POLLOUT)
                send_msg(i);
         }
-        
-        //! maybe change addr ip of client from intet to int/ascii ?
-        //!new Client*
-        //!push to client map (insert or/and make_pair(what is last one))
     }
 }
 
@@ -90,6 +91,11 @@ void    Server::accept_client()
     _clients.insert(std::pair<int, Client>(client_sock, Client(client_sock, client)));
     std::cout << B_GREEN << "New client connected on socket fd: " << client_sock << RE << std::endl;
     //*send_msg() to newely connected client about the commands available to use
+}
+
+void    Server::disconnect_client(int i)
+{
+    (void)i;
 }
 
 

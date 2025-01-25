@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 20:09:46 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/01/19 23:00:34 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/01/25 20:54:34 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,6 +62,7 @@ public:
 	void					init();
 	void					run();
 	void					accept_client();
+	void					disconnect_client(int i);
 	void					read_msg(int i);
 	void					send_msg(int i);
 
