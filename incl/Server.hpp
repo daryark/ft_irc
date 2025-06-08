@@ -65,5 +65,5 @@ public:
 	// Channel *creatChannel(const std::string& name);
 	// Channel *creatChannel(std::string name);
 
-	//void handleInput(Client* client, const std::string& input) //*parser input + masha
+	//void handleInput(Client* client, const std::string& input) //*parser input + masha check CommandFactory.hpp
 };
