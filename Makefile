@@ -1,7 +1,7 @@
 GREEN = \033[0;32m
 RE = \033[0m
 
-SRC =  main.cpp Server.cpp
+SRC =  main.cpp Server.cpp Command.cpp
 HDR = Server.hpp
 
 SRC_F = src/

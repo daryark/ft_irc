@@ -1,29 +1,5 @@
 #include "../incl/Client.hpp"
 
-Client::Client()
-{
-	_fd = -1;
-	_ip = "";
-	_nickname = "";
-	_username = "";
-	_hostname = "";
-	_servername = "";
-	_realname = "";
-	authenticated = false;
-}
-
-// Client::Client(int fd, const struct sockaddr_in &addr)
-// {
-// 	_fd = fd;
-// 	_addr = addr;
-// 	// _ip = inet_ntoa(addr.sin_addr);
-// 	_nickname = "";
-// 	_username = "";
-// 	_hostname = "";
-// 	_servername = "";
-// 	_realname = "";
-// 	authenticated = false;
-// }
 
 Client::Client(int fd, std::string nickname, std::string username, std::string hostname, std::string servername, std::string realname)
 {
@@ -37,87 +13,69 @@ Client::Client(int fd, std::string nickname, std::string username, std::string h
 	authenticated = false;
 }
 
-Client::Client(const Client &obj)
-{
-	if (this != &obj)
-		*this = obj;
-}
-
-Client &Client::operator=(const Client &copy)
-{
-	_fd = copy._fd;
-	_addr = copy._addr;
-	_ip = copy._ip;
-	_nickname = copy._nickname;
-	_username = copy._username;
-	_hostname = copy._hostname;
-	_servername = copy._servername;
-	_realname = copy._realname;
-	authenticated = copy.authenticated;
-	return *this;
-}
 
 Client::~Client()
 {
-	joined_channels.clear();
+	close(_fd);
+	//joined_channels.clear();
 }
 
-void Client::sendMessage(const std::string &message)
+void Client::sendMessage(const std::string &message) const
 {
 	// Command::parse(message, this).executeCommand();
 	// send(_fd, message.c_str(), message.size(), 0);
 }
 
-int Client::getFd() const
-{
-	return _fd;
-}
+int Client::getFd() const{ return _fd; }
 
-void Client::setNickname(const std::string &nickname)
-{
-	_nickname = nickname;
-}
+void Client::setNickname(const std::string &nickname) { _nickname = nickname; }
 
-const std::string &Client::getNickname() const
-{
-	return _nickname;
-}
+const std::string &Client::getNickname() const { return _nickname; }
 
-void Client::setUsername(const std::string &username)
-{
-	_username = username;
-}
+void Client::setUsername(const std::string &username) { _username = username; }
 
-const std::string &Client::getUsername() const
-{
-	return _username;
-}
+const std::string &Client::getUsername() const { return _username; }
 
-void Client::authenticate(const std::string &password)
+void Client::setHostname(const std::string &hostname) { _hostname = hostname; }
+
+const std::string &Client::getHostname() const { return _hostname; }
+
+void Client::setServername(const std::string &servername) { _servername = servername; }
+
+const std::string &Client::getServername() const { return _servername; }
+
+void Client::setRealname(const std::string &realname) { _realname = realname; }
+
+const std::string &Client::getRealname() const { return _realname; }
+
+void Client::authenticate(bool state)
 {
+	_authenticated = state;
 	// authenticated = true;
 }
 
 bool Client::isAuthenticated() const
 {
-	return authenticated;
+	return _authenticated;
 }
 
-void Client::addChannel(const std::string &channel)
+void Client::joinChannel(const std::string &channel)
 {
 	joined_channels.push_back(channel);
 }
 
 void Client::removeChannel(const std::string &channel)
 {
-	std::vector<std::string>::iterator it = std::find(joined_channels.begin(), joined_channels.end(), channel);
+	/*std::vector<std::string>::iterator it = std::find(joined_channels.begin(), joined_channels.end(), channel);
 	if (it != joined_channels.end()) {
         joined_channels.erase(it);
     }
-	std::cout << "Client::removeChannel" << std::endl;
+	std::cout << "Client::removeChannel" << std::endl;*/
+
+	_channels.erase(std::remove(_joined_channels.begin(), _joined_channels.end(), channel), _joined_channels.end());
 }
 
-void Client::setAddr(const struct sockaddr_in &addr)
+/*void Client::setAddr(const struct sockaddr_in &addr)
 {
 	_addr = addr;
 }
@@ -125,5 +83,5 @@ void Client::setAddr(const struct sockaddr_in &addr)
 const struct sockaddr_in &Client::getAddr() const
 {
 	return _addr;
-}
+}*/
 

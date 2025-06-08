@@ -6,7 +6,7 @@
 /*   By: mperetia <mperetia@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 20:09:46 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/01/18 19:25:36 by mperetia         ###   ########.fr       */
+/*   Updated: 2025/01/19 22:39:03 by mperetia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,8 @@
 #include <unistd.h>      //close
 
 #include "../incl/colors.hpp"
+//class CommandFactory;
+//class Command;
 // class Channel;
 // class Client;
 
@@ -51,6 +53,7 @@ private:
 	void				fancy_print(int opt);
 
 public:
+	Server();
 	Server(int port, std::string password);
 	~Server();
 
@@ -61,4 +64,6 @@ public:
 
 	// Channel *creatChannel(const std::string& name);
 	// Channel *creatChannel(std::string name);
+
+	//void handleInput(Client* client, const std::string& input) //*parser input + masha
 };

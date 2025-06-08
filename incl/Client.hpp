@@ -13,7 +13,7 @@ class Client
 {
 private:
 	int _fd;
-	struct sockaddr_in _addr;
+	//struct sockaddr_in _addr;
 	std::string _ip;
 
 	std::string _nickname;
@@ -23,37 +23,43 @@ private:
 	std::string _servername;
 	std::string _realname;
 
-	std::vector<std::string> joined_channels;
-	bool authenticated;
+	bool _authenticated;
+
+	std::vector<std::string> _joined_channels;
 
 public:
-	Client();
-	Client(int fd, const struct sockaddr_in &addr);
 	Client(int fd, std::string nickname, std::string username, 
 		std::string hostname, std::string servername, std::string realname);
-	
-	Client(const Client &obj);
-	Client &operator=(const Client &copy);
+
 	~Client();
 
 	// metchods
-	void sendMessage(const std::string &message);
+	void sendMessage(const std::string &message) const;
 
-	int getFd() const;
+	int &getFd() const;//+
 	
-	void setNickname(const std::string &nickname);
-	const std::string &getNickname() const;
+	void setNickname(const std::string &nickname);//+
+	const std::string &getNickname() const;//+
 
-	void setUsername(const std::string &username);
-	const std::string &getUsername() const;
+	void setUsername(const std::string &username);//+
+	const std::string &getUsername() const;//+
 
-	void authenticate(const std::string &password);
-	bool isAuthenticated() const;
+	void setHostname(const std::string &hostname);//+
+	const std::string &getHostname() const;//+
+
+	void setServername(const std::string &servername);//+
+	const std::string &getServername() const;//+
+
+	void setRealname(const std::string &realname);//+
+	const std::string &getRealname() const;//+
+
+	void authenticate(bool state); //+
+	bool isAuthenticated() const;//+
 	
-	void addChannel(const std::string &channel);
-	void removeChannel(const std::string &channel);
+	void joinChannel(const std::string &channel);//+
+	void removeChannel(const std::string &channel);//+
 
-	void setAddr(const struct sockaddr_in &addr);
-	const struct sockaddr_in &getAddr() const;
+	//void setAddr(const struct sockaddr_in &addr);
+	//const struct sockaddr_in &getAddr() const;
 	
 };

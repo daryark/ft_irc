@@ -1,43 +1,13 @@
 #include "../incl/Channel.hpp"
 
-Channel::Channel()
-{
-	_name = "";
-	_topic = "";
-	_is_private = false;
-	_password = "";
-	_max_clients = -1;
-	_is_invite_only = false;
-}
-
-Channel::Channel(std::string name)
+Channel::Channel(const std::string& name)
 {
 	_name = name;
-	_topic = "";
-	_is_private = false;
+	_topic = "unkmown";
+	//_is_private = false;
 	_password = "";
 	_max_clients = -1;
 	_is_invite_only = false;
-}
-
-Channel::Channel(const Channel &obj)
-{
-	if (this != &obj)
-		*this = obj;
-}
-
-Channel &Channel::operator=(const Channel &copy)
-{
-	_name = copy._name;
-	_topic = copy._topic;
-	//vector
-	// members = copy.members;
-	// operators = copy.operators;
-	_is_private = copy._is_private;
-	_password = copy._password;
-	_max_clients = copy._max_clients;
-	_is_invite_only = copy._is_invite_only;
-	return *this;
 }
 
 Channel::~Channel()
@@ -46,38 +16,56 @@ Channel::~Channel()
 	operators.clear();
 }
 
-void Channel::setTopic(const std::string& topic)
-{
-	_topic = topic;
+void Channel::setName(const std::string& topic){_name = name;}
+
+const std::string& Channel::getName() const {return _name;}
+
+void Channel::setTopic(const std::string& topic){_topic = topic;}
+
+const std::string& Channel::getTopic() const {return _topic;}
+
+void Channel::setPassword(const std::string& password){ _password = password;}
+
+bool Channel::checkKey(const std::string& password) const{
+	return (password == _password || _password.empty()) ? true : false;
 }
 
-const std::string& Channel::getTopic() const
-{
-	return _topic;
+void Channel::setInviteOnly(bool state){
+	if(_is_invite_only == state)
+		std::cout << "this state: " << state << "has already been set for the channel!" << std::endl;
+	else
+		_is_invite_only = state;
 }
 
-void Channel::addClient(int client_fd)
+void Channel::addClient(Client* client)
 {
+	_members.push_back(client);
 }
 
-void Channel::removeClient(int client_fd)
+void Channel::removeClient(Client* client)
 {
+	_members.erase(std::remove(_members.begin(), _members.end(), client), _members.end());
+	_operators.erase(std::remove(_operators.begin(), _operators.end(), client), _operators.end());
 }
 
-bool Channel::hasClient(int client_fd) const
+bool Channel::isMember(Client* client) const
 {
-	return false;
+	return std::find(_members.begin(), _members.end(), client) != _members.end();
 }
 
-void Channel::addOperator(int client_fd)
+void Channel::addOperator(Client* client)
 {
+	if (std::find(_operators.begin(), _operators.end(), client) == _operators.end()) {
+		_operators.push_back(client);
+	}
 }
 
-void Channel::removeOperator(int client_fd)
+void Channel::removeOperator(Client* client)
 {
+	_operators.erase(std::remove(_operators.begin(), _operators.end(), client), _operators.end());
 }
 
-bool Channel::isOperator(int client_fd) const
+bool Channel::isOperator(Client* client) const
 {
-	return false;
+	return std::find(_operators.begin(), _operators.end(), client) != _operators.end();
 }

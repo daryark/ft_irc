@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mperetia <mperetia@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 20:45:16 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/01/18 18:23:35 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/01/19 19:28:46 by mperetia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,7 @@ void    Server::init()
 void    Server::run()
 {
     pollfd serv_pollfd = {_head_socket, POLLIN, 0}; //#6
+    (void)serv_pollfd;
     while (true)
     {
         // poll
