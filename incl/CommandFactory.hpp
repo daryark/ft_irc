@@ -5,18 +5,23 @@
 #ifndef COMMANDFACTORY_H
 #define COMMANDFACTORY_H
 
+#include <vector>
+#include <string>
+#include "Command.hpp"
 
-//server
+// server
 /*void Server::handleInput(Client* client, const std::string& input) {
     Command command = CommandFactory::parse(input, this);
     command.executeCommand(client);
 }*/
 
 class Server;
-class Command;
-class CommandFactory {
+// class Command;
+class CommandFactory
+{
 public:
-    static Command parse(Server* server, const std::string& input) {
+    static Command parse(Server *server, const std::string &input)
+    {
         std::istringstream iss(input);
         std::string command;
         iss >> command;
@@ -30,4 +35,4 @@ public:
     }
 };
 
-#endif //COMMANDFACTORY_H
+#endif // COMMANDFACTORY_H

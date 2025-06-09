@@ -1,6 +1,5 @@
 #include "../incl/Client.hpp"
 
-
 Client::Client(int fd, std::string nickname, std::string username, std::string hostname, std::string servername, std::string realname)
 {
 	_fd = fd;
@@ -10,14 +9,14 @@ Client::Client(int fd, std::string nickname, std::string username, std::string h
 	_hostname = hostname;
 	_servername = servername;
 	_realname = realname;
-	authenticated = false;
+	_authenticated = false;
+	_registered = false;
 }
-
 
 Client::~Client()
 {
 	close(_fd);
-	//joined_channels.clear();
+	//_joined_channels.clear();
 }
 
 void Client::sendMessage(const std::string &message) const
@@ -26,7 +25,7 @@ void Client::sendMessage(const std::string &message) const
 	// send(_fd, message.c_str(), message.size(), 0);
 }
 
-int Client::getFd() const{ return _fd; }
+int &Client::getFd() { return _fd; }
 
 void Client::setNickname(const std::string &nickname) { _nickname = nickname; }
 
@@ -59,20 +58,31 @@ bool Client::isAuthenticated() const
 	return _authenticated;
 }
 
+void Client::setRegistered(bool state)
+{
+	_authenticated = state;
+	// authenticated = true;
+}
+
+bool Client::isRegistered() const
+{
+	return _authenticated;
+}
+
 void Client::joinChannel(const std::string &channel)
 {
-	joined_channels.push_back(channel);
+	_joined_channels.push_back(channel);
 }
 
 void Client::removeChannel(const std::string &channel)
 {
 	/*std::vector<std::string>::iterator it = std::find(joined_channels.begin(), joined_channels.end(), channel);
 	if (it != joined_channels.end()) {
-        joined_channels.erase(it);
-    }
+		joined_channels.erase(it);
+	}
 	std::cout << "Client::removeChannel" << std::endl;*/
 
-	_channels.erase(std::remove(_joined_channels.begin(), _joined_channels.end(), channel), _joined_channels.end());
+	_joined_channels.erase(std::remove(_joined_channels.begin(), _joined_channels.end(), channel), _joined_channels.end());
 }
 
 /*void Client::setAddr(const struct sockaddr_in &addr)
@@ -84,4 +94,3 @@ const struct sockaddr_in &Client::getAddr() const
 {
 	return _addr;
 }*/
-

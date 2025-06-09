@@ -1,4 +1,4 @@
-#pragma once	
+#pragma once
 
 #include <iostream>
 #include <vector>
@@ -13,7 +13,7 @@ class Client
 {
 private:
 	int _fd;
-	//struct sockaddr_in _addr;
+	// struct sockaddr_in _addr;
 	std::string _ip;
 
 	std::string _nickname;
@@ -24,42 +24,47 @@ private:
 	std::string _realname;
 
 	bool _authenticated;
+	bool _registered;
 
 	std::vector<std::string> _joined_channels;
 
 public:
-	Client(int fd, std::string nickname, std::string username, 
-		std::string hostname, std::string servername, std::string realname);
+	Client(int fd, std::string nickname, std::string username,
+		   std::string hostname, std::string servername, std::string realname);
+	// Client(int fd, std::string username, std::string hostname,
+		//    std::string servername, std::string realname);
 
 	~Client();
 
 	// metchods
 	void sendMessage(const std::string &message) const;
 
-	int &getFd() const;//+
-	
-	void setNickname(const std::string &nickname);//+
-	const std::string &getNickname() const;//+
+	int &getFd(); //+
 
-	void setUsername(const std::string &username);//+
-	const std::string &getUsername() const;//+
+	void setNickname(const std::string &nickname); //+
+	const std::string &getNickname() const;		   //+
 
-	void setHostname(const std::string &hostname);//+
-	const std::string &getHostname() const;//+
+	void setUsername(const std::string &username); //+
+	const std::string &getUsername() const;		   //+
 
-	void setServername(const std::string &servername);//+
-	const std::string &getServername() const;//+
+	void setHostname(const std::string &hostname); //+
+	const std::string &getHostname() const;		   //+
 
-	void setRealname(const std::string &realname);//+
-	const std::string &getRealname() const;//+
+	void setServername(const std::string &servername); //+
+	const std::string &getServername() const;		   //+
+
+	void setRealname(const std::string &realname); //+
+	const std::string &getRealname() const;		   //+
 
 	void authenticate(bool state); //+
-	bool isAuthenticated() const;//+
-	
-	void joinChannel(const std::string &channel);//+
-	void removeChannel(const std::string &channel);//+
+	bool isAuthenticated() const;  //+
 
-	//void setAddr(const struct sockaddr_in &addr);
-	//const struct sockaddr_in &getAddr() const;
-	
+	void setRegistered(bool state); //+
+	bool isRegistered() const;  //+
+
+	void joinChannel(const std::string &channel);	//+
+	void removeChannel(const std::string &channel); //+
+
+	// void setAddr(const struct sockaddr_in &addr);
+	// const struct sockaddr_in &getAddr() const;
 };
