@@ -4,9 +4,9 @@ Channel::Channel(const std::string &name)
 {
 	_name = name;
 	_topic = "unkmown";
-	//_is_private = false;
 	_password = "";
 	_max_clients = -1;
+    _hasPassword = false;
 	_is_invite_only = false;
 }
 
@@ -31,6 +31,8 @@ bool Channel::checkKey(const std::string &password) const
 	return (password == _password || _password.empty()) ? true : false;
 }
 
+bool Channel::hasPassword() const { return _hasPassword; }
+
 void Channel::setInviteOnly(bool state)
 {
 	if (_is_invite_only == state)
@@ -39,15 +41,29 @@ void Channel::setInviteOnly(bool state)
 		_is_invite_only = state;
 }
 
+bool Channel::isInviteOnly() const { return _is_invite_only; }
+
+bool Channel::isInvitedClient(Client *client) const {
+  return std::find(_invitedClient.begin(), _invitedClient.end(), client) != _invitedClient.end();
+}
+
 void Channel::addClient(Client *client)
 {
-	_members.push_back(client);
+  //set
+  _members.insert(client);
+  //vector
+//	_members.push_back(client);
 }
 
 void Channel::removeClient(Client *client)
 {
-	_members.erase(std::remove(_members.begin(), _members.end(), client), _members.end());
-	_operators.erase(std::remove(_operators.begin(), _operators.end(), client), _operators.end());
+  if (_members.find(client) != _members.end()){
+    _members.erase(client);
+    _operators.erase(client);
+  }
+    //vector
+//	_members.erase(std::remove(_members.begin(), _members.end(), client), _members.end());
+//	_operators.erase(std::remove(_operators.begin(), _operators.end(), client), _operators.end());
 }
 
 bool Channel::isMember(Client *client) const
@@ -57,18 +73,29 @@ bool Channel::isMember(Client *client) const
 
 void Channel::addOperator(Client *client)
 {
-	if (std::find(_operators.begin(), _operators.end(), client) == _operators.end())
-	{
-		_operators.push_back(client);
-	}
+  //
+  _operators.insert(client);
+  _members.insert(client);
+
+  //vector
+//	if (std::find(_operators.begin(), _operators.end(), client) == _operators.end())
+//	{
+//		_operators.push_back(client);
+//	}
 }
 
 void Channel::removeOperator(Client *client)
 {
-	_operators.erase(std::remove(_operators.begin(), _operators.end(), client), _operators.end());
+  //set
+  _operators.erase(client);
+  //vector
+  // _operators.erase(std::remove(_operators.begin(), _operators.end(), client), _operators.end());
 }
 
 bool Channel::isOperator(Client *client) const
 {
-	return std::find(_operators.begin(), _operators.end(), client) != _operators.end();
+  //set
+	return _operators.find(client) != _operators.end();
+  //vector
+  //return std::find(_operators.begin(), _operators.end(), client) != _operators.end();
 }

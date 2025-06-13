@@ -72,3 +72,20 @@ void Server::fancy_print(int opt)
     else if (opt == PR_LISTEN)
         std::cout << B_CYAN << "Waiting for connections..." << RE << std::endl;
 }
+
+const std::string& Server::getPassword() const { return _password; }
+const std::map<int, Client*>& Server::getClients() const{ return _clients; }
+const std::map<std::string, Channel*>& Server::getChannel() const {return _channels;}
+
+Channel* Server::getChannelByName(const std::string& name) {
+    std::map<std::string, Channel*>::iterator it = _channels.find(name);
+    if (it != _channels.end())
+        return it->second;
+    return NULL;
+}
+
+Channel* Server::createChannel(const std::string& nameChannel) {
+    Channel *channel = new Channel(nameChannel);
+    _channels[nameChannel] = channel;
+    return channel;
+}

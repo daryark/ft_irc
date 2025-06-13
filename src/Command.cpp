@@ -45,8 +45,58 @@ void Command::executePrivmsg(Client *client)
     // Реализация метода executePrivmsg
 }
 
+std::vector<std::string> split(const std::string& input, char delimiter) {
+    std::vector<std::string> tokens;
+    std::istringstream iss(input);
+    std::string token;
+    while (std::getline(iss, token, delimiter)) {
+        tokens.push_back(token);
+    }
+    return tokens;
+}
+
 void Command::executeJoin(Client *client)
 {
+    if(_args.empty()) {
+        client->sendMessage("461 JOIN :Not enough parameters");
+        return;
+    }
+    if(!client->isRegistered()) {
+        client->sendMessage("451 JOIN :Not registered");
+        return;
+    }
+
+    const std::vector<std::string> channelNames = split(_args[0], ',');
+    std::vector<std::string> channelsPasswords;
+    if(_args.size() == 2) {
+        channelsPasswords = split(_args[1], ',');
+    }
+
+    for (int i = 0; i < channelNames.size(); i++) {
+        Channel* channel = _server->getChannelByName(channelNames[i]);
+
+        if(!channel) {
+            channel = _server->createChannel(channelNames[i]);
+            channel->addOperator(client);
+        }else {
+            if(channel->isInviteOnly() && !channel->isInviteOnly()) {
+
+            }
+
+        }
+    }
+
+
+
+
+
+
+
+
+    // if()
+    // const std::map<int, Client *> &clients = _server->getCliends();
+
+    // if(_max_clients != -1)
     // Реализация метода executeJoin
 }
 
@@ -96,7 +146,8 @@ void Command::executeNick(Client *client)
         client->sendMessage("432 " + nickname + " :Erroneous nickname");
         return;
     }
-    const std::map<int, Client *> &clients = _server->getCliends();
+    //? check working this part with const iterator
+    const std::map<int, Client *> &clients = _server->getClients();
     const std::map<int, Client *>::const_iterator it = clients.begin();
     while (it != clients.end())
     {
@@ -128,7 +179,6 @@ void Command::executePass(Client *client)
     if (client->isAuthenticated())
     {
         client->sendMessage("462: Already registered — cannot register again.");
-        return;
     }
 
     client->authenticate(_args[0] == _server->getPassword());
@@ -142,8 +192,23 @@ void Command::executeUser(Client *client)
 {
     if (_args.size() != 4)
     {
-        client->sendMessage("");
+        client->sendMessage("461 USER :Not enough parameters");
         return;
     }
-    
+
+    if (client->isRegistered())
+    {
+        client->sendMessage("462 :You may not reregister");
+        return;
+    }
+
+    const std::string &username = _args[0];
+    const std::string &realname = _args[3];
+    client->setUserDefault(username, realname);
+
+    if (!client->getNickname().empty() && !client->isRegistered())
+    {
+        client->setRegistered(true);
+        client->sendMessage("001 " + client->getNickname() + " :Welcome to the IRC server");
+    }
 }

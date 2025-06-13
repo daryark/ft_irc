@@ -69,6 +69,22 @@ bool Client::isRegistered() const
 	return _authenticated;
 }
 
+void Client::setUser(const std::string& username, const std::string& hostname, const std::string& servername, const std::string& realname){
+  _username = username;
+  _hostname = hostname;
+  _servername = servername;
+  _realname = realname;
+}
+
+void Client::setUserDefault(const std::string& username, const std::string& realname){
+  _username = username;
+  _realname = realname;
+  _hostname = "0";
+  _servername = "*";
+}
+
+
+
 void Client::joinChannel(const std::string &channel)
 {
 	_joined_channels.push_back(channel);

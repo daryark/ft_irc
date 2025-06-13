@@ -41,6 +41,9 @@ public:
 
 	int &getFd(); //+
 
+	void setUser(const std::string& username, const std::string& hostname, const std::string& servername, const std::string& realname);
+	void setUserDefault(const std::string& username, const std::string& realname);
+
 	void setNickname(const std::string &nickname); //+
 	const std::string &getNickname() const;		   //+
 

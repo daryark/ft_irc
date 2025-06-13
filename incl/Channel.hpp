@@ -3,19 +3,26 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <set>
 
 class Client;
-
 class Channel
 {
 private:
 	std::string _name;
 	std::string _topic;
 
-	std::vector<Client *> _members;
-	std::vector<Client *> _operators;
+	std::set<Client *> _members;
+	std::set<Client *> _operators;
+	std::set<Client *> _invitedClient;
+
+	//vector
+	// std::vector<Client *> _members;
+	// std::vector<Client *> _operators;
+	// std::vector<Client *> _invitedClient;
 
 	std::string _password;
+	bool _hasPassword;
 
 	int _max_clients;
 	bool _is_invite_only;
@@ -33,8 +40,11 @@ public:
 
 	void setPassword(const std::string &password);	  //+
 	bool checkKey(const std::string &password) const; //+
+	bool hasPassword() const;//+
 
 	void setInviteOnly(bool state); // +
+	bool isInviteOnly() const;
+	bool isInvitedClient(Client* client) const;
 
 	void addClient(Client *client);		 //+
 	void removeClient(Client *client);	 //+

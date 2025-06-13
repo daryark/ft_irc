@@ -8,6 +8,8 @@
 
 #include "Client.hpp"
 #include "Server.hpp"
+#include "Channel.hpp"
+
 
 enum CommandType
 {
@@ -25,7 +27,7 @@ enum CommandType
 	TOPIC,
 	MODE
 };
-
+class Channel;
 class Client;
 class Server;
 class Command
@@ -41,8 +43,8 @@ private:
 	static std::map<std::string, CommandHandler> _commandMap;
 	static void initCommandMap();
 
-	void executeNick(Client *client);
-	void executeUser(Client *client);
+	void executeNick(Client *client);//+
+	void executeUser(Client *client);//+
 	void executePass(Client *client); //+
 	void executeJoin(Client *client);
 	void executePrivmsg(Client *client);

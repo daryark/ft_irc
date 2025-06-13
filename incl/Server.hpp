@@ -28,9 +28,11 @@
 
 #include "../incl/colors.hpp"
 // class CommandFactory;
-// class Command;
-//  class Channel;
-//  class Client;
+class Command;
+  class Channel;
+  class Client;
+
+#include "Channel.hpp"
 
 #define PR_RUN 1
 #define PR_CLOSE 2
@@ -44,8 +46,8 @@ private:
 	std::string _password;
 	struct sockaddr_in _addr;
 
-	// std::map<int, Client*> _clients; // int - fd_client and ptr to Client
-	// std::map<std::string, Channel*> _channels; // name_channel and ptr to Channel
+	std::map<int, Client*> _clients; // int - fd_client and ptr to Client
+	std::map<std::string, Channel*> _channels; // name_channel and ptr to Channel
 	std::vector<pollfd> _pollfds;
 
 	Server(const Server &obj) { (void)obj; };
@@ -69,7 +71,13 @@ public:
 	// Channel *creatChannel(const std::string& name);
 	// Channel *creatChannel(std::string name);
 
-	const std::string &getPassword() const;
-	const std::map<int, Client*> &getCliends() const;
+	const std::string &getPassword() const; //+
+	const std::map<int, Client*> &getClients() const; //+
+	const std::map<std::string, Channel*> &getChannel() const;//+
+
+	Channel* getChannelByName(const std::string& name);//+
+
+	Channel* createChannel(const std::string& nameChannel); //+
+
 	// void handleInput(Client* client, const std::string& input) //*parser input + masha check CommandFactory.hpp
 };
