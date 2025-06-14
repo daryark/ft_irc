@@ -44,7 +44,10 @@ void Channel::setInviteOnly(bool state)
 bool Channel::isInviteOnly() const { return _is_invite_only; }
 
 bool Channel::isInvitedClient(Client *client) const {
-  return std::find(_invitedClient.begin(), _invitedClient.end(), client) != _invitedClient.end();
+
+  return _invitedClient.find(client) != _invitedClient.end();
+  //vector
+  //  return std::find(_invitedClient.begin(), _invitedClient.end(), client) != _invitedClient.end();
 }
 
 void Channel::addClient(Client *client)
@@ -99,3 +102,5 @@ bool Channel::isOperator(Client *client) const
   //vector
   //return std::find(_operators.begin(), _operators.end(), client) != _operators.end();
 }
+
+bool Channel::isFull() const{ return _members.size() == _max_clients; }

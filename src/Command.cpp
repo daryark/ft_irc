@@ -74,30 +74,30 @@ void Command::executeJoin(Client *client)
 
     for (int i = 0; i < channelNames.size(); i++) {
         Channel* channel = _server->getChannelByName(channelNames[i]);
-
+        std::string pass = (i < channelsPasswords.size()) ? channelsPasswords[i] : "";
         if(!channel) {
-            channel = _server->createChannel(channelNames[i]);
+            channel = _server->createChannel(pass);
             channel->addOperator(client);
         }else {
-            if(channel->isInviteOnly() && !channel->isInviteOnly()) {
-
+            if(channel->isInviteOnly() && !channel->isInvitedClient(client)) {
+                client->sendMessage("error");
             }
-
+            if(channel->hasPassword() && !channel->checkPassword(channelsPasswords[i])) {
+                client->sendMessage("error");
+            }
+            if(channel->isFull()) {
+                client->sendMessage("error");
+            }
         }
+        channel->addClient(client);
     }
 
 
+    // Отправить клиенту:
+    //1. подтверждение JOIN,
+    //2.TOPIC (если есть),
+    //3.NAMES (список участников).
 
-
-
-
-
-
-    // if()
-    // const std::map<int, Client *> &clients = _server->getCliends();
-
-    // if(_max_clients != -1)
-    // Реализация метода executeJoin
 }
 
 // void Command::executePong(Client* client) {
@@ -185,7 +185,6 @@ void Command::executePass(Client *client)
     if (!client->isAuthenticated())
     {
         client->sendMessage("464: Password mismatch — wrong password sent with PASS.");
-        return;
     }
 }
 void Command::executeUser(Client *client)

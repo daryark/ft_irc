@@ -39,7 +39,7 @@ public:
 	const std::string &getTopic() const;	 //+
 
 	void setPassword(const std::string &password);	  //+
-	bool checkKey(const std::string &password) const; //+
+	bool checkPassword(const std::string &password) const; //+
 	bool hasPassword() const;//+
 
 	void setInviteOnly(bool state); // +
@@ -53,6 +53,8 @@ public:
 	void addOperator(Client *client);	   //+
 	void removeOperator(Client *client);   //+
 	bool isOperator(Client *client) const; //+
+
+	bool isFull() const;//+
 
 	// void addClient(int client_fd);
 

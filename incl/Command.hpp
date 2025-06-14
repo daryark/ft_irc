@@ -46,7 +46,7 @@ private:
 	void executeNick(Client *client);//+
 	void executeUser(Client *client);//+
 	void executePass(Client *client); //+
-	void executeJoin(Client *client);
+	void executeJoin(Client *client);//+
 	void executePrivmsg(Client *client);
 	void executeKick(Client *client);
 	void executeInvite(Client *client);
