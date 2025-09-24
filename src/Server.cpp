@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 20:45:16 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/01/25 20:57:31 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/09/24 13:26:13 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ void    Server::init()
         throw std::runtime_error("fcntl");
 
     std::memset(&_addr, 0, sizeof(_addr));//*4
-    inet_pton(AF_INET, "0.0.0.0", &_addr.sin_addr);
+    _addr.sin_addr.s_addr = htons(INADDR_ANY);// inet_pton(AF_INET, "0.0.0.0", &_addr.sin_addr);
     _addr.sin_port = htons(_port);//*5
     _addr.sin_family = AF_INET;
     if (bind(_head_socket, (sockaddr*)&_addr, sizeof(_addr)) == -1)
@@ -59,7 +59,7 @@ void    Server::run()
         {
             if (_pollfds[i].revents & POLLHUP)
              {   
-                disconnect_client(i); //!continue after disconnecting this client? or other clients can send some data through one poll loop at the same time???
+                disconnect_client(i);
                 continue;
              }
             if (_pollfds[i].revents & POLLIN) //*6.1
@@ -78,19 +78,22 @@ void    Server::run()
 void    Server::accept_client()
 {
     sockaddr_in client;
-    socklen_t   clSize = sizeof(client);
     std::memset(&client, 0, sizeof(client));
+    socklen_t   clSize = sizeof(client);
     int client_sock = accept(_head_socket, (sockaddr*)&client, &clSize);
     if (client_sock == -1)
     {
-        std::cerr << RED << "Can't connect with new client" << RE << std::endl;
+        std::cerr << RED << PR_CL_NOT_CONNECT << RE << std::endl;
         return ;
     }
     push_pollfd(client_sock, POLLIN | POLLOUT, 0);
-    //!people converted ip to human readable from client.sin_addr with inet_ntoa()...add if needed later and save in constructor.
     _clients.insert(std::pair<int, Client>(client_sock, Client(client_sock, client)));
-    std::cout << B_GREEN << "New client connected on socket fd: " << client_sock << RE << std::endl;
+    //!people converted ip to human readable from client.sin_addr with inet_ntoa()...add if needed later and save in constructor
+    char *ip = inet_ntoa(client.sin_addr);
+    std::cout << "sin_addr: " << client.sin_addr.s_addr << " ip: " << ip << std::endl; //? check, if we save the whole client sockaddr_in or only ip of the client in the pairs struct
+    std::cout << B_GREEN << PR_CL_CONNECT << client_sock << RE << std::endl;
     //*send_msg() to newely connected client about the commands available to use
+    send_msg(client_sock);
 }
 
 void    Server::disconnect_client(int i)
@@ -102,11 +105,14 @@ void    Server::disconnect_client(int i)
 void    Server::read_msg(int i)
 {
     (void)i;
+    
 }
-
 void    Server::send_msg(int i)
 {
-    (void)i;
+    std::string data = "Welcome on the server";
+    std::cout << B_GREEN;
+    send(i, data.c_str(), data.length(), 0);
+    std::cout << RE;
 }
 
 //------------------helpers--------------------

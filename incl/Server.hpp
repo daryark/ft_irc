@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 20:09:46 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/01/25 20:54:34 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/09/15 14:46:44 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,8 @@
 #define PR_RUN		1
 #define PR_CLOSE	2
 #define PR_LISTEN	3
+#define PR_CL_NOT_CONNECT	"Can't connect the new client"
+#define PR_CL_CONNECT		"New client connected on socket fd: "
 
 class Server
 {
