@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 20:45:16 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/09/24 13:26:13 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/09/26 19:26:51 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@ Server::Server(int port, std::string password): _port(port), _password(password)
 Server::~Server()
 {
     close(_head_socket);
+    // _pollfds.clear();//????!
     fancy_print(PR_CLOSE);
 }
 
@@ -67,10 +68,10 @@ void    Server::run()
                 if (_pollfds[i].fd == _head_socket)
                    accept_client();
                 else
-                    read_msg(i);
+                    read_msg(_pollfds[i].fd);
             }
             if (_pollfds[i].revents & POLLOUT)
-               send_msg(i);
+               send_color(i, PR_WELCOME, B_GREEN);
         }
     }
 }
@@ -88,31 +89,66 @@ void    Server::accept_client()
     }
     push_pollfd(client_sock, POLLIN | POLLOUT, 0);
     _clients.insert(std::pair<int, Client>(client_sock, Client(client_sock, client)));
-    //!people converted ip to human readable from client.sin_addr with inet_ntoa()...add if needed later and save in constructor
-    char *ip = inet_ntoa(client.sin_addr);
-    std::cout << "sin_addr: " << client.sin_addr.s_addr << " ip: " << ip << std::endl; //? check, if we save the whole client sockaddr_in or only ip of the client in the pairs struct
     std::cout << B_GREEN << PR_CL_CONNECT << client_sock << RE << std::endl;
-    //*send_msg() to newely connected client about the commands available to use
-    send_msg(client_sock);
+    send_color(client_sock, PR_WELCOME, B_GREEN);
+    send_color(client_sock, PR_USAGE, I_WHITE);
 }
 
-void    Server::disconnect_client(int i)
+void    Server::disconnect_client(int fd)
 {
-    (void)i;
+    _clients.erase(fd); //map
+    for (std::vector<pollfd>::iterator it = _pollfds.begin(); it != _pollfds.end(); it++)
+    {
+        std::cout << "it->fd: " << it->fd << ", fd: " << fd << std::endl;
+        if (it->fd == fd)
+        {
+            std::cout << "disconnected" << std::endl;
+            close(it->fd);
+            _pollfds.erase(it); //vector
+            break ;
+        }
+    }
 }
 
-
-void    Server::read_msg(int i)
+void    Server::process_msg(int fd, char* buf)
 {
-    (void)i;
-    
+    (void)fd;
+    std::cout << buf << std::endl;
+    // send_color(_head_socket, buf);
+    // send_color(fd, "sent", GREEN);
 }
-void    Server::send_msg(int i)
+
+void    Server::read_msg(int fd)
 {
-    std::string data = "Welcome on the server";
-    std::cout << B_GREEN;
-    send(i, data.c_str(), data.length(), 0);
-    std::cout << RE;
+    char buf[MAX_MSG];
+    std::cout << "fd: " << fd << std::endl;
+    int recv_bytes = recv(fd, buf, MAX_MSG - 1, 0);
+    std::cout << "bytes: " << recv_bytes << std::endl;
+    std::cout << "buf: " << buf << std::endl;
+    usleep(100000);
+    if (recv_bytes > 0)
+        process_msg(fd, buf);
+    else
+    {
+        // std::cerr << "Client disconnected on socket fd: " << fd <<std::endl;
+        if (recv_bytes == 0)
+            send_color(STDERR_FILENO,"Client disconnected on socket fd: " + fd, YELLOW);
+        else if (recv_bytes == -1)
+            std::cerr << "Connection problem" <<std::endl;
+    disconnect_client(fd);
+    }
+}
+
+void    Server::send_color(int fd, const std::string& msg, const std::string& color)
+{
+    usleep(700000);
+    std::cout << "color send;" << std::endl;
+    std::string colored = color + msg + RE + '\n';
+    int sent = send(fd, colored.c_str(), colored.length(), 0);
+    if (sent < 0)
+        std::cerr << "ERR color print in send()" << std::endl;
+    else
+        std::cout << "sent bytes: " << sent << ", msg: " << msg << std::endl;
 }
 
 //------------------helpers--------------------
@@ -126,15 +162,15 @@ void    Server::push_pollfd(int fd, short event, short revent)
     _pollfds.push_back(new_pollfd);
 }
 
-void    Server::fancy_print(int opt)
+void    Server::fancy_print(const std::string& opt)
 {
+    std::cout << B_BLUE << opt;
     if (opt == PR_RUN)
-        std::cout << B_BLUE << "Server is running on port ༼ つ " << B_RED
+        std::cout << " ༼ つ " << B_RED
         << "♥" << B_BLUE << "_" << B_RED << "♥" << B_BLUE << " ༽つ "  << B_BLUE 
-        << _port << ";   password: '" << _password << "'" << RE << std::endl;
+        << _port << ",   password '" << _password << "'";
     else if (opt == PR_CLOSE)
-        std::cout << B_BLUE << "Server closed " << B_RED << "⊂༼" << B_BLUE
-        << "´סּ" << B_RED << "︵" << B_BLUE "סּ`" << B_RED << "⊂ ༽" << RE << std::endl;
-    else if (opt == PR_LISTEN)
-        std::cout << B_CYAN << "Waiting for connections..." << RE << std::endl;
+        std::cout << B_BLUE << opt << B_RED << " ⊂༼" << B_BLUE
+        << "´סּ" << B_RED << "︵" << B_BLUE "סּ`" << B_RED << "⊂ ༽";
+    std::cout << RE << std::endl;
 }
