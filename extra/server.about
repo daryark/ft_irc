@@ -6,9 +6,11 @@
 //*2.	setsockopt(_head_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(&opt));
     head_socket - server socket
     opt - void* bcs for other second param option this can be either (int* or struct linger*)
+    To manipulate options at the sockets API level, level is specified as SOL_SOCKET
 //? SO_REUSEADDR - allows to restart/run server fast. ->
-    S puts socket in a "TIME_WAIT" state to ensure any data on the network are properly handled and don’t interfere with new connections.
     After closing socket, OS keeps the port reserved for ~ 2–4 min.
+    - A server with active client connections can be restarted and can bind to its port without 
+    having to close all of the client connections
 
 //*3 fcntl(fd, cmd_type, ...optional_arg) - usage, modes and so on.
 Configures file descriptor properties.
@@ -47,9 +49,10 @@ Choosing a port in this range minimizes the risk of conflicts with known service
 //*bind(_head_socket, (sockaddr*)&_addr, sizeof(_addr))
 binds socket fd to _addr and pass it's size to reserve amnt of memory for it.
 
+//# next line available since C++11, fuck...
 //#6 aggregate initialization (initialization of all members of struct at once, IN THE SAME ORDER AS THEY SPEICFIED)
 //? ex:
-struct pollfd {
+//*6 struct pollfd {
     int     fd;       //first member
     short   events;  //second member
     short   revents; //third member
@@ -57,12 +60,38 @@ struct pollfd {
 //? usage with aggregate init.
 pollfd serv_pollfd = {_head_socket, POLLIN, 0};
 so no need to assign each member with direct access like: serv_pollfd.fd = _head_socket and so on with each.
-//*pollfd
+//*6.1 pollfd
 When you initialize or reset a pollfd structure, the revents field should be cleared (set to 0)
-because it will be overwritten by the system when poll() is invoked.
+because it will be overwritten by the system when poll() is invoked (to POLLIN/POLLOUT/POLLERR) - the real event that will happen.
+//?The revents field is a bitmask that indicates the events that occurred for a file descriptor.
+Multiple events can occur at the same time (e.g., POLLIN, POLLOUT, POLLHUP), and they are stored as separate bits in the revents integer.
+
+//*7 poll(_pollfds.data(), _pollfds.size(), 1000);
+First param: poll work with direct pointer to data storage, not with vector, so we pass the pointer to data array stored in vector container.
+Third param: timeout in milliseconds that poll() should block waiting for a file descriptor to become ready.
+//?    The call will block until either:
+    •  a file descriptor becomes ready;
+    •  the call is interrupted by a signal handler; or
+    •  the timeout expires.
+//? return: num of elems in arr that has revents set to nonzero.
+
+//*8 inet_ntoa(struct in_addr in) converts the Internet host address in, given in network byte order, to a string in IPv4 dotted-decimal notation.
+//? in_addr has just one member - address in byte order. It's a struct just as an adapter
+
 
 //! write about std::runtime_error and STDEXCEPT
 //! write about std::exception catching by ref std::exception &e
 //! wirte about listen
 
-https://github.com/markov199/ft_irc/blob/main/ft_irc/Server.cpp
+//#MAP container: syntax and available stuff
+//?_clients[client_sock] = Client(client_sock, client);
+this syntax looks cool, but here you create(as operator[] creates new elem, when doesn't find
+elem by the key in the map. But IF already EXIST - it write/overwrite actually in the existing elem value).
+And after one more step is to copy assign inplace constructed Client
+inside (as we use obj, not pointer in value);
+//since C++11 there is ability to create direct, avoiding temporary obj Client:
+_clients.emplace(client_sock, Client(client_sock));
+//? so better do: _clients.insert(std::make_pair(client_sock, Client(client_sock, client)));
+//or directly make pair: syntax: _clients.insert(std::pair<int, Client>(client_sock, Client(client_sock)));
+insert work with the whole pair (key, value), so we need to std::make_pair().
+//? direct operator{} syntax since C++11: _clients.insert({client_sock, Client(client_sock, client)});

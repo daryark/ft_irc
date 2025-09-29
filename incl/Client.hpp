@@ -13,11 +13,11 @@ class Client
 {
 private:
 	int _fd;
-	// struct sockaddr_in _addr;
-	std::string _ip;
+	const struct sockaddr_in _addr;
+	// const int _fd;//#const or not?
+	// struct sockaddr_in _addr; //#const or not?
 
 	std::string _nickname;
-
 	std::string _username;
 	std::string _hostname;
 	std::string _servername;
@@ -29,15 +29,18 @@ private:
 	std::vector<std::string> _joined_channels;
 
 public:
-	Client(int fd, std::string nickname, std::string username,
-		   std::string hostname, std::string servername, std::string realname);
+	Client(int fd, sockaddr_in addr);
+	// Client(int fd, std::string nickname, std::string username,
+	// 	   std::string hostname, std::string servername, std::string realname);
 	// Client(int fd, std::string username, std::string hostname,
 		//    std::string servername, std::string realname);
 
 	~Client();
 
-	// metchods
-	void sendMessage(const std::string &message) const;
+	Client(const Client &obj);
+
+	// methods
+	// void sendMessage(const std::string &message) const;
 
 	int &getFd(); //+
 

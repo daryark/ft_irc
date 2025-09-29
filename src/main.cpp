@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mperetia <mperetia@student.42wolfsburg.de> +#+  +:+       +#+        */
+/*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 20:09:44 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/01/19 22:47:02 by mperetia         ###   ########.fr       */
+/*   Updated: 2025/09/29 13:13:01 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,12 +14,11 @@
 #include "../incl/Client.hpp"
 #include "../incl/Command.hpp"
 
-
 void    ft_irc(Server& serv)
 {
     try {
         serv.init();
-        serv.run(); //not written yet
+        serv.run();
     }
     catch (std::exception& e) {
         std::cout << U_RED << e.what() << RE << std::endl;
@@ -27,24 +26,21 @@ void    ft_irc(Server& serv)
     return ;
 }
 
-//?ex:  ./ircserv <port> <password>
+//#ex:  ./ircserv <port> <password>
 int main(int argc, char **argv)
 {
-    if (argc != 2) {
+    if (argc != 3) {
         std::cerr << RED << "usage: ./ircserv <port> <password>" << RE << std::endl;
         return 1;
     }
-    // int port = atoi(argv[1]);
-    // if ( port < 1024 || port > 65535)
-    // {
-    //     std::cerr << RED << "Port is not valid. Must be in range: 1024 - 65535" << RE << std::endl;
-    //     return (1);
-    // }
-    // Server  serv;
-    // Client clien;
-    Command com;
-    com.executeCommand(argv[1]);
-    // ft_irc(serv);
+    int port = atoi(argv[1]);
+    if ( port < 1024 || port > 65535)
+    {
+        std::cerr << RED << "Port is not valid. Must be in range: 1024 - 65535" << RE << std::endl;
+        return (1);
+    }
+    Server  serv(port, argv[2]);
+    ft_irc(serv);
     return 0;
     
     

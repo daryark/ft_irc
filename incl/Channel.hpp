@@ -40,6 +40,9 @@ public:
 
 	void setPassword(const std::string &password);	  //+
 	bool checkPassword(const std::string &password) const; //+
+
+	bool checkKey(const std::string &password) const;//#not the same as checkPassword????
+
 	bool hasPassword() const;//+
 
 	void setInviteOnly(bool state); // +

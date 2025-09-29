@@ -1,17 +1,27 @@
 #include "../incl/Client.hpp"
 
-Client::Client(int fd, std::string nickname, std::string username, std::string hostname, std::string servername, std::string realname)
+Client::Client(int fd,  sockaddr_in addr): _fd(fd), _addr(addr)
 {
-	_fd = fd;
-	_ip = "";
-	_nickname = nickname;
-	_username = username;
-	_hostname = hostname;
-	_servername = servername;
-	_realname = realname;
+	_nickname = "";
+	_username = "";
+	_hostname = "";
+	_servername = "";
+	_realname = "";
 	_authenticated = false;
 	_registered = false;
 }
+
+// Client::Client(int fd, std::string nickname, std::string username, std::string hostname, std::string servername, std::string realname)
+// {
+// 	_fd = fd;
+// 	_nickname = nickname;
+// 	_username = username;
+// 	_hostname = hostname;
+// 	_servername = servername;
+// 	_realname = realname;
+// 	_authenticated = false;
+// 	_registered = false;
+// }
 
 Client::~Client()
 {
@@ -19,11 +29,11 @@ Client::~Client()
 	//_joined_channels.clear();
 }
 
-void Client::sendMessage(const std::string &message) const
-{
-	// Command::parse(message, this).executeCommand();
-	// send(_fd, message.c_str(), message.size(), 0);
-}
+// void Client::sendMessage(const std::string &message) const
+// {
+// 	// Command::parse(message, this).executeCommand();
+// 	// send(_fd, message.c_str(), message.size(), 0);
+// }
 
 int &Client::getFd() { return _fd; }
 

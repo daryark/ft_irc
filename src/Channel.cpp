@@ -6,7 +6,7 @@ Channel::Channel(const std::string &name)
 	_topic = "unkmown";
 	_password = "";
 	_max_clients = -1;
-    _hasPassword = false;
+  _hasPassword = false;
 	_is_invite_only = false;
 }
 
@@ -103,4 +103,4 @@ bool Channel::isOperator(Client *client) const
   //return std::find(_operators.begin(), _operators.end(), client) != _operators.end();
 }
 
-bool Channel::isFull() const{ return _members.size() == _max_clients; }
+bool Channel::isFull() const{ return (int)_members.size() == _max_clients; }

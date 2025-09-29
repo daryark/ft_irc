@@ -3,8 +3,9 @@
 std::map<std::string, Command::CommandHandler> Command::_commandMap;
 
 Command::Command(Server *server, const std::string &command, const std::vector<std::string> &args)
-    : _server(server), _command(command), _args(args)
+    : _command(command), _args(args)
 {
+    _server = server;
     if (_commandMap.empty())
         initCommandMap();
 }
@@ -38,13 +39,16 @@ void Command::executeCommand(Client *client, const std::vector<std::string> &arg
     {
         std::cout << "Command not found" << std::endl;
     }
+    (void)args;
 }
 
 void Command::executePrivmsg(Client *client)
 {
+    (void)client;
     // Реализация метода executePrivmsg
 }
 
+//#out of class, move to the helper file?!
 std::vector<std::string> split(const std::string& input, char delimiter) {
     std::vector<std::string> tokens;
     std::istringstream iss(input);
@@ -58,11 +62,13 @@ std::vector<std::string> split(const std::string& input, char delimiter) {
 void Command::executeJoin(Client *client)
 {
     if(_args.empty()) {
-        client->sendMessage("461 JOIN :Not enough parameters");
+        _server->send_color(client->getFd(), "461 JOIN :Not enough parameters", RED);
+        // client->sendMessage("461 JOIN :Not enough parameters");
         return;
     }
     if(!client->isRegistered()) {
-        client->sendMessage("451 JOIN :Not registered");
+        _server->send_color(client->getFd(), "451 JOIN :Not registered", RED);
+        // client->sendMessage("451 JOIN :Not registered");
         return;
     }
 
@@ -72,7 +78,7 @@ void Command::executeJoin(Client *client)
         channelsPasswords = split(_args[1], ',');
     }
 
-    for (int i = 0; i < channelNames.size(); i++) {
+    for (long unsigned int i = 0; i < channelNames.size(); i++) {
         Channel* channel = _server->getChannelByName(channelNames[i]);
         std::string pass = (i < channelsPasswords.size()) ? channelsPasswords[i] : "";
         if(!channel) {
@@ -80,13 +86,16 @@ void Command::executeJoin(Client *client)
             channel->addOperator(client);
         }else {
             if(channel->isInviteOnly() && !channel->isInvitedClient(client)) {
-                client->sendMessage("error");
+                _server->send_color(client->getFd(), "error", RED);
+                // client->sendMessage("error");
             }
-            if(channel->hasPassword() && !channel->checkPassword(channelsPasswords[i])) {
-                client->sendMessage("error");
+            if(channel->hasPassword() && !channel->checkKey(channelsPasswords[i])) { //# changed checkPassword for checkKey only here!
+                _server->send_color(client->getFd(), "error", RED);
+                // client->sendMessage("error");
             }
             if(channel->isFull()) {
-                client->sendMessage("error");
+                _server->send_color(client->getFd(), "error", RED);
+                // client->sendMessage("error");
             }
         }
         channel->addClient(client);
@@ -114,21 +123,25 @@ void Command::executeJoin(Client *client)
 
 void Command::executeKick(Client *client)
 {
+    (void)client;
     // Реализация метода executeKick
 }
 
 void Command::executeInvite(Client *client)
 {
+    (void)client;
     // Реализация метода executeInvite
 }
 
 void Command::executeTopic(Client *client)
 {
+    (void)client;
     // Реализация метода executeTopic
 }
 
 void Command::executeMode(Client *client)
 {
+    (void)client;
     // Реализация метода executeMode
 }
 
@@ -136,14 +149,16 @@ void Command::executeNick(Client *client)
 {
     if (_args.empty())
     {
-        client->sendMessage("431 :No nickname given");
+        _server->send_color(client->getFd(), "431 :No nickname given", RED);
+        // client->sendMessage("431 :No nickname given");
         return;
     }
 
     std::string nickname = _args[0];
     if (nickname.empty() || nickname.find(' ') != std::string::npos)
     {
-        client->sendMessage("432 " + nickname + " :Erroneous nickname");
+        _server->send_color(client->getFd(), "432 " + nickname + " :Erroneous nickname", RED);
+        // client->sendMessage("432 " + nickname + " :Erroneous nickname");
         return;
     }
     //? check working this part with const iterator
@@ -153,12 +168,14 @@ void Command::executeNick(Client *client)
     {
         if (it->second->getNickname() == nickname)
         {
-            client->sendMessage("433: Nickname is already in use.");
+            _server->send_color(client->getFd(), "433: Nickname is already in use.", RED);
+            // client->sendMessage("433: Nickname is already in use.");
             return;
         }
     }
     client->setNickname(nickname);
-    client->sendMessage("001 " + nickname + " :Welcome to the IRC server");
+    _server->send_color(client->getFd(), "001 " + nickname + " :Welcome to the IRC server", RED);
+    // client->sendMessage("001 " + nickname + " :Welcome to the IRC server");
 
     //?
     // if (!client->getUsername().empty() && !client->isRegistered())
@@ -172,32 +189,37 @@ void Command::executePass(Client *client)
 {
     if (_args.empty())
     {
-        client->sendMessage("461: PASS Not enough parameters supplied for the command.\n");
+        _server->send_color(client->getFd(), "461: PASS Not enough parameters supplied for the command.\n", RED);
+        // client->sendMessage("461: PASS Not enough parameters supplied for the command.\n");
         return;
     }
 
     if (client->isAuthenticated())
     {
-        client->sendMessage("462: Already registered — cannot register again.");
+        _server->send_color(client->getFd(), "462: Already registered — cannot register again.", RED);
+        // client->sendMessage("462: Already registered — cannot register again.");
     }
 
     client->authenticate(_args[0] == _server->getPassword());
     if (!client->isAuthenticated())
     {
-        client->sendMessage("464: Password mismatch — wrong password sent with PASS.");
+        _server->send_color(client->getFd(), "464: Password mismatch — wrong password sent with PASS.", RED);
+        // client->sendMessage("464: Password mismatch — wrong password sent with PASS.");
     }
 }
 void Command::executeUser(Client *client)
 {
     if (_args.size() != 4)
     {
-        client->sendMessage("461 USER :Not enough parameters");
+        _server->send_color(client->getFd(), "461 USER :Not enough parameters", RED);
+        // client->sendMessage("461 USER :Not enough parameters");
         return;
     }
 
     if (client->isRegistered())
     {
-        client->sendMessage("462 :You may not reregister");
+        _server->send_color(client->getFd(), "462 :You may not reregister", RED);
+        // client->sendMessage("462 :You may not reregister");
         return;
     }
 
@@ -208,6 +230,7 @@ void Command::executeUser(Client *client)
     if (!client->getNickname().empty() && !client->isRegistered())
     {
         client->setRegistered(true);
-        client->sendMessage("001 " + client->getNickname() + " :Welcome to the IRC server");
+        _server->send_color(client->getFd(), "001 " + client->getNickname() + " :Welcome to the IRC server", RED);
+        // client->sendMessage("001 " + client->getNickname() + " :Welcome to the IRC server");
     }
 }
