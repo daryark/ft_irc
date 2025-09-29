@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 20:09:46 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/09/26 17:53:00 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/09/29 10:59:41 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,8 @@
 #include <unistd.h>      //close
 
 #include <cerrno>
+
+#include <stdio.h>
 
 #include "../incl/colors.hpp"
 #include "../incl/Client.hpp"
@@ -73,7 +75,7 @@ private:
 	void					disconnect_client(int fd);
 	void					read_msg(int fd);
 	void					push_pollfd(int, short, short);
-	void					process_msg(int fd, char* buf);
+	void					process_msg(int fd, char* buf, unsigned int len);
 
 	void					fancy_print(const std::string& opt);
 	void					send_color(int fd, const std::string& msg, const std::string& color = RE);

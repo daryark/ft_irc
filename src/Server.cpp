@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 20:45:16 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/09/26 19:26:51 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/09/29 11:07:12 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,8 +70,8 @@ void    Server::run()
                 else
                     read_msg(_pollfds[i].fd);
             }
-            if (_pollfds[i].revents & POLLOUT)
-               send_color(i, PR_WELCOME, B_GREEN);
+            // if (_pollfds[i].revents & POLLOUT)
+            //    send_color(i, PR_WELCOME, B_GREEN);
         }
     }
 }
@@ -99,7 +99,6 @@ void    Server::disconnect_client(int fd)
     _clients.erase(fd); //map
     for (std::vector<pollfd>::iterator it = _pollfds.begin(); it != _pollfds.end(); it++)
     {
-        std::cout << "it->fd: " << it->fd << ", fd: " << fd << std::endl;
         if (it->fd == fd)
         {
             std::cout << "disconnected" << std::endl;
@@ -110,12 +109,14 @@ void    Server::disconnect_client(int fd)
     }
 }
 
-void    Server::process_msg(int fd, char* buf)
+void    Server::process_msg(int fd, char* buf, unsigned int len)
 {
-    (void)fd;
-    std::cout << buf << std::endl;
-    // send_color(_head_socket, buf);
-    // send_color(fd, "sent", GREEN);
+    char ss[MAX_MSG];
+    strncpy(ss, buf, len);
+    ss[len] = '\0';
+    
+    std::cout << ss << std::endl;
+    send_color(fd, "msg delivered", GREEN);
 }
 
 void    Server::read_msg(int fd)
@@ -123,14 +124,13 @@ void    Server::read_msg(int fd)
     char buf[MAX_MSG];
     std::cout << "fd: " << fd << std::endl;
     int recv_bytes = recv(fd, buf, MAX_MSG - 1, 0);
-    std::cout << "bytes: " << recv_bytes << std::endl;
-    std::cout << "buf: " << buf << std::endl;
+    std::cout << "recived bytes: " << recv_bytes << std::endl;
     usleep(100000);
     if (recv_bytes > 0)
-        process_msg(fd, buf);
+        process_msg(fd, buf, recv_bytes);
     else
     {
-        // std::cerr << "Client disconnected on socket fd: " << fd <<std::endl;
+        std::cerr << "Client disconnected on socket fd: " << fd <<std::endl;
         if (recv_bytes == 0)
             send_color(STDERR_FILENO,"Client disconnected on socket fd: " + fd, YELLOW);
         else if (recv_bytes == -1)
@@ -141,8 +141,6 @@ void    Server::read_msg(int fd)
 
 void    Server::send_color(int fd, const std::string& msg, const std::string& color)
 {
-    usleep(700000);
-    std::cout << "color send;" << std::endl;
     std::string colored = color + msg + RE + '\n';
     int sent = send(fd, colored.c_str(), colored.length(), 0);
     if (sent < 0)
