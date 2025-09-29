@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 20:09:46 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/09/29 15:40:17 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/09/29 18:06:12 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,6 +102,8 @@ private:
 	const std::string &getPassword() const; //+
 	const std::map<int, Client*> &getClients() const; //+
 	const std::map<std::string, Channel*> &getChannel() const;//+
+
+	Client*	getClient(int fd)	const;
 
 	Channel* getChannelByName(const std::string& name);//+
 

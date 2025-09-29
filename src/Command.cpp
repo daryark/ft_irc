@@ -27,19 +27,18 @@ Command::~Command()
 {
 }
 
-void Command::executeCommand(Client *client, const std::vector<std::string> &args)
+void Command::executeCommand(Client *client)
 {
     std::map<std::string, CommandHandler>::iterator it = _commandMap.find(_command);
     if (it != _commandMap.end())
     {
-        CommandHandler handel = it->second;
-        (this->*handel)(client);
+        CommandHandler handle = it->second;
+        (this->*handle)(client);
     }
     else
     {
         std::cout << "Command not found" << std::endl;
     }
-    (void)args;
 }
 
 void Command::executePrivmsg(Client *client)

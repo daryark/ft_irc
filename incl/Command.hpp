@@ -58,5 +58,5 @@ public:
 	~Command();
 	// metchods
 
-	void executeCommand(Client *client, const std::vector<std::string> &args);
+	void executeCommand(Client *client);
 };

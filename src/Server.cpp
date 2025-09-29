@@ -6,11 +6,13 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 20:45:16 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/09/29 15:26:40 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/09/29 18:15:40 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../incl/Server.hpp"
+#include "../incl/CommandFactory.hpp"
+
 //* all the '*' explanation in extra/server.about file
 Server::Server(int port, std::string password): _port(port), _password(password){}
 
@@ -90,7 +92,8 @@ void    Server::accept_client()
     _clients.insert(std::pair<int, Client*>(client_sock, new Client(client_sock, client)));
     std::cout << B_GREEN << PR_CL_CONNECT << client_sock << RE << std::endl;
     send_color(client_sock, PR_WELCOME, B_GREEN);
-    send_color(client_sock, PR_USAGE, I_WHITE);
+    
+    send_color(client_sock, PR_USAGE, I_WHITE);//#nickname, registration, password => server
 }
 
 void    Server::disconnect_client(int fd)
@@ -114,6 +117,8 @@ void    Server::process_msg(int fd, char* buf, unsigned int len)
     strncpy(ss, buf, len);
     ss[len] = '\0';
     
+    Command command = CommandFactory::parse(this,ss);
+    command.executeCommand(getClient(fd));
     std::cout << ss << std::endl;
     send_color(fd, "msg delivered", GREEN);
 }
@@ -124,7 +129,6 @@ void    Server::read_msg(int fd)
     std::cout << "fd: " << fd << std::endl;
     int recv_bytes = recv(fd, buf, MAX_MSG - 1, 0);
     std::cout << "recived bytes: " << recv_bytes << std::endl;
-    usleep(100000);
     if (recv_bytes > 0)
         process_msg(fd, buf, recv_bytes);
     else
@@ -138,16 +142,6 @@ void    Server::read_msg(int fd)
     }
 }
 
-void    Server::send_color(int fd, const std::string& msg, const std::string& color)
-{
-    std::string colored = color + msg + RE + '\n';
-    int sent = send(fd, colored.c_str(), colored.length(), 0);
-    if (sent < 0)
-        std::cerr << "ERR send_color()" << std::endl;
-    else
-        std::cout << "sent bytes: " << sent << ", msg: " << msg << std::endl;
-}
-
 //------------------helpers--------------------
 
 void    Server::push_pollfd(int fd, short event, short revent)
@@ -159,6 +153,16 @@ void    Server::push_pollfd(int fd, short event, short revent)
     _pollfds.push_back(new_pollfd);
 }
 
+
+void    Server::send_color(int fd, const std::string& msg, const std::string& color)
+{
+    std::string colored = color + msg + RE + '\n';
+    int sent = send(fd, colored.c_str(), colored.length(), 0);
+    if (sent < 0)
+        std::cerr << "ERR send_color()" << std::endl;
+    else
+        std::cout << "sent bytes: " << sent << ", msg: " << msg << std::endl;
+}
 void    Server::fancy_print(const std::string& opt)
 {
     std::cout << B_BLUE << opt;
@@ -172,9 +176,18 @@ void    Server::fancy_print(const std::string& opt)
     std::cout << RE << std::endl;
 }
 
+//getters
 const std::string& Server::getPassword() const { return _password; }
 const std::map<int, Client*>& Server::getClients() const{ return _clients; }
 const std::map<std::string, Channel*>& Server::getChannel() const {return _channels;}
+
+Client* Server::getClient(int fd)   const
+{
+    std::map<int, Client*>::const_iterator it = _clients.find(fd);
+    if (it != _clients.end())
+        return it->second;
+    return NULL;
+}
 
 Channel* Server::getChannelByName(const std::string& name) {
     std::map<std::string, Channel*>::iterator it = _channels.find(name);
