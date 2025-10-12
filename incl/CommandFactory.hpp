@@ -36,9 +36,9 @@ public:
               args.push_back(arg);
               break;
           }
+          args.push_back(arg);
         }
-            args.push_back(arg);
-
+        std::cout << "args.size = " << args.size()<<std::endl;
         return Command(server, command, args);
     }
 };

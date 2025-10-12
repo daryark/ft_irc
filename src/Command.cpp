@@ -144,57 +144,70 @@ void Command::executeMode(Client *client)
 
 void Command::executeNick(Client *client)
 {
+    if(!client->isAuthenticated())
+        return _server->send_color(client->getFd(), "XXX :Register on the server first!!!!!!!!", RED);
     if (_args.empty())
-    {
-        _server->send_color(client->getFd(), "431 :No nickname given", RED);
-        // client->sendMessage("431 :No nickname given");
-        return;
-    }
+        return _server->send_color(client->getFd(), "431 :No nickname given", RED);
+    if (!isValidNickname())
+        return _server->send_color(client->getFd(), "432 :Erroneous nickname", RED);
 
     std::string nickname = _args[0];
-    if (nickname.empty() || nickname.find(' ') != std::string::npos)
-    {
-        _server->send_color(client->getFd(), "432 " + nickname + " :Erroneous nickname", RED);
-        // client->sendMessage("432 " + nickname + " :Erroneous nickname");
-        return;
-    }
+    if (nickname.empty() || nickname.find(' ') != std::string::npos) //!never goes into this if, what does it do??
+        return _server->send_color(client->getFd(), "432 " + nickname + " :Erroneous nickname", RED);
+    
     //? check working this part with const iterator
     const std::map<int, Client *> &clients = _server->getClients();
-    const std::map<int, Client *>::const_iterator it = clients.begin();
-    while (it != clients.end())
+    std::map<int, Client *>::const_iterator it;
+    for (it = clients.begin(); it != clients.end(); it++)
     {
         if (it->second->getNickname() == nickname)
-        {
-            _server->send_color(client->getFd(), "433: Nickname is already in use.", RED);
-            // client->sendMessage("433: Nickname is already in use.");
-            return;
-        }
+            return _server->send_color(client->getFd(), "433: Nickname is already in use.", RED);
     }
-    client->setNickname(nickname);
-    _server->send_color(client->getFd(), "001 " + nickname + " :Welcome to the IRC server", RED);
-    // client->sendMessage("001 " + nickname + " :Welcome to the IRC server");
-
-    //?
-    // if (!client->getUsername().empty() && !client->isRegistered())
-    // {
-    //     client->setRegistered(true);
-    //     client->sendMessage("001 " + nickname + " :Welcome to the IRC server");
-    // }
+    client->setNickname(_args[0]);
 }
+
+bool Command::isValidNickname() const
+{
+    // reject if args array has more than 1 element
+    if (_args.size() != 1)
+        return false;
+
+    const std::string &nick = _args[0];
+    if (nick.empty() || nick.size() > 9)
+        return false;
+
+    // allowed special chars (RFC 2812)
+    const std::string special = "[]\\`_^{|}";
+
+    // first char: letter or special
+    char c = nick[0];
+    if (!isalpha(c) && special.find(c) == std::string::npos)
+        return false;
+
+    // remaining chars: letter / digit / special / '-'
+    for (size_t i = 1; i < nick.size(); ++i)
+    {
+        c = nick[i];
+        if (!isalnum(c) && special.find(c) == std::string::npos && c != '-')
+            return false;
+    }
+    return true;
+}
+
 
 void Command::executePass(Client *client)
 {
-    if (_args.empty())
-    {
-        _server->send_color(client->getFd(), "461: PASS Not enough parameters supplied for the command.\n", RED);
-        // client->sendMessage("461: PASS Not enough parameters supplied for the command.\n");
-        return;
-    }
-
     if (client->isAuthenticated())
     {
         _server->send_color(client->getFd(), "462: Already registered — cannot register again.", RED);
         // client->sendMessage("462: Already registered — cannot register again.");
+    }
+
+    if (_args.empty())
+    {
+        return _server->send_color(client->getFd(), "461: PASS Not enough parameters supplied for the command.\n", RED);
+        // client->sendMessage("461: PASS Not enough parameters supplied for the command.\n");
+        // return;
     }
 
     client->authenticate(_args[0] == _server->getPassword());
@@ -206,6 +219,19 @@ void Command::executePass(Client *client)
 }
 void Command::executeUser(Client *client)
 {
+    
+    if (client->isRegistered())
+    {
+        return _server->send_color(client->getFd(), "462: Already registered — cannot register again.", RED);
+        // _server->send_color(client->getFd(), "462 :You may not reregister", RED);
+        // client->sendMessage("462 :You may not reregister");
+    }
+    else if (!client->isAuthenticated())
+        return _server->send_color(client->getFd(), "XXX :Register on the server first!!!!!!!!", RED);
+    else if (client->getNickname() == "")
+        return _server->send_color(client->getFd(), "431 :No nickname given", RED);
+
+    std::cout << "_args.size() = " << _args.size() << std::endl;
     if (_args.size() != 4)
     {
         _server->send_color(client->getFd(), "461 USER :Not enough parameters", RED);
@@ -213,21 +239,14 @@ void Command::executeUser(Client *client)
         return;
     }
 
-    if (client->isRegistered())
-    {
-        _server->send_color(client->getFd(), "462 :You may not reregister", RED);
-        // client->sendMessage("462 :You may not reregister");
-        return;
-    }
-
     const std::string &username = _args[0];
     const std::string &realname = _args[3];
     client->setUserDefault(username, realname);
-
-    if (!client->getNickname().empty() && !client->isRegistered())
-    {
-        client->setRegistered(true);
-        _server->send_color(client->getFd(), "001 " + client->getNickname() + " :Welcome to the IRC server", RED);
-        // client->sendMessage("001 " + client->getNickname() + " :Welcome to the IRC server");
-    }
+    client->setRegistered(true);
+    _server->send_color(client->getFd(), "001 " + client->getNickname() + " :Welcome to the IRC server", GREEN);
+    // if (!client->getNickname().empty() && !client->isRegistered())
+    // {
+    //     client->setRegistered(true);
+    //     // client->sendMessage("001 " + client->getNickname() + " :Welcome to the IRC server");
+    // }
 }

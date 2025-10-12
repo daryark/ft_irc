@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 20:45:16 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/10/12 16:50:13 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/10/12 21:02:43 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,11 +90,9 @@ void    Server::accept_client()
     }
     push_pollfd(client_sock, POLLIN | POLLOUT, 0);
     _clients.insert(std::pair<int, Client*>(client_sock, new Client(client_sock, client)));
-    send_color(client_sock, PR_USAGE, I_WHITE);//#PASS, NICK, USER => server
-
     send_color(client_sock, PR_WELCOME, B_GREEN);
     std::cout << B_GREEN << PR_CL_CONNECT << client_sock << RE << std::endl;
-    // Command command("")
+    send_color(client_sock, PR_USAGE, I_WHITE);//#PASS, NICK, USER => server
 }
 
 void    Server::disconnect_client(int fd)
@@ -120,23 +118,24 @@ void    Server::process_msg(int fd, char* buf, unsigned int len)
     
     Command command = CommandFactory::parse(this,ss);
     command.executeCommand(getClient(fd));
-    std::cout << ss << std::endl;
+    std::cout << MAGENTA << ss << RE << std::endl;
+    
     send_color(fd, "msg delivered", GREEN);
 }
 
 void    Server::read_msg(int fd)
 {
     char buf[MAX_MSG];
-    std::cout << "fd: " << fd << std::endl;
+    std::cout << B_YELLOW << "fd: " << fd << RE << std::endl;
     int recv_bytes = recv(fd, buf, MAX_MSG - 1, 0);
     std::cout << "recived bytes: " << recv_bytes << std::endl;
     if (recv_bytes > 0)
         process_msg(fd, buf, recv_bytes);
     else
     {
-        std::cerr << "Client disconnected on socket fd: " << fd <<std::endl;
+        // send_color(STDERR_FILENO,"Client disconnected on socket fd: " + std::to_string(fd), YELLOW);
         if (recv_bytes == 0)
-            send_color(STDERR_FILENO,"Client disconnected on socket fd: " + fd, YELLOW);
+            std::cerr << "Client disconnected on socket fd: " << fd <<std::endl;
         else if (recv_bytes == -1)
             std::cerr << "Connection problem" <<std::endl;
     disconnect_client(fd);

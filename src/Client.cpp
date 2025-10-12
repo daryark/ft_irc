@@ -70,13 +70,12 @@ bool Client::isAuthenticated() const
 
 void Client::setRegistered(bool state)
 {
-	_authenticated = state;
-	// authenticated = true;
+	_registered = state;
 }
 
 bool Client::isRegistered() const
 {
-	return _authenticated;
+	return _registered;
 }
 
 void Client::setUser(const std::string& username, const std::string& hostname, const std::string& servername, const std::string& realname){
