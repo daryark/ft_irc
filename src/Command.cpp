@@ -58,22 +58,15 @@ std::vector<std::string> split(const std::string& input, char delimiter) {
 
 void Command::executeJoin(Client *client)
 {
-    if(_args.empty()) {
-        _server->send_color(client->getFd(), "461 JOIN :Not enough parameters", RED);
-        // client->sendMessage("461 JOIN :Not enough parameters");
-        return;
-    }
-    if(!client->isRegistered()) {
-        _server->send_color(client->getFd(), "451 JOIN :Not registered", RED);
-        // client->sendMessage("451 JOIN :Not registered");
-        return;
-    }
+    if(!client->isRegistered())
+        return _server->send_color(client->getFd(), "451 JOIN :Not registered", RED);
+    if(_args.empty())
+        return _server->send_color(client->getFd(), "461 JOIN :Not enough parameters", RED);
 
     const std::vector<std::string> channelNames = split(_args[0], ',');
     std::vector<std::string> channelsPasswords;
-    if(_args.size() == 2) {
+    if(_args.size() == 2)
         channelsPasswords = split(_args[1], ',');
-    }
 
     for (long unsigned int i = 0; i < channelNames.size(); i++) {
         Channel* channel = _server->getChannelByName(channelNames[i]);
@@ -81,18 +74,15 @@ void Command::executeJoin(Client *client)
         if(!channel) {
             channel = _server->createChannel(pass);
             channel->addOperator(client);
-        }else {
+        } else {
             if(channel->isInviteOnly() && !channel->isInvitedClient(client)) {
                 _server->send_color(client->getFd(), "error", RED);
-                // client->sendMessage("error");
             }
             if(channel->hasPassword() && !channel->checkKey(channelsPasswords[i])) { //# changed checkPassword for checkKey only here!
                 _server->send_color(client->getFd(), "error", RED);
-                // client->sendMessage("error");
             }
             if(channel->isFull()) {
                 _server->send_color(client->getFd(), "error", RED);
-                // client->sendMessage("error");
             }
         }
         channel->addClient(client);
@@ -194,38 +184,22 @@ bool Command::isValidNickname() const
     return true;
 }
 
-
 void Command::executePass(Client *client)
 {
     if (client->isAuthenticated())
-    {
-        _server->send_color(client->getFd(), "462: Already registered — cannot register again.", RED);
-        // client->sendMessage("462: Already registered — cannot register again.");
-    }
-
+        return _server->send_color(client->getFd(), "462: Already registered — cannot register again.", RED);
     if (_args.empty())
-    {
         return _server->send_color(client->getFd(), "461: PASS Not enough parameters supplied for the command.\n", RED);
-        // client->sendMessage("461: PASS Not enough parameters supplied for the command.\n");
-        // return;
-    }
 
     client->authenticate(_args[0] == _server->getPassword());
     if (!client->isAuthenticated())
-    {
         _server->send_color(client->getFd(), "464: Password mismatch — wrong password sent with PASS.", RED);
-        // client->sendMessage("464: Password mismatch — wrong password sent with PASS.");
-    }
 }
+
 void Command::executeUser(Client *client)
 {
-    
     if (client->isRegistered())
-    {
         return _server->send_color(client->getFd(), "462: Already registered — cannot register again.", RED);
-        // _server->send_color(client->getFd(), "462 :You may not reregister", RED);
-        // client->sendMessage("462 :You may not reregister");
-    }
     else if (!client->isAuthenticated())
         return _server->send_color(client->getFd(), "XXX :Register on the server first!!!!!!!!", RED);
     else if (client->getNickname() == "")
@@ -233,20 +207,11 @@ void Command::executeUser(Client *client)
 
     std::cout << "_args.size() = " << _args.size() << std::endl;
     if (_args.size() != 4)
-    {
-        _server->send_color(client->getFd(), "461 USER :Not enough parameters", RED);
-        // client->sendMessage("461 USER :Not enough parameters");
-        return;
-    }
+        return _server->send_color(client->getFd(), "461 USER :Not enough parameters", RED);
 
     const std::string &username = _args[0];
     const std::string &realname = _args[3];
     client->setUserDefault(username, realname);
     client->setRegistered(true);
     _server->send_color(client->getFd(), "001 " + client->getNickname() + " :Welcome to the IRC server", GREEN);
-    // if (!client->getNickname().empty() && !client->isRegistered())
-    // {
-    //     client->setRegistered(true);
-    //     // client->sendMessage("001 " + client->getNickname() + " :Welcome to the IRC server");
-    // }
 }
