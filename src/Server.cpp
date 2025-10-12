@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 20:45:16 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/09/29 18:15:40 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/10/12 16:50:13 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,10 +90,11 @@ void    Server::accept_client()
     }
     push_pollfd(client_sock, POLLIN | POLLOUT, 0);
     _clients.insert(std::pair<int, Client*>(client_sock, new Client(client_sock, client)));
-    std::cout << B_GREEN << PR_CL_CONNECT << client_sock << RE << std::endl;
+    send_color(client_sock, PR_USAGE, I_WHITE);//#PASS, NICK, USER => server
+
     send_color(client_sock, PR_WELCOME, B_GREEN);
-    
-    send_color(client_sock, PR_USAGE, I_WHITE);//#nickname, registration, password => server
+    std::cout << B_GREEN << PR_CL_CONNECT << client_sock << RE << std::endl;
+    // Command command("")
 }
 
 void    Server::disconnect_client(int fd)
@@ -161,7 +162,7 @@ void    Server::send_color(int fd, const std::string& msg, const std::string& co
     if (sent < 0)
         std::cerr << "ERR send_color()" << std::endl;
     else
-        std::cout << "sent bytes: " << sent << ", msg: " << msg << std::endl;
+        std::cout << "sent bytes: " << sent << std::endl;
 }
 void    Server::fancy_print(const std::string& opt)
 {

@@ -36,9 +36,7 @@ void Command::executeCommand(Client *client)
         (this->*handle)(client);
     }
     else
-    {
-        std::cout << "Command not found" << std::endl;
-    }
+        _server->send_color(client->getFd(), "Command not found", RED);
 }
 
 void Command::executePrivmsg(Client *client)

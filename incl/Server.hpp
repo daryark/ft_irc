@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 20:09:46 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/09/29 18:06:12 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/10/12 16:53:01 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@ class Command;
 #define PR_CL_NOT_CONNECT	"Can't connect the new client"
 #define PR_CL_CONNECT		"New client connected on socket fd "
 #define PR_WELCOME	"Welcome on the server"
+#define	PR_IN_MSG	"Register to join the server. Execute PASS, NICK, USER commands"
 #define PR_USAGE	"Usage:\n"\
 	"· KICK - Eject a client from the channel\n"\
 	"· INVITE - Invite a client to a channel/n"\
