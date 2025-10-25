@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 20:09:46 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/09/29 18:06:12 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/10/22 23:22:17 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 #include <map>
 #include <algorithm>
 
+#include <csignal> //*9
 #include <sys/socket.h> // socket, bind, listen, accept
 #include <netinet/in.h> // sockaddr_in
 #include <arpa/inet.h>	// htons
@@ -49,10 +50,11 @@ class Command;
 #define PR_LISTEN	"Waiting for connections..."
 #define PR_CL_NOT_CONNECT	"Can't connect the new client"
 #define PR_CL_CONNECT		"New client connected on socket fd "
-#define PR_WELCOME	"Welcome on the server"
+#define PR_WELCOME	" :Welcome to the IRC server"
+#define	PR_IN_MSG	"Register to join the server. Execute PASS, NICK, USER commands"
 #define PR_USAGE	"Usage:\n"\
 	"· KICK - Eject a client from the channel\n"\
-	"· INVITE - Invite a client to a channel/n"\
+	"· INVITE - Invite a client to a channel\n"\
 	"· TOPIC - Change or view the channel topic\n"\
 	"· MODE - Change the channel’s mode:\n"\
 	"· 	i: Set/remove Invite-only channel\n"\
@@ -76,21 +78,21 @@ private:
 	Server &operator=(const Server &){return *this;};
 	//helpers //#REWRITE to CamelCase!!!!
 	void					accept_client();
-	void					disconnect_client(int fd);
 	void					read_msg(int fd);
 	void					push_pollfd(int, short, short);
 	void					process_msg(int fd, char* buf, unsigned int len);
-
+	
 	void					fancy_print(const std::string& opt);
 	
 	public:
-	Server();
-	Server(int port, std::string password);
-	~Server();
+		Server();
+		Server(int port, std::string password);
+		~Server();
 	
 	// methods
 	void					init();
 	void					run();
+	void					disconnect_client(int fd);
 	
 	void					send_color(int fd, const std::string& msg, const std::string& color = RE);
 
@@ -108,6 +110,8 @@ private:
 	Channel* getChannelByName(const std::string& name);//+
 
 	Channel* createChannel(const std::string& nameChannel); //+
+
+	Client* getClientByNickname(const std::string& nickname); //-
 
 	// void handleInput(Client* client, const std::string& input) //*parser input + masha check CommandFactory.hpp
 };

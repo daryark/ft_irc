@@ -19,8 +19,8 @@ enum CommandType
 	PASS,
 	JOIN,
 	PRIVMSG,
+	QUIT,
 	// PONG,
-	// QUIT,
 	// PART,
 	KICK,
 	INVITE,
@@ -52,6 +52,9 @@ private:
 	void executeInvite(Client *client);
 	void executeTopic(Client *client);
 	void executeMode(Client *client);
+	void executeQuit(Client *client);
+
+	bool isValidNickname()	const;
 
 public:
 	Command(Server *server, const std::string &command, const std::vector<std::string> &args);

@@ -65,6 +65,7 @@ When you initialize or reset a pollfd structure, the revents field should be cle
 because it will be overwritten by the system when poll() is invoked (to POLLIN/POLLOUT/POLLERR) - the real event that will happen.
 //?The revents field is a bitmask that indicates the events that occurred for a file descriptor.
 Multiple events can occur at the same time (e.g., POLLIN, POLLOUT, POLLHUP), and they are stored as separate bits in the revents integer.
+POLLOUT - almost always is this revent, as it says that server has space to pass the data(write into OUT)
 
 //*7 poll(_pollfds.data(), _pollfds.size(), 1000);
 First param: poll work with direct pointer to data storage, not with vector, so we pass the pointer to data array stored in vector container.
@@ -77,6 +78,18 @@ Third param: timeout in milliseconds that poll() should block waiting for a file
 
 //*8 inet_ntoa(struct in_addr in) converts the Internet host address in, given in network byte order, to a string in IPv4 dotted-decimal notation.
 //? in_addr has just one member - address in byte order. It's a struct just as an adapter
+
+//*9 sig_atomic_t
+It’s a small integer type guaranteed to be read/written in one atomic CPU operation
+even in the presence of asynchronous interrupts made by signals.
+So if a signal interrupts your code while that variable is being changed,
+you won’t get a half-written or corrupted value.
+//*volatile - (нестабільний)
+//* https://medium.com/@pauljlucas/what-volatile-does-in-c-and-c-d6e9924b15c7
+To tell the compiler that objects qualified with volatile may either be modified
+or cause side effects in ways unknown to the compiler; therefore, not to optimize
+away accesses to such objects nor reorder their accesses with respect to other
+operations that have visible side effects.
 
 
 //! write about std::runtime_error and STDEXCEPT

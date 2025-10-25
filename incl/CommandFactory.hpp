@@ -30,15 +30,16 @@ public:
         std::string arg;
         while (iss >> arg){
           if(arg[0] == ':'){
-              std::string rest;
-              std::getline(iss, rest);
-              arg = arg.substr(1) + rest;
-              args.push_back(arg);
-              break;
-          }
-        }
+            args.push_back(":");
+            std::string rest;
+            std::getline(iss, rest);
+            arg = arg.substr(1) + rest;
             args.push_back(arg);
-
+            break;
+          }
+          args.push_back(arg);
+        }
+        std::cout << "args.size = " << args.size()<< "; ";//########################
         return Command(server, command, args);
     }
 };

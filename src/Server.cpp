@@ -6,13 +6,16 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 20:45:16 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/09/29 18:15:40 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/10/22 23:34:02 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../incl/Server.hpp"
 #include "../incl/CommandFactory.hpp"
 
+volatile sig_atomic_t g_runnning = 1;//!!!!###
+
+void sigHandler(int){ g_runnning = 0;}
 //* all the '*' explanation in extra/server.about file
 Server::Server(int port, std::string password): _port(port), _password(password){}
 
@@ -52,8 +55,9 @@ void    Server::init()
 void Server::run()
 {
     push_pollfd(_head_socket, POLLIN, 0); //#6
-    //!sigint & sigstp signal catch here add
-    while (true)
+    signal(SIGINT, sigHandler);
+    signal(SIGTSTP, sigHandler);
+    while (g_runnning)
     {
         if (poll(_pollfds.data(), (int)_pollfds.size(), 1000) < 0) //*7
             break ;
@@ -71,8 +75,18 @@ void Server::run()
                 else
                     read_msg(_pollfds[i].fd);
             }
-            // if (_pollfds[i].revents & POLLOUT)
-            //    send_color(i, PR_WELCOME, B_GREEN);
+            if (_pollfds[i].revents & (POLLHUP | POLLERR | POLLNVAL))
+            {   
+                if (_pollfds[i].revents & POLLOUT)
+                    std::cout << BG_CYAN << "POLLOUT" << RE << "; ";
+                else if (_pollfds[i].revents & POLLHUP)
+                    std::cout << BG_MAGENTA << "POLLHUP" << RE << "; ";
+                else if (_pollfds[i].revents & POLLERR)
+                    std::cout << BG_RED << "POLLERR" << RE << "; ";
+                else if (_pollfds[i].revents & POLLNVAL)
+                    std::cout << BG_YELLOW << "POLLNVAL" << RE << "; ";
+                std::cout << RED << "Quit" << RE << std::endl;
+            }
         }
     }
 }
@@ -91,21 +105,22 @@ void    Server::accept_client()
     push_pollfd(client_sock, POLLIN | POLLOUT, 0);
     _clients.insert(std::pair<int, Client*>(client_sock, new Client(client_sock, client)));
     std::cout << B_GREEN << PR_CL_CONNECT << client_sock << RE << std::endl;
-    send_color(client_sock, PR_WELCOME, B_GREEN);
-    
-    send_color(client_sock, PR_USAGE, I_WHITE);//#nickname, registration, password => server
+    send_color(client_sock, PR_IN_MSG, I_WHITE);
 }
 
 void    Server::disconnect_client(int fd)
 {
+    // send_color(fd, "Disconnect", RED);
+    send(fd, "Disconnect", 11, MSG_NOSIGNAL);
     _clients.erase(fd); //map
     for (std::vector<pollfd>::iterator it = _pollfds.begin(); it != _pollfds.end(); it++)
     {
         if (it->fd == fd)
         {
-            std::cout << "disconnected" << std::endl;
+            shutdown(fd, SHUT_RDWR);
             close(it->fd);
             _pollfds.erase(it); //vector
+            std::cout << "disconnected" << "; ";
             break ;
         }
     }
@@ -119,23 +134,21 @@ void    Server::process_msg(int fd, char* buf, unsigned int len)
     
     Command command = CommandFactory::parse(this,ss);
     command.executeCommand(getClient(fd));
-    std::cout << ss << std::endl;
-    send_color(fd, "msg delivered", GREEN);
+    std::cout << MAGENTA << ss << RE << std::endl;//############
 }
 
 void    Server::read_msg(int fd)
 {
     char buf[MAX_MSG];
-    std::cout << "fd: " << fd << std::endl;
+    std::cout << B_YELLOW << "fd: " << fd << RE << "; ";//##########
     int recv_bytes = recv(fd, buf, MAX_MSG - 1, 0);
-    std::cout << "recived bytes: " << recv_bytes << std::endl;
+    std::cout << "recived bytes: " << recv_bytes << "; ";//#########
     if (recv_bytes > 0)
         process_msg(fd, buf, recv_bytes);
     else
     {
-        std::cerr << "Client disconnected on socket fd: " << fd <<std::endl;
         if (recv_bytes == 0)
-            send_color(STDERR_FILENO,"Client disconnected on socket fd: " + fd, YELLOW);
+            std::cerr << "Client disconnected on socket fd: " << fd <<std::endl;
         else if (recv_bytes == -1)
             std::cerr << "Connection problem" <<std::endl;
     disconnect_client(fd);
@@ -160,18 +173,18 @@ void    Server::send_color(int fd, const std::string& msg, const std::string& co
     int sent = send(fd, colored.c_str(), colored.length(), 0);
     if (sent < 0)
         std::cerr << "ERR send_color()" << std::endl;
-    else
-        std::cout << "sent bytes: " << sent << ", msg: " << msg << std::endl;
+    // else
+    //     std::cout << "sent bytes: " << sent << std::endl;//#############
 }
 void    Server::fancy_print(const std::string& opt)
 {
-    std::cout << B_BLUE << opt;
+    std::cout << std::endl << B_BLUE << opt;
     if (opt == PR_RUN)
             std::cout << " ༼ つ " << B_RED
         << "♥" << B_BLUE << "_" << B_RED << "♥" << B_BLUE << " ༽つ "  << B_BLUE 
         << _port << ",   password '" << _password << "'";
     else if (opt == PR_CLOSE)
-        std::cout << B_BLUE << opt << B_RED << " ⊂༼" << B_BLUE
+        std::cout << B_RED << " ⊂༼" << B_BLUE
         << "´סּ" << B_RED << "︵" << B_BLUE "סּ`" << B_RED << "⊂ ༽";
     std::cout << RE << std::endl;
 }
@@ -190,7 +203,7 @@ Client* Server::getClient(int fd)   const
 }
 
 Channel* Server::getChannelByName(const std::string& name) {
-    std::map<std::string, Channel*>::iterator it = _channels.find(name);
+    std::map<std::string, Channel*>::const_iterator it = _channels.find(name);
     if (it != _channels.end())
         return it->second;
     return NULL;
@@ -200,4 +213,13 @@ Channel* Server::createChannel(const std::string& nameChannel) {
     Channel *channel = new Channel(nameChannel);
     _channels[nameChannel] = channel;
     return channel;
+}
+
+Client* Server::getClientByNickname(const std::string& nickname) {
+    for (std::map<int, Client*>::const_iterator it = _clients.begin(); it != _clients.end(); ++it) {
+        if (it->second->getNickname() == nickname) {
+            return it->second;
+        }
+    }
+    return NULL;
 }
