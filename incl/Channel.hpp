@@ -4,6 +4,9 @@
 #include <vector>
 #include <algorithm>
 #include <set>
+#include <sys/socket.h>
+
+#include "../incl/Client.hpp"
 
 class Client;
 class Channel
@@ -58,6 +61,8 @@ public:
 	bool isOperator(Client *client) const; //+
 
 	bool isFull() const;//+
+
+	void globalMassage(const std::string &message) const; //+
 
 	// void addClient(int client_fd);
 

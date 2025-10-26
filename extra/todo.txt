@@ -12,7 +12,7 @@
 
 ✅ ❌
 
-Server:
+//->Server:
 открыть сокеты ✅
 связать с айпи портом ✅
 какая разница: poll/epoll #???? ❌
@@ -23,11 +23,17 @@ Server:
     выход клиент -> ловим еррор. (входящий пишет в свой буфер) и мониторим циклом, пока выход клиент выйдет на связь. ❌
 предусматривать ли отдельное поведение для макс числа клиентов? или просто accept fail и оно выйдет на ерроре коннекта?
 
-Problems to fix:
+//->Client:
+privMsg method ❌
+stop/close the server (look in docs, how exactly to do) ❌
+close the client connection (look in docs)❌
+
+//->Problems to fix:
 1. Server closes after 3 connected clients ❌
 1.1 even if just 1 client disconnected and reconnected 3 times overall! ✅
 2. Clients hang on open, after the server closed with Ctrl+C ❌
 3. Conditional jump, when send msg more than MAX_BUF size. Search in Server::read_msg ❌
-
+4. Separate and clean the code ❌
+5. Change the CommandFactory parsing - leave ':' as a an identificator(separate in own node??) ❌
 ---------------------гайд делает сервер с одним клиентом
 чтоб работать со многими fd - pull or/and select fncs
