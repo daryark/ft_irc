@@ -13,9 +13,13 @@
 #include "../incl/Server.hpp"
 #include "../incl/CommandFactory.hpp"
 
-volatile sig_atomic_t g_runnning = 1;//!!!!###
+volatile sig_atomic_t g_runnning = 1;//*9
 
-void sigHandler(int){ g_runnning = 0;}
+void sigHandler(int)
+{
+    g_runnning = 0;
+}
+
 //* all the '*' explanation in extra/server.about file
 Server::Server(int port, std::string password): _port(port), _password(password){}
 
@@ -39,10 +43,7 @@ void    Server::init()
     if (fcntl(_head_socket, F_SETFL, O_NONBLOCK) == -1) //*3
         throw std::runtime_error("fcntl");
 
-    std::memset(&_addr, 0, sizeof(_addr));//*4
-    _addr.sin_addr.s_addr = htons(INADDR_ANY);// inet_pton(AF_INET, "0.0.0.0", &_addr.sin_addr);
-    _addr.sin_port = htons(_port);//*5
-    _addr.sin_family = AF_INET;
+    fill_sockaddr_in(_addr, AF_INET, _port, INADDR_ANY);
     if (bind(_head_socket, (sockaddr *)&_addr, sizeof(_addr)) == -1)
         throw std::runtime_error("bind");
     fancy_print(PR_RUN);
@@ -75,7 +76,7 @@ void Server::run()
                 else
                     read_msg(_pollfds[i].fd);
             }
-            if (_pollfds[i].revents & (POLLHUP | POLLERR | POLLNVAL))
+            if (_pollfds[i].revents & (POLLHUP | POLLERR | POLLNVAL)) //######all if-else ifs
             {   
                 if (_pollfds[i].revents & POLLOUT)
                     std::cout << BG_CYAN << "POLLOUT" << RE << "; ";
@@ -157,15 +158,6 @@ void    Server::read_msg(int fd)
 
 //------------------helpers--------------------
 
-void    Server::push_pollfd(int fd, short event, short revent)
-{
-    pollfd new_pollfd;
-    new_pollfd.fd = fd;
-    new_pollfd.events = event;
-    new_pollfd.revents = revent;
-    _pollfds.push_back(new_pollfd);
-}
-
 
 void    Server::send_color(int fd, const std::string& msg, const std::string& color)
 {
@@ -176,18 +168,7 @@ void    Server::send_color(int fd, const std::string& msg, const std::string& co
     // else
     //     std::cout << "sent bytes: " << sent << std::endl;//#############
 }
-void    Server::fancy_print(const std::string& opt)
-{
-    std::cout << std::endl << B_BLUE << opt;
-    if (opt == PR_RUN)
-            std::cout << " ༼ つ " << B_RED
-        << "♥" << B_BLUE << "_" << B_RED << "♥" << B_BLUE << " ༽つ "  << B_BLUE 
-        << _port << ",   password '" << _password << "'";
-    else if (opt == PR_CLOSE)
-        std::cout << B_RED << " ⊂༼" << B_BLUE
-        << "´סּ" << B_RED << "︵" << B_BLUE "סּ`" << B_RED << "⊂ ༽";
-    std::cout << RE << std::endl;
-}
+
 
 //getters
 const std::string& Server::getPassword() const { return _password; }

@@ -319,34 +319,6 @@ bool Command::isValidNickname() const
     return true;
 }
 
-bool Command::isValidNickname() const
-{
-    // reject if args array has more than 1 element
-    if (_args.size() != 1)
-        return false;
-
-    const std::string &nick = _args[0];
-    if (nick.empty() || nick.size() > 9)
-        return false;
-
-    // allowed special chars (RFC 2812)
-    const std::string special = "[]\\`_^{|}";
-
-    // first char: letter or special
-    char c = nick[0];
-    if (!isalpha(c) && special.find(c) == std::string::npos)
-        return false;
-
-    // remaining chars: letter / digit / special / '-'
-    for (size_t i = 1; i < nick.size(); ++i)//?! ++i or i++ ??
-    {
-        c = nick[i];
-        if (!isalnum(c) && special.find(c) == std::string::npos && c != '-')
-            return false;
-    }
-    return true;
-}
-
 void Command::executePass(Client *client)
 {
     if (client->isAuthenticated())

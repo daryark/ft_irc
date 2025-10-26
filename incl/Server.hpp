@@ -81,7 +81,7 @@ private:
 	void					read_msg(int fd);
 	void					push_pollfd(int, short, short);
 	void					process_msg(int fd, char* buf, unsigned int len);
-	
+	void					fill_sockaddr_in(struct sockaddr_in& addr, short int in_family, unsigned short int in_port ,uint32_t s_addr);
 	void					fancy_print(const std::string& opt);
 	
 	public:

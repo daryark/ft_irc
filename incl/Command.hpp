@@ -56,7 +56,6 @@ private:
 
 	bool isValidNickname()	const;
 
-	bool isValidNickname()	const;
 
 public:
 	Command(Server *server, const std::string &command, const std::vector<std::string> &args);

@@ -26,6 +26,7 @@ if recieving client is slow/not-connected monitor:
 //*4.	sockaddr_in - struct describing sock addr (in) - for internet IPv4
 //? servAddr.sin_addr.s_addr = INADDR_ANY is equal to: 
 //? inet_pton(servSockListen, AF_INET, "0.0.0.0", &servAddr.sin_addr);
+//? htonl(INADDR_ANY) - does the same as prev line, just other variant.
 both in prev line says that: 
     inet_pton: Converts the human-readable IP address "0.0.0.0" into a binary and stores it in servAddr.sin_addr
         "0.0.0.0" is a special address that tells the socket to bind to all available network interfaces on the host machine.
