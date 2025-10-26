@@ -22,7 +22,13 @@ void Command::initCommandMap()
     _commandMap["TOPIC"] = &Command::executeTopic;
     _commandMap["MODE"] = &Command::executeMode;
     _commandMap["QUIT"] = &Command::executeQuit;
+    _commandMap["allClients"] = &Command::executeAllClients; 
+    _commandMap["allChannel"] = &Command::executeAllChannel; 
+    _commandMap["allMC"] = &Command::executeAllMembersInChannel;
+    _commandMap["info"] = &Command::executeAllInfo; 
+
 }
+
 
 Command::~Command()
 {
@@ -30,6 +36,8 @@ Command::~Command()
 
 void Command::executeCommand(Client *client)
 {
+    std::cout << "[" << _command << "]" << std::endl;
+
     std::map<std::string, CommandHandler>::iterator it = _commandMap.find(_command);
     if (it != _commandMap.end())
     {
@@ -38,6 +46,31 @@ void Command::executeCommand(Client *client)
     }
     else
     _server->send_color(client->getFd(), "Command not found", RED);
+}
+
+void Command::executeAllInfo(Client* client) 
+{
+    client->printInfo();
+}
+
+void Command::executeAllClients(Client* client) 
+{
+    (void)client;
+    PrintAllClients(*_server);
+}
+
+void Command::executeAllChannel(Client* client) 
+{
+    (void)client;
+    PrintAllChannels(*_server);
+}
+
+void Command::executeAllMembersInChannel(Client* client)
+{
+    (void)client;
+    if(_args.empty())
+        return _server->send_color(client->getFd(), "461 allMC :Not enough parameters", RED);
+    PrintMembersInChannel(*_server, _args[0]);
 }
 
 void Command::executePrivmsg(Client *client)
@@ -109,6 +142,7 @@ std::vector<std::string> split(const std::string& input, char delimiter) {
     return tokens;
 }
 
+//*JOIN <channel> [, <channel>...] <key> [, <key>...] |or "0"
 void Command::executeJoin(Client *client)
 {
     if(!client->isRegistered())
@@ -117,28 +151,52 @@ void Command::executeJoin(Client *client)
         return _server->send_color(client->getFd(), "461 JOIN :Not enough parameters", RED);
 
     const std::vector<std::string> channelNames = split(_args[0], ',');
+    //print channel names
+    for(size_t i = 0; i < channelNames.size(); i++) {
+        if(channelNames[i].empty() || (channelNames[i][0] != '#' && channelNames[i][0] != '&')) {
+            std::cout << "Invalid channel name: " << channelNames[i] << std::endl;
+        }
+        std::cout << "Channel to join: " << channelNames[i] << std::endl;
+    }
     std::vector<std::string> channelsPasswords;
     if(_args.size() == 2)
         channelsPasswords = split(_args[1], ',');
 
+    bool hasError = false;
+
     for (long unsigned int i = 0; i < channelNames.size(); i++) {
+        hasError = false;
         Channel* channel = _server->getChannelByName(channelNames[i]);
         std::string pass = (i < channelsPasswords.size()) ? channelsPasswords[i] : "";
         if(!channel) {
-            channel = _server->createChannel(pass);
+            channel = _server->createChannel(channelNames[i]);
             channel->addOperator(client);
+            client->joinChannel(channelNames[i]);
+            channel->addClient(client);
         } else {
             if(channel->isInviteOnly() && !channel->isInvitedClient(client)) {
-                _server->send_color(client->getFd(), "error", RED);
+                _server->send_color(client->getFd(), "Channel is invite only", RED);
+                hasError = true;
             }
             if(channel->hasPassword() && !channel->checkKey(channelsPasswords[i])) { //# changed checkPassword for checkKey only here!
-                _server->send_color(client->getFd(), "error", RED);
+                _server->send_color(client->getFd(), "not correct password for channel", RED);
+                hasError = true;
             }
             if(channel->isFull()) {
-                _server->send_color(client->getFd(), "error", RED);
+                 _server->send_color(client->getFd(), "Channel is full", RED);
+                 hasError
+            }
+            if(channel->isMember(client)) {
+                _server->send_color(client->getFd(), "Client is already joined", RED); //ignor only message, but not error without stop
+                hasError = true;
+            }
+            if(!hasError){
+                channel->addClient(client);
+                client->joinChannel(channelNames[i]);
+                channel->globalMassage(":" + client->getNickname() + "JOIN " + channelNames[i]);
+
             }
         }
-        channel->addClient(client);
     }
 
 

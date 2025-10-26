@@ -119,3 +119,24 @@ const struct sockaddr_in &Client::getAddr() const
 {
 	return _addr;
 }*/
+
+void Client::printInfo() const
+{
+	// std::cout << "Client Info:" << std::endl;
+	// std::cout << "FD: " << _fd << std::endl;
+	// std::cout << "Nickname: " << _nickname << std::endl;
+	// std::cout << "Username: " << _username << std::endl;
+	// std::cout << "Hostname: " << _hostname << std::endl;
+	// std::cout << "Servername: " << _servername << std::endl;
+	// std::cout << "Realname: " << _realname << std::endl;
+	// std::cout << "Authenticated: " << (_authenticated ? "Yes" : "No") << std::endl;
+	// std::cout << "Registered: " << (_registered ? "Yes" : "No") << std::endl;
+	std::cout << "Joined Channels: ";
+	for (size_t i = 0; i < _joined_channels.size(); ++i)
+	{
+		std::cout << _joined_channels[i];
+		if (i != _joined_channels.size() - 1)
+			std::cout << ", ";
+	}
+	std::cout << std::endl;
+}

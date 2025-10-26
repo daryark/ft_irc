@@ -111,3 +111,5 @@ void Channel::globalMassage(const std::string &message) const
   for (std::set<Client *>::iterator it = _members.begin(); it != _members.end(); ++it)
     send((*it)->getFd(), message.c_str(), message.length(), 0);  
 }
+
+int Channel::getSize() const { return _members.size(); }

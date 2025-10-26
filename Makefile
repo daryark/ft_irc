@@ -1,7 +1,7 @@
 GREEN = \033[0;32m
 RE = \033[0m
 
-SRC =  main.cpp Server.cpp Client.cpp Command.cpp Channel.cpp server_helpers.cpp
+SRC =  main.cpp Server.cpp Client.cpp Command.cpp Channel.cpp server_helpers.cpp debug_file.cpp
 HDR = Server.hpp Client.hpp CommandFactory.hpp Command.hpp Channel.hpp
 
 SRC_F = src/
@@ -13,7 +13,7 @@ VPATH = $(SRC_F)
 OBJ = $(addprefix $(OBJ_F), $(SRC:%.cpp=%.o))
 
 CXX = c++
-CXX_FLAGS = -std=c++98 -Wall -Wextra -Werror -O3 -g
+CXX_FLAGS = -std=c++11 -Wall -Wextra -Werror -O3 -g
 NAME=ircserv
 
 all:$(NAME)

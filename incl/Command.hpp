@@ -57,10 +57,20 @@ private:
 	bool isValidNickname()	const;
 
 
+	void executeAllClients(Client* client);
+	void executeAllChannel(Client* client);
+	void executeAllMembersInChannel(Client* client);
+	void executeAllInfo(Client* client);
+
 public:
 	Command(Server *server, const std::string &command, const std::vector<std::string> &args);
 	~Command();
 	// metchods
 
 	void executeCommand(Client *client);
+	
+	void PrintAllClients( Server& server);
+	void PrintAllChannels( Server& server);
+	void PrintMembersInChannel( Server& server, const std::string& channelName);
 };
+

@@ -71,6 +71,8 @@ public:
 	void joinChannel(const std::string &channel);	//+
 	void removeChannel(const std::string &channel); //+
 
+	void printInfo() const; //+
+
 	// void setAddr(const struct sockaddr_in &addr);
 	// const struct sockaddr_in &getAddr() const;
 };
