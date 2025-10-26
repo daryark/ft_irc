@@ -1,6 +1,6 @@
 #include "../incl/Client.hpp"
 
-Client::Client(int fd,  sockaddr_in addr): _fd(fd), _addr(addr)
+Client::Client(int fd,  sockaddr_in addr, Server* server): _fd(fd), _addr(addr), _server(server)
 {
 	_nickname = "";
 	_username = "";
@@ -35,7 +35,9 @@ Client::~Client()
 // 	// send(_fd, message.c_str(), message.size(), 0);
 // }
 
-int &Client::getFd() { return _fd; }
+int& Client::getFd() { return _fd; }
+
+std::deque<std::string>& Client::getMsgQueue() { return _msg_queue; };
 
 void Client::setNickname(const std::string &nickname) { _nickname = nickname; }
 
@@ -110,6 +112,11 @@ void Client::removeChannel(const std::string &channel)
 	_joined_channels.erase(std::remove(_joined_channels.begin(), _joined_channels.end(), channel), _joined_channels.end());
 }
 
+void Client::queueMsg(const std::string &message)
+{
+	_msg_queue.push_back(message);
+	_server->markPfdForPollout(getFd());
+}
 /*void Client::setAddr(const struct sockaddr_in &addr)
 {
 	_addr = addr;

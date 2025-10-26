@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 20:09:46 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/10/22 23:22:17 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/10/26 18:57:03 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,20 +80,22 @@ private:
 	void					accept_client();
 	void					read_msg(int fd);
 	void					push_pollfd(int, short, short);
-	void					process_msg(int fd, char* buf, unsigned int len);
+	void					process_in_msg(int fd, char* buf, unsigned int len);
 	void					fill_sockaddr_in(struct sockaddr_in& addr, short int in_family, unsigned short int in_port ,uint32_t s_addr);
 	void					fancy_print(const std::string& opt);
 	
 	public:
-		Server();
-		Server(int port, std::string password);
-		~Server();
+	Server();
+	Server(int port, std::string password);
+	~Server();
 	
 	// methods
 	void					init();
 	void					run();
 	void					disconnect_client(int fd);
 	
+	void					markPfdForPollout(int fd);
+	void					send_msg(int fd);
 	void					send_color(int fd, const std::string& msg, const std::string& color = RE);
 
 	// void handelNewConnection();

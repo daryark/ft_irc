@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 20:45:16 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/10/22 23:34:02 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/10/26 19:51:33 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,7 @@ void Server::run()
             break ;
         for (int i = 0; i < (int)_pollfds.size(); i++ )
         {
-            if (_pollfds[i].revents & POLLHUP)
+            if (_pollfds[i].revents & (POLLHUP | POLLERR | POLLNVAL))
              {   
                 disconnect_client(i);
                 continue;
@@ -76,20 +76,25 @@ void Server::run()
                 else
                     read_msg(_pollfds[i].fd);
             }
-            if (_pollfds[i].revents & (POLLHUP | POLLERR | POLLNVAL)) //######all if-else ifs
-            {   
-                if (_pollfds[i].revents & POLLOUT)
-                    std::cout << BG_CYAN << "POLLOUT" << RE << "; ";
-                else if (_pollfds[i].revents & POLLHUP)
-                    std::cout << BG_MAGENTA << "POLLHUP" << RE << "; ";
-                else if (_pollfds[i].revents & POLLERR)
-                    std::cout << BG_RED << "POLLERR" << RE << "; ";
-                else if (_pollfds[i].revents & POLLNVAL)
-                    std::cout << BG_YELLOW << "POLLNVAL" << RE << "; ";
-                std::cout << RED << "Quit" << RE << std::endl;
-            }
+            if (_pollfds[i].revents & POLLOUT)
+               send_msg(_pollfds[i].fd);
         }
     }
+}
+
+
+void    Server::send_msg(int fd)
+{
+    Client* client = getClient(fd);
+    std::deque<std::string>& msg_queue = client->getMsgQueue();
+    while(!msg_queue.empty())
+    {
+        int n = send(fd, msg_queue.front().c_str(), msg_queue.front().size(), MSG_NOSIGNAL);
+        if (n <= 0)
+            break; // socket full, wait for next POLLOUT
+        msg_queue.pop_front();
+    }
+    _pollfds[fd].events &= ~POLLOUT; // stop monitoring POLLOUT until new msg
 }
 
 void    Server::accept_client()
@@ -104,7 +109,7 @@ void    Server::accept_client()
         return ;
     }
     push_pollfd(client_sock, POLLIN | POLLOUT, 0);
-    _clients.insert(std::pair<int, Client*>(client_sock, new Client(client_sock, client)));
+    _clients.insert(std::pair<int, Client*>(client_sock, new Client(client_sock, client, this)));
     std::cout << B_GREEN << PR_CL_CONNECT << client_sock << RE << std::endl;
     send_color(client_sock, PR_IN_MSG, I_WHITE);
 }
@@ -127,7 +132,7 @@ void    Server::disconnect_client(int fd)
     }
 }
 
-void    Server::process_msg(int fd, char* buf, unsigned int len)
+void    Server::process_in_msg(int fd, char* buf, unsigned int len)
 {
     char ss[MAX_MSG];
     strncpy(ss, buf, len);
@@ -145,7 +150,7 @@ void    Server::read_msg(int fd)
     int recv_bytes = recv(fd, buf, MAX_MSG - 1, 0);
     std::cout << "recived bytes: " << recv_bytes << "; ";//#########
     if (recv_bytes > 0)
-        process_msg(fd, buf, recv_bytes);
+        process_in_msg(fd, buf, recv_bytes);
     else
     {
         if (recv_bytes == 0)
@@ -156,8 +161,18 @@ void    Server::read_msg(int fd)
     }
 }
 
-//------------------helpers--------------------
-
+//*------------------helpers--------------------
+void    Server::markPfdForPollout(int fd)
+{
+    for (std::vector<pollfd>::iterator it = _pollfds.begin(); it != _pollfds.end(); ++it)
+    {
+        if (it->fd == fd)
+        {
+            it->events |= POLLOUT;
+            break;
+        }
+    }
+}
 
 void    Server::send_color(int fd, const std::string& msg, const std::string& color)
 {
@@ -170,7 +185,7 @@ void    Server::send_color(int fd, const std::string& msg, const std::string& co
 }
 
 
-//getters
+//*getters
 const std::string& Server::getPassword() const { return _password; }
 const std::map<int, Client*>& Server::getClients() const{ return _clients; }
 const std::map<std::string, Channel*>& Server::getChannel() const {return _channels;}
@@ -203,4 +218,5 @@ Client* Server::getClientByNickname(const std::string& nickname) {
         }
     }
     return NULL;
+    // return std::find(_clients.begin(), _clients.end(), nickname);
 }

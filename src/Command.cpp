@@ -70,7 +70,7 @@ void Command::executePrivmsg(Client *client)
         return _server->send_color(client->getFd(), "461 PRIVMSG :Not enough parameters", RED);
     
     const std::string &target = _args[0];
-    const std::string &message = _args[1];
+    std::string &message = _args[1];
 
     //? need to test, but probably unreal becauce parsing splits by space
     if(target.empty())
@@ -78,7 +78,7 @@ void Command::executePrivmsg(Client *client)
     if(message.empty())
         return _server->send_color(client->getFd(), "412 :No text to send", RED);
     
-
+    message = target + " :" + message;
     if(target[0] == '#' || target[0] == '&') {
         Channel* channel = _server->getChannelByName(target);
         if(!channel)
@@ -86,15 +86,12 @@ void Command::executePrivmsg(Client *client)
         if(!channel->isMember(client))
             return _server->send_color(client->getFd(), "404 " + target + " :Cannot send to channel", RED);
 
-        channel->globalMassage(target + " :" + message);
-        // for each member in channel->getMembers()
-        //     _server->send_color(member->getFd(), "PRIVMSG " + target + " :" + message, GREEN);
+        channel->globalMassage(client, message);
     } else {
         Client* targetClient = _server->getClientByNickname(target);
         if(!targetClient)
             return _server->send_color(client->getFd(), "401 " + target + " :No such nick", RED);
-        // send(targetClient->getFd(), message.c_str(), message.length(), 0);         
-        _server->send_color(targetClient->getFd(), "PRIVMSG " + target + " :" + message, GREEN);
+        targetClient->queueMsg(message);
     }
 }
 
@@ -190,7 +187,7 @@ void Command::executeKick(Client *client)
         return _server->send_color(client->getFd(), "441 " + targetNick + " " + channelName + " :They aren't on that channel", RED);
     channel->removeClient(targetClient);
     targetClient->removeChannel(channelName);
-    channel->globalMassage("KICK " + channelName + " " + targetNick + " :" + comment);
+    channel->globalMassage(client, "KICK " + channelName + " " + targetNick + " :" + comment);
     // Notify target client about being kicked
 }
 
@@ -255,7 +252,7 @@ void Command::executeTopic(Client *client)
         
         const std::string &newTopic = _args[1];
         channel->setTopic(newTopic);
-        channel->globalMassage("TOPIC " + channelName + " :" + newTopic);
+        channel->globalMassage(client, "TOPIC " + channelName + " :" + newTopic);
     }
 }
 
