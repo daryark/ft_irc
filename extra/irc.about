@@ -15,7 +15,7 @@ MUST be multiple <channels> and equal amount of <users>, paired 1-to-1 (#ch us, 
 //*INVITE <nick> <channel>
 //*TOPIC <channel> [: [<topic>]]
 TOPIC channel - returns the topic of the channel
-TOPIC channel : - removes the topic of the channel
+TOPIC channel : - removes the topic of the channel //need to do++
 TOPIC channel : new_topic - set the new topic (if privilegies are ok)
 //*QUIT [: <msg>]
 //*MODE <channel> <+/-modes> [<mode params>]

@@ -289,11 +289,11 @@ void Command::executeNick(Client *client)
             return _server->send_color(client->getFd(), "433: Nickname is already in use.", RED);
     }
     client->setNickname(_args[0]);
-    if(!client->getUsername().empty() && !client->isRegistered()) {
-        client->setRegistered(true);
-        _server->send_color(client->getFd(), "001 " + nickname + PR_WELCOME, B_GREEN);
-        // _server->send_color(client->getFd(), PR_USAGE, B_WHITE);
-    }
+    // if(!client->getUsername().empty() && !client->isRegistered()) {
+    //     client->setRegistered(true);
+    //     _server->send_color(client->getFd(), "001 " + nickname + PR_WELCOME, B_GREEN);
+    //     // _server->send_color(client->getFd(), PR_USAGE, B_WHITE);
+    // }
 }
 
 bool Command::isValidNickname() const
@@ -356,7 +356,6 @@ void Command::executeUser(Client *client)
     if(!client->getNickname().empty() && !client->isRegistered()){
         client->setRegistered(true);
         _server->send_color(client->getFd(), "001 " + client->getNickname() + PR_WELCOME, B_GREEN);
-        
     }
     // client->setRegistered(true);//?
     // _server->send_color(client->getFd(), PR_USAGE, B_WHITE);
