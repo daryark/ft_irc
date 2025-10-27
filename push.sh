@@ -22,6 +22,7 @@ fi
 
 # Get the current commit author email
 CURRENT_AUTHOR_EMAIL=$(git log -1 --pretty=format:'%ae')
+echo "CURRENT AUTHOR: $CURRENT_AUTHOR_EMAIL"
 
 # Modify the current author email to replace the random part with 'student'
 NEW_AUTHOR_EMAIL=$(clean_email "$CURRENT_AUTHOR_EMAIL")
