@@ -64,6 +64,8 @@ public:
 
 	void globalMassage(Client* sender, std::string message) const; //+
 
+	int getSize() const; //+
+
 	// void addClient(int client_fd);
 
 	// void removeClient(int client_fd);

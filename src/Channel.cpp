@@ -115,3 +115,5 @@ void Channel::globalMassage(Client* sender, std::string message) const
     (*it)->queueMsg(message);
   }
 }
+
+int Channel::getSize() const { return _members.size(); }
