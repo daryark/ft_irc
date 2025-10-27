@@ -30,7 +30,7 @@ if [[ "$CURRENT_EMAIL" == *@*.42wolfsburg.de ]]; then
 else
   NEW_EMAIL="$CURRENT_EMAIL"  # leave as is for gmail, etc.
 fi
- echo RED "new email: $NEW_EMAIL, old email: $CURRENT_EMAIL" RE
+ echo "$(RED) new email: $NEW_EMAIL, old email: $CURRENT_EMAIL $(RE)"
 # Add changes
 echo "Adding changes to staging..."
 git add .
