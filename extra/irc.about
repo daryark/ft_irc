@@ -5,8 +5,8 @@ mode - 0(default), other modes for user don't need to be handled according to th
 //*PASS <pass>
 //*JOIN <channel> [, <channel>...] <key> [, <key>...] |or "0"
 JOIN 0 - is a special request to leave all channels the user is currently a member of
-//*PRIVMSG <target> [, <target>...] : <msg>
-multiple targets (mix of user/channel), separated by commas
+//*PRIVMSG <target> [,<target>...] : <msg> 
+multiple targets (mix of user/channel), separated by commas (without spaces!)
 and the same msg to all valid target will be sent
 //*KICK <channel> [, <channel>...] <user> [, <user>...]
 MUST be multiple <channels> and equal amount of <users>, paired 1-to-1 (#ch us, #ch2 us2, ..) 

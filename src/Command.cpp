@@ -81,11 +81,14 @@ void Command::executePrivmsg(Client *client)
         return _server->send_color(client->getFd(), "451 PRIVMSG :Not registered", RED);
     if(_args.size() < 2)
         return _server->send_color(client->getFd(), "461 PRIVMSG :Not enough parameters", RED);
-    if(_args[1] == ":")
-        return _server->send_color(client->getFd(), "411 :No recipient given (PRIVMSG)", RED);
+    if(_args[0] == ":")
+    {   std::cout << "args[1]: " << _args[1] << std::endl;
+         return _server->send_color(client->getFd(), "411 :No recipient given (PRIVMSG)", RED);}
     if (_args[_args.size() - 2] != ":")
         return _server->send_color(client->getFd(), "412 :No text to send", RED);
-    const std::string& message = client->getNickname() + ":" + _args.back() + "\r\n";
+    const std::string& message = ":" + client->getNickname() + "!" + client->getUsername() + "@"
+    + SERVER_NAME + " PRIVMSG ";
+    // :<nick>!<user>@<host>
     
     for (unsigned int i = 0; i < (_args.size() - 2); i++)
     {
@@ -99,12 +102,12 @@ void Command::executePrivmsg(Client *client)
             if(!channel->isMember(client))
                 return _server->send_color(client->getFd(), "404 " + target + " :Cannot send to channel", RED);
     
-            channel->globalMassage(client, message);
+            channel->globalMassage(client, message + target + ":" + _args.back() + "\r\n");
         } else {
             Client* targetClient = _server->getClientByNickname(target);
             if(!targetClient)
                 return _server->send_color(client->getFd(), "401 " + target + " :No such nick", RED);
-            targetClient->queueMsg(message);
+            targetClient->queueMsg(message + target + ":" + _args.back() + "\r\n");
         }
     }
 }
@@ -128,7 +131,7 @@ void Command::executeJoin(Client *client)
     if(_args.empty())
         return _server->send_color(client->getFd(), "461 JOIN :Not enough parameters", RED);
     if (_args.size() == 1 && _args[0] == "0")
-        std::cout << BG_RED << "leave all the channels request from user: " << client->getNickname() << RE << std::endl;`
+        std::cout << BG_RED << "leave all the channels request from user: " << client->getNickname() << RE << std::endl;
 
     const std::vector<std::string> channelNames = split(_args[0], ',');
     //print channel names
@@ -164,7 +167,7 @@ void Command::executeJoin(Client *client)
             }
             if(channel->isFull()) {
                  _server->send_color(client->getFd(), "Channel is full", RED);
-                 hasError
+                 hasError = true;
             }
             if(channel->isMember(client)) {
                 _server->send_color(client->getFd(), "Client is already joined", RED); //ignor only message, but not error without stop
@@ -173,7 +176,8 @@ void Command::executeJoin(Client *client)
             if(!hasError){
                 channel->addClient(client);
                 client->joinChannel(channelNames[i]);
-                channel->globalMassage(":" + client->getNickname() + "JOIN " + channelNames[i]);
+                const std::string& message = client->getNickname() + ":" + _args.back() + "\r\n";
+                channel->globalMassage(client, ":" + client->getNickname() + " JOIN " + channelNames[i] + "\r\n");
 
             }
         }

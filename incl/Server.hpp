@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 20:09:46 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/10/27 13:17:06 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/10/27 19:27:06 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ class Command;
 
 #include "../incl/Client.hpp"
 
+#define SERVER_NAME "localhost"
 #define MAX_MSG	512
 
 //# CREATE ERR CODES FILE
