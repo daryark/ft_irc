@@ -40,58 +40,43 @@ void Command::executeCommand(Client *client)
     _server->send_color(client->getFd(), "Command not found", RED);
 }
 
+//    Command: PRIVMSG
+//    Parameters: <msgtarget>{,<msgtarget>} :<text to be sent>
 void Command::executePrivmsg(Client *client)
 {
-    //    Command: PRIVMSG
-    //    Parameters: <msgtarget>{,<msgtarget>} :<text to be sent>
     if(!client->isRegistered())
-        return _server->send_color(client->getFd(), "451 JOIN :Not registered", RED);
-    // if (_args.size() < 2)
-    // {
-    //     if (_args.size() == 1)
-    //     {
-    //         if (_args[0].length() < 10)
-    //             _server->send_color(client->getFd(), "ERR_NOTEXTTOSEND");
-    //         else
-    //             _server->send_color(client->getFd(), "ERR_NORECIPIENT");
-    //     }
-    // }
-    // // for (std::vector<std::string>::iterator i = 0; i < (_args.size() - 1); i++)
-    // // {
-    // //     if (i == 0)
-    // //         _server->send_color(client->getFd(), "no target to send msg to", RED);
-    // //     else
-    // //         _server->send_color(client->getFd(), "send msg", BG_WHITE);
-    // //     break ;
-    // // }
-
-    // std::cout << BG_GREEN << _args.size() << RE << std::endl;
+        return _server->send_color(client->getFd(), "451 PRIVMSG :Not registered", RED);
     if(_args.size() < 2)
         return _server->send_color(client->getFd(), "461 PRIVMSG :Not enough parameters", RED);
-    
-    const std::string &target = _args[0];
-    std::string &message = _args[1];
-
-    //? need to test, but probably unreal becauce parsing splits by space
-    if(target.empty())
+    if(_args[1] == ":")
         return _server->send_color(client->getFd(), "411 :No recipient given (PRIVMSG)", RED);
-    if(message.empty())
+    if (_args[_args.size() - 2] != ":")
         return _server->send_color(client->getFd(), "412 :No text to send", RED);
-    
-    message = target + " :" + message;
-    if(target[0] == '#' || target[0] == '&') {
-        Channel* channel = _server->getChannelByName(target);
-        if(!channel)
-            return _server->send_color(client->getFd(), "403 " + target + " :No such channel", RED);
-        if(!channel->isMember(client))
-            return _server->send_color(client->getFd(), "404 " + target + " :Cannot send to channel", RED);
+    const std::string& message = client->getNickname() + ":" + _args.back() + "\r\n";
 
-        channel->globalMassage(client, message);
-    } else {
-        Client* targetClient = _server->getClientByNickname(target);
-        if(!targetClient)
-            return _server->send_color(client->getFd(), "401 " + target + " :No such nick", RED);
-        targetClient->queueMsg(message);
+
+    
+    //? need to test, but probably unreal because parsing splits by space
+    
+    for (unsigned int i = 0; i < (_args.size() - 2); i++)
+    {
+        const std::string &target = _args[i];
+        if(target == client->getNickname())
+            continue;
+        if(target[0] == '#' || target[0] == '&') {
+            Channel* channel = _server->getChannelByName(target);
+            if(!channel)
+                return _server->send_color(client->getFd(), "403 " + target + " :No such channel", RED);
+            if(!channel->isMember(client))
+                return _server->send_color(client->getFd(), "404 " + target + " :Cannot send to channel", RED);
+    
+            channel->globalMassage(client, message);
+        } else {
+            Client* targetClient = _server->getClientByNickname(target);
+            if(!targetClient)
+                return _server->send_color(client->getFd(), "401 " + target + " :No such nick", RED);
+            targetClient->queueMsg(message);
+        }
     }
 }
 
@@ -155,8 +140,7 @@ void Command::executeQuit(Client* client) {
         std::cout << BG_I_BLUE << client->getNickname() << " disconnected(SENT TO EVERYONE WITH POLLOUT)" << RE << "; ";
     else
         std::cout << BG_WHITE << "send this quit msg to everyone(SENT TO EVERYONE WITH POLLOUT) ALL THE _args ARR: " << BG_YELLOW << _args[0] << RE << std::endl;
-    _server->disconnect_client(client->getFd());
-    shutdown(client->getFd(), SHUT_RDWR);
+    _server->disconnect_client2(client->getFd());
     }
 
 // void Command::executePart(Client* client) {

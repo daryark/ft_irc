@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 20:45:16 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/10/26 19:51:33 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/10/27 15:18:43 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,23 +61,29 @@ void Server::run()
     while (g_runnning)
     {
         if (poll(_pollfds.data(), (int)_pollfds.size(), 1000) < 0) //*7
-            break ;
-        for (int i = 0; i < (int)_pollfds.size(); i++ )
+            break ; //!clean up & break
+        for (int it = 0; it < (int)_pollfds.size(); it++)
         {
-            if (_pollfds[i].revents & (POLLHUP | POLLERR | POLLNVAL))
-             {   
-                disconnect_client(i);
-                continue;
-             }
-            if (_pollfds[i].revents & POLLIN) //*6.1
+            // it = disconnect_client(_pollfds[it].fd);
+            if (_pollfds[it].revents & (POLLHUP | POLLERR | POLLNVAL))
+                disconnect_client2(_pollfds[it].fd);
+            else if (_pollfds[it].revents & POLLIN) //*6.1
             {
-                if (_pollfds[i].fd == _head_socket)
+                if (_pollfds[it].fd == _head_socket)
                    accept_client();
                 else
-                    read_msg(_pollfds[i].fd);
+                {
+                    int read_bytes = read_msg(_pollfds[it].fd); //DISCONNECT_CLIENT IN QUIT COMMAND
+                    if (read_bytes <= 0)
+                    {
+                        std::cerr << (read_bytes == 0 ? "Client disconnected on socket fd: " : "Connection problem on fd: ") << _pollfds[it].fd <<std::endl;
+                        // it = disconnect_client(_pollfds[it].fd);
+                        disconnect_client2(_pollfds[it].fd);
+                    }
+                }
             }
-            if (_pollfds[i].revents & POLLOUT)
-               send_msg(_pollfds[i].fd);
+            else if (_pollfds[it].revents & POLLOUT)
+               send_msg(_pollfds[it].fd);
         }
     }
 }
@@ -114,20 +120,38 @@ void    Server::accept_client()
     send_color(client_sock, PR_IN_MSG, I_WHITE);
 }
 
-void    Server::disconnect_client(int fd)
+std::vector<pollfd>::iterator   Server::disconnect_client(int fd)
 {
-    // send_color(fd, "Disconnect", RED);
-    send(fd, "Disconnect", 11, MSG_NOSIGNAL);
-    _clients.erase(fd); //map
+    std::map<int, Client*>::iterator to_disconnect = _clients.find(fd);
+    delete to_disconnect->second;
+    _clients.erase(to_disconnect); //map
+    close(fd);
+    
     for (std::vector<pollfd>::iterator it = _pollfds.begin(); it != _pollfds.end(); it++)
     {
         if (it->fd == fd)
         {
-            shutdown(fd, SHUT_RDWR);
-            close(it->fd);
-            _pollfds.erase(it); //vector
+            // shutdown(fd, SHUT_RDWR);
             std::cout << "disconnected" << "; ";
-            break ;
+            return _pollfds.erase(it); //vector
+        }
+    }
+    return _pollfds.end();
+}
+void   Server::disconnect_client2(int fd)
+{
+    std::map<int, Client*>::iterator to_disconnect = _clients.find(fd);
+    delete to_disconnect->second;
+    _clients.erase(to_disconnect); //map
+    close(fd);
+
+    for (std::vector<pollfd>::iterator it = _pollfds.begin(); it != _pollfds.end(); it++)
+    {
+        if (it->fd == fd)
+        {
+            std::cout << "disconnected" << "; ";
+            _pollfds.erase(it); //vector
+            break;
         }
     }
 }
@@ -143,7 +167,7 @@ void    Server::process_in_msg(int fd, char* buf, unsigned int len)
     std::cout << MAGENTA << ss << RE << std::endl;//############
 }
 
-void    Server::read_msg(int fd)
+int    Server::read_msg(int fd)
 {
     char buf[MAX_MSG];
     std::cout << B_YELLOW << "fd: " << fd << RE << "; ";//##########
@@ -151,14 +175,7 @@ void    Server::read_msg(int fd)
     std::cout << "recived bytes: " << recv_bytes << "; ";//#########
     if (recv_bytes > 0)
         process_in_msg(fd, buf, recv_bytes);
-    else
-    {
-        if (recv_bytes == 0)
-            std::cerr << "Client disconnected on socket fd: " << fd <<std::endl;
-        else if (recv_bytes == -1)
-            std::cerr << "Connection problem" <<std::endl;
-    disconnect_client(fd);
-    }
+    return recv_bytes;
 }
 
 //*------------------helpers--------------------
