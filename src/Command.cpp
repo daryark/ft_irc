@@ -53,10 +53,6 @@ void Command::executePrivmsg(Client *client)
     if (_args[_args.size() - 2] != ":")
         return _server->send_color(client->getFd(), "412 :No text to send", RED);
     const std::string& message = client->getNickname() + ":" + _args.back() + "\r\n";
-
-
-    
-    //? need to test, but probably unreal because parsing splits by space
     
     for (unsigned int i = 0; i < (_args.size() - 2); i++)
     {
@@ -97,6 +93,8 @@ void Command::executeJoin(Client *client)
         return _server->send_color(client->getFd(), "451 JOIN :Not registered", RED);
     if(_args.empty())
         return _server->send_color(client->getFd(), "461 JOIN :Not enough parameters", RED);
+    if (_args.size() == 1 && _args[0] == "0")
+        std::cout << BG_RED << "leave all the channels request from user: " << client->getNickname() << RE << std::endl;`
 
     const std::vector<std::string> channelNames = split(_args[0], ',');
     std::vector<std::string> channelsPasswords;
