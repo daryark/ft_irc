@@ -7,37 +7,40 @@ if [ -z "$1" ]; then
   exit 1
 fi
 
-# Function to clean the email (replace random numbers/letters with 'student')
-clean_email() {
-  local email=$1
-  # Replace any part of the email before '.42wolfsburg.de' with 'student'
-  echo "$email" | sed -E 's/^([^@]+)@[^@]+\.42wolfsburg\.de$/\1@student.42wolfsburg.de/'
-}
-
 # Ensure git is installed
 if ! command -v git &> /dev/null; then
   echo "Error: Git is not installed. Please install it and try again."
   exit 1
 fi
 
-# Get the current commit author email
-CURRENT_AUTHOR_EMAIL=$(git log -1 --pretty=format:'%ae')
-echo "CURRENT AUTHOR: $CURRENT_AUTHOR_EMAIL"
+# Get your current Git committer email
+CURRENT_EMAIL=$(git config user.email)
+echo "Current committer email: $CURRENT_EMAIL"
 
-# Modify the current author email to replace the random part with 'student'
-NEW_AUTHOR_EMAIL=$(clean_email "$CURRENT_AUTHOR_EMAIL")
+# Function to clean the school email
+clean_email() {
+  local email=$1
+  # Replace any local part before .42wolfsburg.de with 'student'
+  echo "$email" | sed -E 's/^([^@]+)@[^@]+\.42wolfsburg\.de$/\1@student.42wolfsburg.de/'
+}
 
-# Add changes to staging
+# Determine new committer email
+if [[ "$CURRENT_EMAIL" == *@*.42wolfsburg.de ]]; then
+  NEW_EMAIL=$(clean_email "$CURRENT_EMAIL")
+else
+  NEW_EMAIL="$CURRENT_EMAIL"  # leave as is for gmail, etc.
+fi
+
+# Add changes
 echo "Adding changes to staging..."
 git add .
 
-# Commit with the new author email
-echo "Committing with author email: $NEW_AUTHOR_EMAIL"
-GIT_AUTHOR_EMAIL="$NEW_AUTHOR_EMAIL" git commit -m "$1"
+# Commit with the correct committer email
+echo "Committing with committer email: $NEW_EMAIL"
+GIT_COMMITTER_EMAIL="$NEW_EMAIL" git commit -m "$1"
 
 # Push changes
-echo "Pushing changes to the repository..."
+echo "Pushing changes..."
 git push
 
-# Confirmation message
-echo "Done! Changes have been pushed with author email: $NEW_AUTHOR_EMAIL"
+echo "Done! Commit pushed with committer email: $NEW_EMAIL"
