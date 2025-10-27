@@ -13,34 +13,34 @@ if ! command -v git &> /dev/null; then
   exit 1
 fi
 
-# Get your current Git committer email
-CURRENT_EMAIL=$(git config user.email)
-echo "Current committer email: $CURRENT_EMAIL"
-
-# Function to clean the school email
+# Function to clean school email
 clean_email() {
   local email=$1
-  # Replace any local part before .42wolfsburg.de with 'student'
+  # Replace numbers or machine IDs before @ with 'student', leave domain intact
   echo "$email" | sed -E 's/^([^@]+)@[^@]+\.42wolfsburg\.de$/\1@student.42wolfsburg.de/'
 }
 
-# Determine new committer email
-if [[ "$CURRENT_EMAIL" == *@*.42wolfsburg.de ]]; then
-  NEW_EMAIL=$(clean_email "$CURRENT_EMAIL")
+# Get current committer from Git config (this is where your cluster email is)
+CURRENT_COMMITTER_EMAIL=$(git config user.email)
+echo "Current committer email: $CURRENT_COMMITTER_EMAIL"
+
+# Only sanitize if it is a 42wolfsburg email
+if [[ "$CURRENT_COMMITTER_EMAIL" == *@*.42wolfsburg.de ]]; then
+  NEW_COMMITTER_EMAIL=$(clean_email "$CURRENT_COMMITTER_EMAIL")
 else
-  NEW_EMAIL="$CURRENT_EMAIL"  # leave as is for gmail, etc.
+  NEW_COMMITTER_EMAIL="$CURRENT_COMMITTER_EMAIL"
 fi
- echo "$(RED) new email: $NEW_EMAIL, old email: $CURRENT_EMAIL $(RE)"
+
 # Add changes
-echo "Adding changes to staging..."
+echo "Adding changes..."
 git add .
 
-# Commit with the correct committer email
-echo "Committing with committer email: $NEW_EMAIL"
-GIT_COMMITTER_EMAIL="$NEW_EMAIL" git commit -m "$1"
+# Commit using the dynamic committer email
+echo "Committing with committer email: $NEW_COMMITTER_EMAIL"
+GIT_COMMITTER_EMAIL="$NEW_COMMITTER_EMAIL" git commit -m "$1"
 
 # Push changes
 echo "Pushing changes..."
 git push
 
-echo "Done! Commit pushed with committer email: $NEW_EMAIL"
+echo "Done! Commit pushed with committer email: $NEW_COMMITTER_EMAIL"
