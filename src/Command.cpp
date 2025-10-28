@@ -26,7 +26,6 @@ void Command::initCommandMap()
     _commandMap["allChannel"] = &Command::executeAllChannel; 
     _commandMap["allMC"] = &Command::executeAllMembersInChannel;
     _commandMap["info"] = &Command::executeAllInfo; 
-
 }
 
 
@@ -73,123 +72,10 @@ void Command::executeAllMembersInChannel(Client* client)
     PrintMembersInChannel(*_server, _args[0]);
 }
 
-//    Command: PRIVMSG
-//    Parameters: <msgtarget>{,<msgtarget>} :<text to be sent>
-void Command::executePrivmsg(Client *client)
-{
-    if(!client->isRegistered())
-        return _server->send_color(client->getFd(), "451 PRIVMSG :Not registered", RED);
-    if(_args.size() < 2)
-        return _server->send_color(client->getFd(), "461 PRIVMSG :Not enough parameters", RED);
-    if(_args[0] == ":")
-    {   std::cout << "args[1]: " << _args[1] << std::endl;
-         return _server->send_color(client->getFd(), "411 :No recipient given (PRIVMSG)", RED);}
-    if (_args[_args.size() - 2] != ":")
-        return _server->send_color(client->getFd(), "412 :No text to send", RED);
-    const std::string& message = ":" + client->getNickname() + "!" + client->getUsername() + "@"
-    + SERVER_NAME + " PRIVMSG ";
-    // :<nick>!<user>@<host>
-    
-    for (unsigned int i = 0; i < (_args.size() - 2); i++)
-    {
-        const std::string &target = _args[i];
-        if(target == client->getNickname())
-            continue;
-        if(target[0] == '#' || target[0] == '&') {
-            Channel* channel = _server->getChannelByName(target);
-            if(!channel)
-                return _server->send_color(client->getFd(), "403 " + target + " :No such channel", RED);
-            if(!channel->isMember(client))
-                return _server->send_color(client->getFd(), "404 " + target + " :Cannot send to channel", RED);
-    
-            channel->globalMassage(client, message + target + ":" + _args.back() + "\r\n");
-        } else {
-            Client* targetClient = _server->getClientByNickname(target);
-            if(!targetClient)
-                return _server->send_color(client->getFd(), "401 " + target + " :No such nick", RED);
-            targetClient->queueMsg(message + target + ":" + _args.back() + "\r\n");
-        }
-    }
-}
-
-//#out of class, move to the helper file?!
-std::vector<std::string> split(const std::string& input, char delimiter) {
-    std::vector<std::string> tokens;
-    std::istringstream iss(input);
-    std::string token;
-    while (std::getline(iss, token, delimiter)) {
-        tokens.push_back(token);
-    }
-    return tokens;
-}
-
-//*JOIN <channel> [, <channel>...] <key> [, <key>...] |or "0"
-void Command::executeJoin(Client *client)
-{
-    if(!client->isRegistered())
-        return _server->send_color(client->getFd(), "451 JOIN :Not registered", RED);
-    if(_args.empty())
-        return _server->send_color(client->getFd(), "461 JOIN :Not enough parameters", RED);
-    if (_args.size() == 1 && _args[0] == "0")
-        std::cout << BG_RED << "leave all the channels request from user: " << client->getNickname() << RE << std::endl;
-
-    const std::vector<std::string> channelNames = split(_args[0], ',');
-    //print channel names
-    for(size_t i = 0; i < channelNames.size(); i++) {
-        if(channelNames[i].empty() || (channelNames[i][0] != '#' && channelNames[i][0] != '&')) {
-            std::cout << "Invalid channel name: " << channelNames[i] << std::endl;
-        }
-        std::cout << "Channel to join: " << channelNames[i] << std::endl;
-    }
-    std::vector<std::string> channelsPasswords;
-    if(_args.size() == 2)
-        channelsPasswords = split(_args[1], ',');
-
-    bool hasError = false;
-
-    for (long unsigned int i = 0; i < channelNames.size(); i++) {
-        hasError = false;
-        Channel* channel = _server->getChannelByName(channelNames[i]);
-        std::string pass = (i < channelsPasswords.size()) ? channelsPasswords[i] : "";
-        if(!channel) {
-            channel = _server->createChannel(channelNames[i]);
-            channel->addOperator(client);
-            client->joinChannel(channelNames[i]);
-            channel->addClient(client);
-        } else {
-            if(channel->isInviteOnly() && !channel->isInvitedClient(client)) {
-                _server->send_color(client->getFd(), "Channel is invite only", RED);
-                hasError = true;
-            }
-            if(channel->hasPassword() && !channel->checkKey(channelsPasswords[i])) { //# changed checkPassword for checkKey only here!
-                _server->send_color(client->getFd(), "not correct password for channel", RED);
-                hasError = true;
-            }
-            if(channel->isFull()) {
-                 _server->send_color(client->getFd(), "Channel is full", RED);
-                 hasError = true;
-            }
-            if(channel->isMember(client)) {
-                _server->send_color(client->getFd(), "Client is already joined", RED); //ignor only message, but not error without stop
-                hasError = true;
-            }
-            if(!hasError){
-                channel->addClient(client);
-                client->joinChannel(channelNames[i]);
-                const std::string& message = client->getNickname() + ":" + _args.back() + "\r\n";
-                channel->globalMassage(client, ":" + client->getNickname() + " JOIN " + channelNames[i] + "\r\n");
-
-            }
-        }
-    }
-
-
     // Отправить клиенту:
     //1. подтверждение JOIN,
     //2.TOPIC (если есть),
     //3.NAMES (список участников).
-
-}
 
 // void Command::executePong(Client* client) {
 //     // Реализация метода executePong
@@ -306,93 +192,4 @@ void Command::executeMode(Client *client)
         return _server->send_color(client->getFd(), "451 JOIN :Not registered", RED);
     // Реализация метода executeMode
 
-}
-
-void Command::executeNick(Client *client)
-{
-    if(!client->isAuthenticated())
-        return _server->send_color(client->getFd(), "XXX :Register on the server first!!!!!!!!", RED);
-    if (_args.empty())
-        return _server->send_color(client->getFd(), "431 :No nickname given", RED);
-    if (!isValidNickname())
-        return _server->send_color(client->getFd(), "432 :Erroneous nickname", RED);
-
-    std::string nickname = _args[0];
-    if (nickname.empty() || nickname.find(' ') != std::string::npos) //!never goes into this if, what does it do??
-        return _server->send_color(client->getFd(), "432 " + nickname + " :Erroneous nickname", RED);
-    
-    //? check working this part with const iterator
-    const std::map<int, Client *> &clients = _server->getClients();
-    std::map<int, Client *>::const_iterator it;
-    for (it = clients.begin(); it != clients.end(); it++)
-    {
-        if (it->second->getNickname() == nickname)
-            return _server->send_color(client->getFd(), "433: Nickname is already in use.", RED);
-    }
-    client->setNickname(_args[0]);
-}
-
-bool Command::isValidNickname() const
-{
-    // reject if args array has more than 1 element
-    if (_args.size() != 1)
-        return false;
-
-    const std::string &nick = _args[0];
-    if (nick.empty() || nick.size() > 9)
-        return false;
-
-    // allowed special chars (RFC 2812)
-    const std::string special = "[]\\`_^{|}";
-
-    // first char: letter or special
-    char c = nick[0];
-    if (!isalpha(c) && special.find(c) == std::string::npos)
-        return false;
-
-    // remaining chars: letter / digit / special / '-'
-    for (size_t i = 1; i < nick.size(); ++i)
-    {
-        c = nick[i];
-        if (!isalnum(c) && special.find(c) == std::string::npos && c != '-')
-            return false;
-    }
-    return true;
-}
-
-void Command::executePass(Client *client)
-{
-    if (client->isAuthenticated())
-        return _server->send_color(client->getFd(), "462: Already registered — cannot register again.", RED);
-    if (_args.empty())
-        return _server->send_color(client->getFd(), "461: PASS Not enough parameters supplied for the command.\n", RED);
-
-    client->authenticate(_args[0] == _server->getPassword());
-    if (!client->isAuthenticated())
-        _server->send_color(client->getFd(), "464: Password mismatch — wrong password sent with PASS.", RED);
-}
-
-void Command::executeUser(Client *client)
-{
-    if (client->isRegistered())
-        return _server->send_color(client->getFd(), "462: Already registered — cannot register again.", RED);
-    else if (!client->isAuthenticated())
-        return _server->send_color(client->getFd(), "XXX :Register on the server first!!!!!!!!", RED);
-    else if (client->getNickname() == "")
-        return _server->send_color(client->getFd(), "431 :No nickname given", RED);
-
-    // std::cout << "_args.size() = " << _args.size() << std::endl;
-    if (_args.size() != 5 || _args[3] != ":")
-        return _server->send_color(client->getFd(), "461 USER :Not enough parameters", RED);
-
-    const std::string &username = _args[0];
-    const std::string &realname = _args[3];
-    client->setUserDefault(username, realname);
-
-    if(!client->getNickname().empty() && !client->isRegistered()){
-        client->setRegistered(true);
-        _server->send_color(client->getFd(), "001 " + client->getNickname() + PR_WELCOME, B_GREEN);
-    }
-    // client->setRegistered(true);//?
-    // _server->send_color(client->getFd(), PR_USAGE, B_WHITE);
 }
