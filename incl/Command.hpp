@@ -62,6 +62,8 @@ private:
 	void executeAllMembersInChannel(Client* client);
 	void executeAllInfo(Client* client);
 
+	void sendJoinInfo(Client *client, Channel *channel);
+
 public:
 	Command(Server *server, const std::string &command, const std::vector<std::string> &args);
 	~Command();
@@ -69,6 +71,7 @@ public:
 
 	void executeCommand(Client *client);
 	
+	//debug metchods
 	void PrintAllClients( Server& server);
 	void PrintAllChannels( Server& server);
 	void PrintMembersInChannel( Server& server, const std::string& channelName);

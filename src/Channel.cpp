@@ -106,7 +106,7 @@ bool Channel::isOperator(Client *client) const
 bool Channel::isFull() const{ return (int)_members.size() == _max_clients; }
 
 //need to improve send to all members
-void Channel::globalMassage(Client* sender, std::string message) const
+void Channel::globalMessage(Client* sender, std::string message) const
 {
   for (std::set<Client *>::iterator it = _members.begin(); it != _members.end(); ++it)
   {
@@ -117,3 +117,5 @@ void Channel::globalMassage(Client* sender, std::string message) const
 }
 
 int Channel::getSize() const { return _members.size(); }
+
+std::set<Client *> Channel::getClients(){return _members; }

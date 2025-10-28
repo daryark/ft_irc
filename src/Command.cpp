@@ -95,8 +95,8 @@ void Command::executeQuit(Client* client) {
 
 void Command::executeKick(Client *client)
 {
-    if(!client->isRegistered())
-        return _server->send_color(client->getFd(), "451 JOIN :Not registered", RED);
+    // if(!client->isRegistered())
+    //     return _server->send_color(client->getFd(), "451 JOIN :Not registered", RED);
     // Реализация метода executeKick
     if(_args.size() < 2)
         return _server->send_color(client->getFd(), "461 KICK :Not enough parameters", RED);
@@ -117,14 +117,14 @@ void Command::executeKick(Client *client)
         return _server->send_color(client->getFd(), "441 " + targetNick + " " + channelName + " :They aren't on that channel", RED);
     channel->removeClient(targetClient);
     targetClient->removeChannel(channelName);
-    channel->globalMassage(client, "KICK " + channelName + " " + targetNick + " :" + comment);
+    channel->globalMessage(client, "KICK " + channelName + " " + targetNick + " :" + comment);
     // Notify target client about being kicked
 }
 
 void Command::executeInvite(Client *client)
 {
-    if(!client->isRegistered())
-        return _server->send_color(client->getFd(), "451 JOIN :Not registered", RED);
+    // if(!client->isRegistered())
+    //     return _server->send_color(client->getFd(), "451 JOIN :Not registered", RED);
     // Реализация метода executeInvite
 
     if(_args.size() < 2)
@@ -158,8 +158,8 @@ void Command::executeInvite(Client *client)
 //*TOPIC <channel> [: [<topic>]]
 void Command::executeTopic(Client *client)
 {
-    if(!client->isRegistered())
-        return _server->send_color(client->getFd(), "451 JOIN :Not registered", RED);
+    // if(!client->isRegistered())
+    //     return _server->send_color(client->getFd(), "451 JOIN :Not registered", RED);
     // Реализация метода executeTopic
     if(_args.empty())
         return _server->send_color(client->getFd(), "461 TOPIC :Not enough parameters", RED);
@@ -182,7 +182,7 @@ void Command::executeTopic(Client *client)
         
         const std::string &newTopic = _args[1];
         channel->setTopic(newTopic);
-        channel->globalMassage(client, "TOPIC " + channelName + " :" + newTopic);
+        channel->globalMessage(client, "TOPIC " + channelName + " :" + newTopic);
     }
 }
 

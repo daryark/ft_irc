@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 14:40:12 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/10/28 18:33:02 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/10/28 22:05:26 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ void Command::executePrivmsg(Client *client)
             if(!channel->isMember(client))
                 return client->queueMsg("404 " + target + " :Cannot send to channel");
     
-            channel->globalMassage(client, message + target + ":" + _args.back() + "\r\n");
+            channel->globalMessage(client, message + target + ":" + _args.back() + "\r\n");
         } else {
             Client* targetClient = _server->getClientByNickname(target);
             if(!targetClient)

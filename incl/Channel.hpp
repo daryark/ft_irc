@@ -62,9 +62,11 @@ public:
 
 	bool isFull() const;//+
 
-	void globalMassage(Client* sender, std::string message) const; //+
+	void globalMessage(Client* sender, std::string message) const; //+
 
 	int getSize() const; //+
+
+	std::set<Client *> getClients();
 
 	// void addClient(int client_fd);
 
