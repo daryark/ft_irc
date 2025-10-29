@@ -44,7 +44,7 @@ void Command::executeCommand(Client *client)
         (this->*handle)(client);
     }
     else
-    _server->send_color(client->getFd(), "Command not found", RED);
+    client->queueMsg("Command not found");
 }
 
 void Command::executeAllInfo(Client* client) 
@@ -68,7 +68,7 @@ void Command::executeAllMembersInChannel(Client* client)
 {
     (void)client;
     if(_args.empty())
-    return _server->send_color(client->getFd(), "461 allMC :Not enough parameters", RED);
+    return client->queueMsg("461 allMC :Not enough parameters");
     PrintMembersInChannel(*_server, _args[0]);
 }
 
@@ -86,7 +86,7 @@ void Command::executeQuit(Client* client) {
         std::cout << BG_I_BLUE << client->getNickname() << " disconnected(SENT TO EVERYONE WITH POLLOUT)" << RE << "; ";
     else
         std::cout << BG_WHITE << "send this quit msg to everyone(SENT TO EVERYONE WITH POLLOUT) ALL THE _args ARR: " << BG_YELLOW << _args[0] << RE << std::endl;
-    _server->disconnect_client2(client->getFd());
+    _server->disconnectClient(client->getFd());
     }
 
 // void Command::executePart(Client* client) {
@@ -96,10 +96,10 @@ void Command::executeQuit(Client* client) {
 void Command::executeKick(Client *client)
 {
     // if(!client->isRegistered())
-    //     return _server->send_color(client->getFd(), "451 JOIN :Not registered", RED);
+    //     return client->queueMsg("451 JOIN :Not registered");
     // Реализация метода executeKick
     if(_args.size() < 2)
-        return _server->send_color(client->getFd(), "461 KICK :Not enough parameters", RED);
+        return client->queueMsg("461 KICK :Not enough parameters");
     
     const std::string &channelName = _args[0];
     const std::string &targetNick = _args[1];
@@ -107,14 +107,14 @@ void Command::executeKick(Client *client)
 
     Channel* channel = _server->getChannelByName(channelName);
     if(!channel)
-        return _server->send_color(client->getFd(), "403 " + channelName + " :No such channel", RED);
+        return client->queueMsg("403 " + channelName + " :No such channel");
     if(!channel->isOperator(client))
-        return _server->send_color(client->getFd(), "482 " + channelName + " :You're not channel operator", RED);
+        return client->queueMsg("482 " + channelName + " :You're not channel operator");
     Client* targetClient = _server->getClientByNickname(targetNick);
     if(!targetClient)
-        return _server->send_color(client->getFd(), "401 " + targetNick + " :No such nick", RED);
+        return client->queueMsg("401 " + targetNick + " :No such nick");
     if(!channel->isMember(targetClient))
-        return _server->send_color(client->getFd(), "441 " + targetNick + " " + channelName + " :They aren't on that channel", RED);
+        return client->queueMsg("441 " + targetNick + " " + channelName + " :They aren't on that channel");
     channel->removeClient(targetClient);
     targetClient->removeChannel(channelName);
     channel->globalMessage(client, "KICK " + channelName + " " + targetNick + " :" + comment);
@@ -124,31 +124,31 @@ void Command::executeKick(Client *client)
 void Command::executeInvite(Client *client)
 {
     // if(!client->isRegistered())
-    //     return _server->send_color(client->getFd(), "451 JOIN :Not registered", RED);
+    //     return client->queueMsg("451 JOIN :Not registered");
     // Реализация метода executeInvite
 
     if(_args.size() < 2)
-        return _server->send_color(client->getFd(), "461 INVITE :Not enough parameters", RED);
+        return client->queueMsg("461 INVITE :Not enough parameters");
     
     const std::string &targetNick = _args[0];
     const std::string &channelName = _args[1];
 
     Channel* channel = _server->getChannelByName(channelName);
     if(!channel)
-        return _server->send_color(client->getFd(), "403 " + channelName + " :No such channel", RED);
+        return client->queueMsg("403 " + channelName + " :No such channel");
     
     if(!channel->isMember(client))
-        return _server->send_color(client->getFd(), "442 " + channelName + " :You're not on that channel", RED);
+        return client->queueMsg("442 " + channelName + " :You're not on that channel");
     
     if(!channel->isOperator(client))
-        return _server->send_color(client->getFd(), "482 " + channelName + " :You're not channel operator", RED);
+        return client->queueMsg("482 " + channelName + " :You're not channel operator");
     
     Client* targetClient = _server->getClientByNickname(targetNick);
     if(!targetClient)
-        return _server->send_color(client->getFd(), "401 " + targetNick + " :No such nick", RED);
+        return client->queueMsg("401 " + targetNick + " :No such nick");
     
     if(channel->isMember(targetClient))
-        return _server->send_color(client->getFd(), "443 " + targetNick + " " + channelName + " :is already on channel", RED);
+        return client->queueMsg("443 " + targetNick + " " + channelName + " :is already on channel");
     
     channel->addClient(targetClient);
     targetClient->joinChannel(channelName);
@@ -159,25 +159,25 @@ void Command::executeInvite(Client *client)
 void Command::executeTopic(Client *client)
 {
     // if(!client->isRegistered())
-    //     return _server->send_color(client->getFd(), "451 JOIN :Not registered", RED);
+    //     return client->queueMsg("451 JOIN :Not registered");
     // Реализация метода executeTopic
     if(_args.empty())
-        return _server->send_color(client->getFd(), "461 TOPIC :Not enough parameters", RED);
+        return client->queueMsg("461 TOPIC :Not enough parameters");
     
     const std::string &channelName = _args[0];
     Channel* channel = _server->getChannelByName(channelName);
     if(!channel)
-        return _server->send_color(client->getFd(), "403 " + channelName + " :No such channel", RED);
+        return client->queueMsg("403 " + channelName + " :No such channel");
     if(!channel->isMember(client))
-        return _server->send_color(client->getFd(), "442 " + channelName + " :You're not on that channel", RED);
+        return client->queueMsg("442 " + channelName + " :You're not on that channel");
     if(_args.size() == 1) {
         if(channel->getTopic().empty())
-            return _server->send_color(client->getFd(), "331 " + channelName + " :No topic is set", YELLOW);
+            return client->queueMsg("331 " + channelName + " :No topic is set");
         else
-            return _server->send_color(client->getFd(), "332 " + channelName + " :" + channel->getTopic(), GREEN);
+            return client->queueMsg("332 " + channelName + " :" + channel->getTopic());
     } else {
         if(!channel->isOperator(client) && channel->getTopic().empty())
-            return _server->send_color(client->getFd(), "482 " + channelName + " :You're not channel operator", RED);
+            return client->queueMsg("482 " + channelName + " :You're not channel operator");
         
         
         const std::string &newTopic = _args[1];
@@ -189,7 +189,7 @@ void Command::executeTopic(Client *client)
 void Command::executeMode(Client *client)
 {
     if(!client->isRegistered())
-        return _server->send_color(client->getFd(), "451 JOIN :Not registered", RED);
+        return client->queueMsg("451 JOIN :Not registered");
     // Реализация метода executeMode
 
 }

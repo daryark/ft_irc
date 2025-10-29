@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 14:43:07 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/10/28 14:44:47 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/10/29 14:21:00 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,27 +15,27 @@
 void Command::executePass(Client *client)
 {
     if (client->isAuthenticated())
-        return _server->send_color(client->getFd(), "462: Already registered — cannot register again.", RED);
+        return client->queueMsg("462: Already registered — cannot register again.");
     if (_args.empty())
-        return _server->send_color(client->getFd(), "461: PASS Not enough parameters supplied for the command.\n", RED);
+        return client->queueMsg("461: PASS Not enough parameters supplied for the command.\n");
 
     client->authenticate(_args[0] == _server->getPassword());
     if (!client->isAuthenticated())
-        _server->send_color(client->getFd(), "464: Password mismatch — wrong password sent with PASS.", RED);
+        client->queueMsg("464: Password mismatch — wrong password sent with PASS.");
 }
 
 void Command::executeNick(Client *client)
 {
     if(!client->isAuthenticated())
-        return _server->send_color(client->getFd(), "XXX :Register on the server first!!!!!!!!", RED);
+        return client->queueMsg("XXX :Register on the server first!!!!!!!!");
     if (_args.empty())    
-        return _server->send_color(client->getFd(), "431 :No nickname given", RED);
+        return client->queueMsg("431 :No nickname given");
     if (!isValidNickname())    
-        return _server->send_color(client->getFd(), "432 :Erroneous nickname", RED);
+        return client->queueMsg("432 :Erroneous nickname");
 
     std::string nickname = _args[0];    
     if (nickname.empty() || nickname.find(' ') != std::string::npos) //!never goes into this if, what does it do??
-        return _server->send_color(client->getFd(), "432 " + nickname + " :Erroneous nickname", RED);
+        return client->queueMsg("432 " + nickname + " :Erroneous nickname");
     
     //? check working this part with const iterator    
     const std::map<int, Client *> &clients = _server->getClients();
@@ -43,7 +43,7 @@ void Command::executeNick(Client *client)
     for (it = clients.begin(); it != clients.end(); it++)
     {
         if (it->second->getNickname() == nickname)
-            return _server->send_color(client->getFd(), "433: Nickname is already in use.", RED);
+            return client->queueMsg("433: Nickname is already in use.");
     }        
     client->setNickname(_args[0]);
 }    
@@ -79,15 +79,15 @@ bool Command::isValidNickname() const
 void Command::executeUser(Client *client)
 {
     if (client->isRegistered())
-        return _server->send_color(client->getFd(), "462: Already registered — cannot register again.", RED);
+        return client->queueMsg("462: Already registered — cannot register again.");
     else if (!client->isAuthenticated())
-        return _server->send_color(client->getFd(), "XXX :Register on the server first!!!!!!!!", RED);
+        return client->queueMsg("XXX :Register on the server first!!!!!!!!");
     else if (client->getNickname() == "")
-        return _server->send_color(client->getFd(), "431 :No nickname given", RED);
+        return client->queueMsg("431 :No nickname given");
 
     // std::cout << "_args.size() = " << _args.size() << std::endl;
     if (_args.size() != 5 || _args[3] != ":")
-        return _server->send_color(client->getFd(), "461 USER :Not enough parameters", RED);
+        return client->queueMsg("461 USER :Not enough parameters");
 
     const std::string &username = _args[0];
     const std::string &realname = _args[3];
@@ -95,8 +95,8 @@ void Command::executeUser(Client *client)
 
     if(!client->getNickname().empty() && !client->isRegistered()){
         client->setRegistered(true);
-        _server->send_color(client->getFd(), "001 " + client->getNickname() + PR_WELCOME, B_GREEN);
+        client->queueMsg("001 " + client->getNickname() + PR_WELCOME);
     }
     // client->setRegistered(true);//?
-    // _server->send_color(client->getFd(), PR_USAGE, B_WHITE);
+    // client->queueMsg(PR_USAGE, B_WHITE);
 }

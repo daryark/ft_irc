@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 20:45:16 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/10/27 19:26:24 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/10/29 14:16:46 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ Server::~Server()
 {
     close(_head_socket);
     // _pollfds.clear();//????!
-    fancy_print(PR_CLOSE);
+    fancyPrint(PR_CLOSE);
 }
 
 void    Server::init()
@@ -43,19 +43,19 @@ void    Server::init()
     if (fcntl(_head_socket, F_SETFL, O_NONBLOCK) == -1) //*3
         throw std::runtime_error("fcntl");
 
-    fill_sockaddr_in(_addr, AF_INET, _port, INADDR_ANY);
+    fillSockaddrIn(_addr, AF_INET, _port, INADDR_ANY);
     if (bind(_head_socket, (sockaddr *)&_addr, sizeof(_addr)) == -1)
         throw std::runtime_error("bind");
-    fancy_print(PR_RUN);
+    fancyPrint(PR_RUN);
 
     if (listen(_head_socket, SOMAXCONN) == -1)
         throw std::runtime_error("listen");
-    fancy_print(PR_LISTEN);
+    fancyPrint(PR_LISTEN);
 }
 
 void Server::run()
 {
-    push_pollfd(_head_socket, POLLIN, 0); //#6
+    pushPollfd(_head_socket, POLLIN, 0); //#6
     signal(SIGINT, sigHandler);
     signal(SIGTSTP, sigHandler);
     while (g_runnning)
@@ -66,30 +66,30 @@ void Server::run()
         {
             // it = disconnect_client(_pollfds[it].fd);
             if (_pollfds[it].revents & (POLLHUP | POLLERR | POLLNVAL))
-                disconnect_client2(_pollfds[it].fd);
+                disconnectClient(_pollfds[it].fd);
             else if (_pollfds[it].revents & POLLIN) //*6.1
             {
                 if (_pollfds[it].fd == _head_socket)
-                   accept_client();
+                   acceptClient();
                 else
                 {
-                    int read_bytes = read_msg(_pollfds[it].fd); //DISCONNECT_CLIENT IN QUIT COMMAND
+                    int read_bytes = readMsg(_pollfds[it].fd); //DISCONNECT_CLIENT IN QUIT COMMAND
                     if (read_bytes <= 0)
                     {
                         std::cerr << (read_bytes == 0 ? "Client disconnected on socket fd: " : "Connection problem on fd: ") << _pollfds[it].fd <<std::endl;
                         // it = disconnect_client(_pollfds[it].fd);
-                        disconnect_client2(_pollfds[it].fd);
+                        disconnectClient(_pollfds[it].fd);
                     }
                 }
             }
             else if (_pollfds[it].revents & POLLOUT)
-               send_msg(_pollfds[it].fd);
+               sendMsg(_pollfds[it].fd);
         }
     }
 }
 
 
-void    Server::send_msg(int fd)
+void    Server::sendMsg(int fd)
 {
     Client* client = getClient(fd);
     std::deque<std::string>& msg_queue = client->getMsgQueue();
@@ -103,7 +103,7 @@ void    Server::send_msg(int fd)
     _pollfds[fd].events &= ~POLLOUT; // stop monitoring POLLOUT until new msg
 }
 
-void    Server::accept_client()
+void    Server::acceptClient()
 {
     sockaddr_in client;
     std::memset(&client, 0, sizeof(client));
@@ -114,31 +114,31 @@ void    Server::accept_client()
         std::cerr << RED << PR_CL_NOT_CONNECT << RE << std::endl;
         return ;
     }
-    push_pollfd(client_sock, POLLIN | POLLOUT, 0);
+    pushPollfd(client_sock, POLLIN | POLLOUT, 0);
     _clients.insert(std::pair<int, Client*>(client_sock, new Client(client_sock, client, this)));
     std::cout << B_GREEN << PR_CL_CONNECT << client_sock << RE << std::endl;
-    send_color(client_sock, PR_IN_MSG, I_WHITE);
+    getClient(client_sock)->queueMsg(PR_IN_MSG);
 }
 
-std::vector<pollfd>::iterator   Server::disconnect_client(int fd)
-{
-    std::map<int, Client*>::iterator to_disconnect = _clients.find(fd);
-    delete to_disconnect->second;
-    _clients.erase(to_disconnect); //map
-    close(fd);
+// std::vector<pollfd>::iterator   Server::disconnect_client(int fd)
+// {
+//     std::map<int, Client*>::iterator to_disconnect = _clients.find(fd);
+//     delete to_disconnect->second;
+//     _clients.erase(to_disconnect); //map
+//     close(fd);
     
-    for (std::vector<pollfd>::iterator it = _pollfds.begin(); it != _pollfds.end(); it++)
-    {
-        if (it->fd == fd)
-        {
-            // shutdown(fd, SHUT_RDWR);
-            std::cout << "disconnected" << "; ";
-            return _pollfds.erase(it); //vector
-        }
-    }
-    return _pollfds.end();
-}
-void   Server::disconnect_client2(int fd)
+//     for (std::vector<pollfd>::iterator it = _pollfds.begin(); it != _pollfds.end(); it++)
+//     {
+//         if (it->fd == fd)
+//         {
+//             // shutdown(fd, SHUT_RDWR);
+//             std::cout << "disconnected" << "; ";
+//             return _pollfds.erase(it); //vector
+//         }
+//     }
+//     return _pollfds.end();
+// }
+void   Server::disconnectClient(int fd)
 {
     std::map<int, Client*>::iterator to_disconnect = _clients.find(fd);
     delete to_disconnect->second;
@@ -156,7 +156,7 @@ void   Server::disconnect_client2(int fd)
     }
 }
 
-void    Server::process_in_msg(int fd, char* buf, unsigned int len)
+void    Server::processInMsg(int fd, char* buf, unsigned int len)
 {
     char ss[MAX_MSG];
     strncpy(ss, buf, len);
@@ -167,14 +167,14 @@ void    Server::process_in_msg(int fd, char* buf, unsigned int len)
     std::cout << MAGENTA << ss << RE << std::endl;//############
 }
 
-int    Server::read_msg(int fd)
+int    Server::readMsg(int fd)
 {
     char buf[MAX_MSG];
     std::cout << B_YELLOW << "fd: " << fd << RE << "; ";//##########
     int recv_bytes = recv(fd, buf, MAX_MSG - 1, 0);
     std::cout << "recived bytes: " << recv_bytes << "; ";//#########
     if (recv_bytes > 0)
-        process_in_msg(fd, buf, recv_bytes);
+        processInMsg(fd, buf, recv_bytes);
     return recv_bytes;
 }
 
@@ -191,15 +191,15 @@ void    Server::markPfdForPollout(int fd)
     }
 }
 
-void    Server::send_color(int fd, const std::string& msg, const std::string& color)
-{
-    std::string colored = color + msg + RE + '\n';
-    int sent = send(fd, colored.c_str(), colored.length(), 0);
-    if (sent < 0)
-        std::cerr << "ERR send_color()" << std::endl;
-    // else
-    //     std::cout << "sent bytes: " << sent << std::endl;//#############
-}
+// void    Server::send_color(int fd, const std::string& msg, const std::string& color)
+// {
+//     std::string colored = color + msg + RE + '\n';
+//     int sent = send(fd, colored.c_str(), colored.length(), 0);
+//     if (sent < 0)
+//         std::cerr << "ERR queueMsg()" << std::endl;
+//     // else
+//     //     std::cout << "sent bytes: " << sent << std::endl;//#############
+// }
 
 
 //*getters

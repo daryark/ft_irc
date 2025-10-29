@@ -4,7 +4,7 @@ RE = \033[0m
 SRC =	main.cpp Server.cpp Client.cpp Command.cpp Channel.cpp \
 		CommandJoin.cpp CommandPrivmsg.cpp CommandRegistration.cpp \
 		server_helpers.cpp debug_file.cpp
-HDR = Server.hpp Client.hpp CommandFactory.hpp Command.hpp Channel.hpp
+HDR = Server.hpp Client.hpp CommandFactory.hpp Command.hpp Channel.hpp ErrorReply.hpp
 
 SRC_F = src/
 OBJ_F = obj/

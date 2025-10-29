@@ -1,9 +1,4 @@
-//
-// Created by mperetia on 08.06.25.
-//
-
-#ifndef COMMANDFACTORY_H
-#define COMMANDFACTORY_H
+#pragma once
 
 #include <vector>
 #include <string>
@@ -44,4 +39,3 @@ public:
     }
 };
 
-#endif // COMMANDFACTORY_H

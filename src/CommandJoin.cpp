@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 14:41:01 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/10/28 22:05:26 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/10/29 14:20:33 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,9 +71,9 @@ void Command::sendJoinInfo(Client *client, Channel *channel)
 void Command::executeJoin(Client *client)
 {
     // if(!client->isRegistered())
-    //     return _server->send_color(client->getFd(), "451 JOIN :Not registered", RED);
+    //     return client->queueMsg("451 JOIN :Not registered");
     if(_args.empty())
-        return _server->send_color(client->getFd(), "461 JOIN :Not enough parameters", RED);
+        return client->queueMsg("461 JOIN :Not enough parameters");
     if (_args.size() == 1 && _args[0] == "0")
         std::cout << BG_RED << "leave all the channels request from user: " << client->getNickname() << RE << std::endl;
 
@@ -101,19 +101,19 @@ void Command::executeJoin(Client *client)
             sendJoinInfo(client, channel);
         } else {
             if(channel->isInviteOnly() && !channel->isInvitedClient(client)) {
-                _server->send_color(client->getFd(), "Channel is invite only", RED);
+                client->queueMsg("Channel is invite only");
                 continue;
             }
             if(channel->hasPassword() && !channel->checkKey(channelsPasswords[i])) { //# changed checkPassword for checkKey only here!
-                _server->send_color(client->getFd(), "not correct password for channel", RED);
+                client->queueMsg("not correct password for channel");
                 continue;
             }
             if(channel->isFull()) {
-                 _server->send_color(client->getFd(), "Channel is full", RED);
+                 client->queueMsg("Channel is full");
                  continue;
             }
             if(channel->isMember(client)) {
-                _server->send_color(client->getFd(), "Client is already joined", RED); //ignor only message, but not error without stop
+                client->queueMsg("Client is already joined"); //ignor only message, but not error without stop
                 continue;
             }
             channel->addClient(client);
