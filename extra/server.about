@@ -95,6 +95,7 @@ To tell the compiler that objects qualified with volatile may either be modified
 or cause side effects in ways unknown to the compiler; therefore, not to optimize
 away accesses to such objects nor reorder their accesses with respect to other
 operations that have visible side effects.
+//*extern - variable is just declared, it exists and can be used in some other file
 
 
 //! write about std::runtime_error and STDEXCEPT

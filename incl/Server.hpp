@@ -27,6 +27,8 @@ class Client;
 #define SERVER_NAME "ircserv"
 #define MAX_MSG	512
 
+extern volatile sig_atomic_t g_runnning;//*9
+
 class Server
 {
 private:

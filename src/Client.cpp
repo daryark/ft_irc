@@ -59,26 +59,13 @@ void Client::setRealname(const std::string &realname) { _realname = realname; }
 
 const std::string &Client::getRealname() const { return _realname; }
 
-void Client::authenticate(bool state)
-{
-	_authenticated = state;
-	// authenticated = true;
-}
+void Client::authenticate(bool state) {	_authenticated = state; }
 
-bool Client::isAuthenticated() const
-{
-	return _authenticated;
-}
+bool Client::isAuthenticated() const { return _authenticated; }
 
-void Client::setRegistered(bool state)
-{
-	_registered = state;
-}
+void Client::register(bool state) { _registered = state; }
 
-bool Client::isRegistered() const
-{
-	return _registered;
-}
+bool Client::isRegistered() const { return _registered; }
 
 void Client::setUser(const std::string& username, const std::string& hostname, const std::string& servername, const std::string& realname){
   _username = username;

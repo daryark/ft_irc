@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 14:43:07 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/10/29 14:21:00 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/10/29 19:29:57 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,43 +14,58 @@
 
 void Command::executePass(Client *client)
 {
-    if (client->isAuthenticated())
-        return client->queueMsg("462: Already registered — cannot register again.");
+    const std::string& nick = client->getNickname();
+    if (client->isAuthenticated() || client->isRegistered())
+        return client->queueMsg(ERR_ALREADYREGISTRED(nick));
     if (_args.empty())
-        return client->queueMsg("461: PASS Not enough parameters supplied for the command.\n");
+        return client->queueMsg(ERR_NEEDMOREPARAMS(nick, "PASS"));
 
     client->authenticate(_args[0] == _server->getPassword());
     if (!client->isAuthenticated())
-        client->queueMsg("464: Password mismatch — wrong password sent with PASS.");
+        return client->queueMsg(ERR_PASSWDMISMATCH(nick));
+    welcomeIfRegister(client);
 }
 
 void Command::executeNick(Client *client)
 {
-    if(!client->isAuthenticated())
-        return client->queueMsg("XXX :Register on the server first!!!!!!!!");
-    if (_args.empty())    
-        return client->queueMsg("431 :No nickname given");
-    if (!isValidNickname())    
-        return client->queueMsg("432 :Erroneous nickname");
-
-    std::string nickname = _args[0];    
-    if (nickname.empty() || nickname.find(' ') != std::string::npos) //!never goes into this if, what does it do??
-        return client->queueMsg("432 " + nickname + " :Erroneous nickname");
+    bool is_registered = client->isRegistered();
     
-    //? check working this part with const iterator    
+    if (_args.empty())    
+        return client->queueMsg(ERR_NONICKNAMEGIVEN());
+    
+    const std::string& nick = client->getNickname();
+    if (!isValidNickname())    
+        return client->queueMsg(ERR_ERRONEUSNICKNAME(nick));
+    
     const std::map<int, Client *> &clients = _server->getClients();
     std::map<int, Client *>::const_iterator it;
     for (it = clients.begin(); it != clients.end(); it++)
     {
-        if (it->second->getNickname() == nickname)
-            return client->queueMsg("433: Nickname is already in use.");
-    }        
+        if (it->second->getNickname() == nick)
+            return client->queueMsg(ERR_NICKNAMEINUSE(nick));
+    }
+
     client->setNickname(_args[0]);
+    if (!is_registered)
+        welcomeIfRegister(client);
 }    
+
+void Command::executeUser(Client *client)
+{
+    const std::string& nick = client->getNickname();
+    if (client->isRegistered())
+        return client->queueMsg(ERR_ALREADYREGISTRED(nick));
+    if (_args.size() != 5 || _args[3] != ":")
+        return client->queueMsg(ERR_NEEDMOREPARAMS(nick, "USER"));
+        
+    const std::string &username = _args[0];
+    const std::string &realname = _args[3];
+    client->setUserDefault(username, realname);
+    welcomeIfRegister(client);
+}
 
 bool Command::isValidNickname() const
 {
-    // reject if args array has more than 1 element
     if (_args.size() != 1)
         return false;
 
@@ -58,15 +73,10 @@ bool Command::isValidNickname() const
     if (nick.empty() || nick.size() > 9)
         return false;
 
-    // allowed special chars (RFC 2812)    
-    const std::string special = "[]\\`_^{|}";
-
-    // first char: letter or special
+    const std::string special = "[]\\`_^{|}"; //(RFC 2812) 
     char c = nick[0];
     if (!isalpha(c) && special.find(c) == std::string::npos)
-        return false;
-
-    // remaining chars: letter / digit / special / '-'    
+        return false;   
     for (size_t i = 1; i < nick.size(); ++i)
     {
         c = nick[i];
@@ -74,29 +84,11 @@ bool Command::isValidNickname() const
             return false;
     }        
     return true;
-}    
+}
 
-void Command::executeUser(Client *client)
+void Command::welcomeIfRegister (Client* client)
 {
+    client->register(!nick.empty() && !client->getUsername().empty() && client->isAuthenticated());
     if (client->isRegistered())
-        return client->queueMsg("462: Already registered — cannot register again.");
-    else if (!client->isAuthenticated())
-        return client->queueMsg("XXX :Register on the server first!!!!!!!!");
-    else if (client->getNickname() == "")
-        return client->queueMsg("431 :No nickname given");
-
-    // std::cout << "_args.size() = " << _args.size() << std::endl;
-    if (_args.size() != 5 || _args[3] != ":")
-        return client->queueMsg("461 USER :Not enough parameters");
-
-    const std::string &username = _args[0];
-    const std::string &realname = _args[3];
-    client->setUserDefault(username, realname);
-
-    if(!client->getNickname().empty() && !client->isRegistered()){
-        client->setRegistered(true);
-        client->queueMsg("001 " + client->getNickname() + PR_WELCOME);
-    }
-    // client->setRegistered(true);//?
-    // client->queueMsg(PR_USAGE, B_WHITE);
+        client->queueMsg(RPL_WELCOME(client->getNickname(), ,client->getUsername() client->getHostname()));
 }

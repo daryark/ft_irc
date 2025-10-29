@@ -55,7 +55,7 @@ private:
 	void executeQuit(Client *client);
 
 	bool isValidNickname()	const;
-
+	void welcomeIfRegister(Client *client);
 
 	void executeAllClients(Client* client);
 	void executeAllChannel(Client* client);

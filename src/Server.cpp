@@ -6,14 +6,14 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 20:45:16 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/10/29 14:16:46 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/10/29 17:00:34 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../incl/Server.hpp"
 #include "../incl/CommandFactory.hpp"
 
-volatile sig_atomic_t g_runnning = 1;//*9
+volatile sig_atomic_t g_runnning = 1;
 
 void sigHandler(int)
 {

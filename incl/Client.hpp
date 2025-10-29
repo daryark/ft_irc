@@ -68,7 +68,7 @@ public:
 	void authenticate(bool state); //+
 	bool isAuthenticated() const;  //+
 
-	void setRegistered(bool state); //+
+	void register(bool state); //+
 	bool isRegistered() const;  //+
 
 	void joinChannel(const std::string &channel);	//+
