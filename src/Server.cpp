@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 20:45:16 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/10/29 17:00:34 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/10/29 19:52:33 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@ void    Server::init()
 
     fillSockaddrIn(_addr, AF_INET, _port, INADDR_ANY);
     if (bind(_head_socket, (sockaddr *)&_addr, sizeof(_addr)) == -1)
-        throw std::runtime_error("bind");
+        throw std::runtime_error("bind failed. Address is already in use");
     fancyPrint(PR_RUN);
 
     if (listen(_head_socket, SOMAXCONN) == -1)

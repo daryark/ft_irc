@@ -44,7 +44,7 @@ void Command::executeCommand(Client *client)
         (this->*handle)(client);
     }
     else
-    client->queueMsg("Command not found");
+    client->queueMsg("Command not found\r\n");
 }
 
 void Command::executeAllInfo(Client* client) 

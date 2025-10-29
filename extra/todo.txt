@@ -38,5 +38,7 @@
 4. Separate and clean the code ❌ / ✅
 5. Change the CommandFactory parsing - leave ':' as a an identificator(separate in own node??)  ✅
 6. Make the template fn for find inside map (for keys = default, for values, for const ofc too)  ❌ ❌ ❌
+7. hostname (pass as this to the new created  client, but need to pass the host (like local), which var need to take ??) ❌
+8. why make is not triggered, for example when i change Command.cpp ❌
 ---------------------гайд делает сервер с одним клиентом
 чтоб работать со многими fd - pull or/and select fncs

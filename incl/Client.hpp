@@ -52,6 +52,7 @@ public:
 
 	void setNickname(const std::string &nickname); //+
 	const std::string &getNickname() const;		   //+
+	const std::string getSafeNickname() const;
 
 	void setUsername(const std::string &username); //+
 	const std::string &getUsername() const;		   //+
@@ -68,7 +69,7 @@ public:
 	void authenticate(bool state); //+
 	bool isAuthenticated() const;  //+
 
-	void register(bool state); //+
+	void setRegistered(bool state); //+
 	bool isRegistered() const;  //+
 
 	void joinChannel(const std::string &channel);	//+

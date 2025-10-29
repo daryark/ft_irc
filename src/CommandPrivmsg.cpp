@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 14:40:12 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/10/28 22:05:26 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/10/29 21:05:02 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,12 +17,12 @@
 void Command::executePrivmsg(Client *client)
 {
     if(!client->isRegistered())
-        return client->queueMsg("451 PRIVMSG :Not registered");
+        return client->queueMsg(ERR_NOTREGISTERED(client->getSafeNickname(), "PRIVMSG"));
+    const std::string& nick = client->getNickname();
     if(_args.size() < 2)
-        return client->queueMsg("461 PRIVMSG :Not enough parameters");
+        return client->queueMsg(ERR_NEEDMOREPARAMS(nick, "PRIVMSG"));
     if(_args[0] == ":")
-    {   std::cout << "args[1]: " << _args[1] << std::endl;
-         return client->queueMsg("411 :No recipient given (PRIVMSG)");}
+         return client->queueMsg("411 :No recipient given (PRIVMSG)");
     if (_args[_args.size() - 2] != ":")
         return client->queueMsg("412 :No text to send");
     const std::string& message = ":" + client->getNickname() + " PRIVMSG ";

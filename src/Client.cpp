@@ -43,6 +43,8 @@ void Client::setNickname(const std::string &nickname) { _nickname = nickname; }
 
 const std::string &Client::getNickname() const { return _nickname; }
 
+const std::string Client::getSafeNickname() const { return _nickname.empty() ? "*" : _nickname;}
+
 void Client::setUsername(const std::string &username) { _username = username; }
 
 const std::string &Client::getUsername() const { return _username; }
@@ -63,7 +65,7 @@ void Client::authenticate(bool state) {	_authenticated = state; }
 
 bool Client::isAuthenticated() const { return _authenticated; }
 
-void Client::register(bool state) { _registered = state; }
+void Client::setRegistered(bool state) { _registered = state; }
 
 bool Client::isRegistered() const { return _registered; }
 
@@ -80,8 +82,6 @@ void Client::setUserDefault(const std::string& username, const std::string& real
   _hostname = "0";
   _servername = "*";
 }
-
-
 
 void Client::joinChannel(const std::string &channel)
 {
