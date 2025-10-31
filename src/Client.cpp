@@ -9,6 +9,7 @@ Client::Client(int fd,  sockaddr_in addr, Server* server): _fd(fd), _addr(addr),
 	_realname = "";
 	_authenticated = false;
 	_registered = false;
+	_incomplete_msg = "";
 }
 
 // Client::Client(int fd, std::string nickname, std::string username, std::string hostname, std::string servername, std::string realname)
@@ -68,6 +69,10 @@ bool Client::isAuthenticated() const { return _authenticated; }
 void Client::setRegistered(bool state) { _registered = state; }
 
 bool Client::isRegistered() const { return _registered; }
+
+std::string& Client::getIncompleteMsg(){ return _incomplete_msg; }
+
+void Client::setIncompleteMsg(const std::string &incomplete_msg) { _incomplete_msg = incomplete_msg; }
 
 void Client::setUser(const std::string& username, const std::string& hostname, const std::string& servername, const std::string& realname){
   _username = username;

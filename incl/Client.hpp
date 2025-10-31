@@ -27,6 +27,7 @@ private:
 	bool _authenticated; //pass
 	bool _registered;
 
+	std::string _incomplete_msg;
 	std::deque<std::string> _msg_queue;
 	std::vector<std::string> _joined_channels;
 
@@ -71,6 +72,9 @@ public:
 
 	void setRegistered(bool state); //+
 	bool isRegistered() const;  //+
+
+	void setIncompleteMsg(const std::string &incomplete_msg); //+
+	std::string& getIncompleteMsg();		   //+
 
 	void joinChannel(const std::string &channel);	//+
 	void removeChannel(const std::string &channel); //+

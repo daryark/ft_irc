@@ -44,9 +44,9 @@ private:
 	Server &operator=(const Server &){return *this;};
 	//helpers //#REWRITE to CamelCase!!!!
 	void							acceptClient();
-	int								readMsg(int fd);
+	void								readMsg(int fd);
 	void							pushPollfd(int, short, short);
-	void							processInMsg(int fd, char* buf, unsigned int len);
+	void							processInMsg(int fd, char* buf, int len);
 	void							fillSockaddrIn(struct sockaddr_in& addr, short int in_family, unsigned short int in_port ,uint32_t s_addr);
 	void							fancyPrint(const std::string& opt);
 	

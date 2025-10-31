@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 20:45:16 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/10/29 19:52:33 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/10/31 23:40:04 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,15 +72,7 @@ void Server::run()
                 if (_pollfds[it].fd == _head_socket)
                    acceptClient();
                 else
-                {
-                    int read_bytes = readMsg(_pollfds[it].fd); //DISCONNECT_CLIENT IN QUIT COMMAND
-                    if (read_bytes <= 0)
-                    {
-                        std::cerr << (read_bytes == 0 ? "Client disconnected on socket fd: " : "Connection problem on fd: ") << _pollfds[it].fd <<std::endl;
-                        // it = disconnect_client(_pollfds[it].fd);
-                        disconnectClient(_pollfds[it].fd);
-                    }
-                }
+                    readMsg(_pollfds[it].fd);
             }
             else if (_pollfds[it].revents & POLLOUT)
                sendMsg(_pollfds[it].fd);
@@ -156,26 +148,44 @@ void   Server::disconnectClient(int fd)
     }
 }
 
-void    Server::processInMsg(int fd, char* buf, unsigned int len)
+void    Server::processInMsg(int fd, char* buf, int len)
 {
-    char ss[MAX_MSG];
-    strncpy(ss, buf, len);
-    ss[len] = '\0';
-    
-    Command command = CommandFactory::parse(this,ss);
-    command.executeCommand(getClient(fd));
-    std::cout << MAGENTA << ss << RE << std::endl;//############
+    Client* client = getClient(fd);
+    if (!client)
+        return ;
+
+    std::string& all_buf = client->getIncompleteMsg().append(buf, static_cast<size_t>(len)); //non-const Ref& of _incomplete_msg
+
+    size_t pos = 0;
+    while((pos = all_buf.find("\r\n")) != std::string::npos)
+    {
+        std::string line = all_buf.substr(0, pos);
+        all_buf.erase(0, pos + 2);
+        if (line.empty())
+            continue ;
+        
+        Command command = CommandFactory::parse(this,line);
+        command.executeCommand(client);
+        std::cout << MAGENTA << line << RE << std::endl;//############
+    }
+
 }
 
-int    Server::readMsg(int fd)
+void    Server::readMsg(int fd)
 {
     char buf[MAX_MSG];
+    buf[MAX_MSG - 1] = '\0';
     std::cout << B_YELLOW << "fd: " << fd << RE << "; ";//##########
     int recv_bytes = recv(fd, buf, MAX_MSG - 1, 0);
     std::cout << "recived bytes: " << recv_bytes << "; ";//#########
-    if (recv_bytes > 0)
-        processInMsg(fd, buf, recv_bytes);
-    return recv_bytes;
+    if (recv_bytes <= 0)
+    {
+        std::cerr << (recv_bytes == 0 
+            ? "Client disconnected on socket fd: " 
+            : "Connection problem on fd: ") << fd <<std::endl;
+            disconnectClient(fd);
+    }
+    processInMsg(fd, buf, recv_bytes);
 }
 
 //*------------------helpers--------------------

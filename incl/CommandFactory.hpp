@@ -29,8 +29,6 @@ public:
             std::string rest;
             std::getline(iss, rest);
             arg = arg.substr(1) + rest;
-            args.push_back(arg);
-            break;
           }
           args.push_back(arg);
         }
@@ -38,4 +36,3 @@ public:
         return Command(server, command, args);
     }
 };
-
