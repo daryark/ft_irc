@@ -15,7 +15,7 @@ VPATH = $(SRC_F)
 OBJ = $(addprefix $(OBJ_F), $(SRC:%.cpp=%.o))
 
 CXX = c++
-CXX_FLAGS = -std=c++11 -Wall -Wextra -Werror -O3 -g
+CXX_FLAGS = -std=c++11 -Wall -Wextra -Werror -O9 -g -MMD -MP
 NAME=ircserv
 
 all:$(NAME)
@@ -24,9 +24,9 @@ $(NAME): $(OBJ)
 	$(CXX) $(CXX_FLAGS) -o $@ $^
 	@echo "$(GREEN)OK$(RE)"
 
-$(OBJ_F)%.o: %.cpp $(HDR_F) Makefile
-	mkdir -p $(@D)
-	$(CXX) $(CXX_FLAGS) -c $< -o $@
+$(OBJ_F)%.o: %.cpp Makefile
+	@mkdir -p $(@D)
+	$(CXX) $(CXX_FLAGS) -I$(HDR_F) -c $< -o $@
 
 clean:
 	@rm -rf $(OBJ_F)
@@ -35,5 +35,7 @@ fclean:	clean
 	@rm -f $(NAME)
 
 re:	fclean all
+
+-include $(OBJ:.o=.d)
 
 .PHONY:	all clean fclean re

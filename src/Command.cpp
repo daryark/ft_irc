@@ -35,7 +35,7 @@ Command::~Command()
 
 void Command::executeCommand(Client *client)
 {
-    std::cout << "[" << _command << "]" << std::endl;
+    std::cout << "[" << _command << "]";
 
     std::map<std::string, CommandHandler>::iterator it = _commandMap.find(_command);
     if (it != _commandMap.end())
@@ -44,7 +44,7 @@ void Command::executeCommand(Client *client)
         (this->*handle)(client);
     }
     else
-    client->queueMsg("Command not found\r\n");
+        client->queueMsg("Command not found\r\n");
 }
 
 void Command::executeAllInfo(Client* client) 

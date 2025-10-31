@@ -3,7 +3,7 @@
 Channel::Channel(const std::string &name)
 {
 	_name = name;
-	_topic = "unkmown";
+	_topic = "Not set up"; //#change for topic ? topic : "Not set up" -> in the code
 	_password = "";
 	_max_clients = -1;
   _hasPassword = false;

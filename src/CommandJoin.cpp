@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 14:41:01 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/10/29 14:20:33 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/10/31 20:53:48 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,87 +24,75 @@ std::vector<std::string> split(const std::string& input, char delimiter) {
     return tokens;
 }
 
-
-void Command::sendJoinInfo(Client *client, Channel *channel)
+const std::string Command::formChannelMembersList(Channel *channel)
 {
-    // JOIN message (sent to everyone in the channel)
-    std::string joinMsg = ":" + client->getNickname() + "!" + client->getUsername() + "@" +
-                          client->getHostname() + " JOIN :" + channel->getName() + "\r\n";
-    channel->globalMessage(client, joinMsg);
-
-    // TOPIC (332 if set, 331 if not)
-    if (!channel->getTopic().empty()) {
-        std::string topicMsg = ": 332 " + client->getNickname() + " " +
-                               channel->getName() + " :" + channel->getTopic() + "\r\n";
-        client->queueMsg(topicMsg);
-    } else {
-        std::string noTopicMsg = ": 331 " + client->getNickname() + " " +
-                                 channel->getName() + " :No topic is set\r\n";
-        client->queueMsg(noTopicMsg);
-    }
-
-    // NAMES list (353)
-    std::string namesList;
+    std::string names_list;
     const std::set<Client *> &clients = channel->getClients();
 
     for (std::set<Client *>::const_iterator it = clients.begin(); it != clients.end(); ++it)
     {
         Client *member = *it;
         if (channel->isOperator(member))
-            namesList += "@" + member->getNickname() + " ";
-        else
-            namesList += member->getNickname() + " ";
+            names_list += "@";
+        names_list += member->getNickname() + " ";
     }
+    return names_list;
+}
 
-    std::string namesMsg = ": 353 " + client->getNickname() + " = " +
-                           channel->getName() + " :" + namesList + "\r\n";
-    client->queueMsg(namesMsg);
+void Command::sendJoinInfo(Client *client, Channel *channel)
+{
+    // JOIN message (sent to everyone in the channel)
+    std::string join_msg = MSG_PREFIX(client->getNickname(), client->getUsername(),
+        client->getHostname(), "JOIN") + ":" + channel->getName() + "\r\n";
+    channel->globalMessage(client, join_msg);
 
-    // End of NAMES list (366)
-    std::string endMsg = ": 366 " + client->getNickname() + " " +
-                         channel->getName() + " :End of /NAMES list.\r\n";
-    client->queueMsg(endMsg);
+    if (!channel->getTopic().empty())
+        client->queueMsg(RPL_TOPIC(channel->getName(), channel->getTopic()));
+    else
+        client->queueMsg(RPL_NOTOPIC(channel->getName()));
+
+    client->queueMsg(RPL_NAMREPLY(client->getNickname(), channel->getName(), formChannelMembersList(channel)));
+    client->queueMsg(RPL_ENDOFNAMES(client->getNickname(), channel->getName()));
 }
 
 
 //*JOIN <channel> [, <channel>...] <key> [, <key>...] |or "0"
 void Command::executeJoin(Client *client)
 {
-    // if(!client->isRegistered())
-    //     return client->queueMsg("451 JOIN :Not registered");
+    if(!client->isRegistered())
+        return client->queueMsg(ERR_NOTREGISTERED(client->getNickname(), "JOIN"));
     if(_args.empty())
-        return client->queueMsg("461 JOIN :Not enough parameters");
+        return client->queueMsg(ERR_NEEDMOREPARAMS(client->getNickname(), "JOIN"));
     if (_args.size() == 1 && _args[0] == "0")
         std::cout << BG_RED << "leave all the channels request from user: " << client->getNickname() << RE << std::endl;
 
-    const std::vector<std::string> channelNames = split(_args[0], ',');
+    const std::vector<std::string> channel_names = split(_args[0], ',');
     //print channel names
-    for(size_t i = 0; i < channelNames.size(); i++) {
-        if(channelNames[i].empty() || (channelNames[i][0] != '#' && channelNames[i][0] != '&')) {
-            std::cout << "Invalid channel name: " << channelNames[i] << std::endl;
-        }
-        std::cout << "Channel to join: " << channelNames[i] << std::endl;
+    for(size_t i = 0; i < channel_names.size(); i++) {
+        if(channel_names[i].empty() || (channel_names[i][0] != '#' && channel_names[i][0] != '&'))
+            std::cout << "Invalid channel name: " << channel_names[i] << std::endl;
+        std::cout << "Channel to join: " << channel_names[i] << std::endl;
     }
-    std::vector<std::string> channelsPasswords;
+    std::vector<std::string> channels_passwords;
     if(_args.size() == 2)
-        channelsPasswords = split(_args[1], ',');
+        channels_passwords = split(_args[1], ',');
 
 
-    for (long unsigned int i = 0; i < channelNames.size(); i++) {
-        Channel* channel = _server->getChannelByName(channelNames[i]);
-        std::string pass = (i < channelsPasswords.size()) ? channelsPasswords[i] : "";
+    for (long unsigned int i = 0; i < channel_names.size(); i++) {
+        Channel* channel = _server->getChannelByName(channel_names[i]);
+        std::string pass = (i < channels_passwords.size()) ? channels_passwords[i] : "";
         if(!channel) {
-            channel = _server->createChannel(channelNames[i]);
+            channel = _server->createChannel(channel_names[i]);
             channel->addOperator(client);
             channel->addClient(client);
-            client->joinChannel(channelNames[i]);
+            client->joinChannel(channel_names[i]);
             sendJoinInfo(client, channel);
         } else {
             if(channel->isInviteOnly() && !channel->isInvitedClient(client)) {
                 client->queueMsg("Channel is invite only");
                 continue;
             }
-            if(channel->hasPassword() && !channel->checkKey(channelsPasswords[i])) { //# changed checkPassword for checkKey only here!
+            if(channel->hasPassword() && !channel->checkKey(channels_passwords[i])) { //# changed checkPassword for checkKey only here!
                 client->queueMsg("not correct password for channel");
                 continue;
             }
@@ -117,11 +105,11 @@ void Command::executeJoin(Client *client)
                 continue;
             }
             channel->addClient(client);
-            client->joinChannel(channelNames[i]);
+            client->joinChannel(channel_names[i]);
             // const std::string& message = client->getNickname() + ":" + _args.back() + "\r\n";
             sendJoinInfo(client, channel);
 
-            //channel->globalMessage(client, ":" + client->getNickname() + " JOIN " + channelNames[i] + "\r\n");      
+            //channel->globalMessage(client, ":" + client->getNickname() + " JOIN " + channel_names[i] + "\r\n");      
         }
     }
 }

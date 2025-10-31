@@ -56,13 +56,16 @@ private:
 
 	bool isValidNickname()	const;
 	void welcomeIfRegister(Client *client);
+	void executePrivmsgToChannel(Client *client, const std::string& target);
+	void executePrivmsgToClient(Client *client, const std::string& target);
 
-	void executeAllClients(Client* client);
-	void executeAllChannel(Client* client);
-	void executeAllMembersInChannel(Client* client);
+	void executeAllClients(Client *client);
+	void executeAllChannel(Client *client);
+	void executeAllMembersInChannel(Client *client);
 	void executeAllInfo(Client* client);
 
 	void sendJoinInfo(Client *client, Channel *channel);
+	const std::string formChannelMembersList(Channel *channel);
 
 public:
 	Command(Server *server, const std::string &command, const std::vector<std::string> &args);
