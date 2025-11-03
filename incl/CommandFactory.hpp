@@ -28,11 +28,24 @@ public:
             args.push_back(":");
             std::string rest;
             std::getline(iss, rest);
-            arg = arg.substr(1) + rest;
+            std::cout << GREEN << "REST: " << rest << RE << std::endl;
+            if (!rest.empty())
+            {
+              if (arg[1])
+                args.push_back(arg.substr(1) + rest);
+              else
+                args.push_back(rest);
+            }
+            else if (arg[1])
+              args.push_back(arg.substr(1));
+            break ;
           }
-          args.push_back(arg);
+          if (!arg.empty())
+            args.push_back(arg);
         }
-        std::cout << "args.size = " << args.size()<< "; ";//########################
+        std::cout << BG_RED << args.size() << " args.size" << RE << std::endl;//########################
+        for (size_t i = 0; i < args.size(); i++)  //########################
+            std:: cout << BG_MAGENTA << args[i] << " args[" << i << "]" << RE << std::endl;//########################
         return Command(server, command, args);
     }
 };

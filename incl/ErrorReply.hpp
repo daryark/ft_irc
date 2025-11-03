@@ -10,6 +10,7 @@
 #define PR_LISTEN	"Waiting for connections..."
 #define PR_CL_NOT_CONNECT	"Can't connect the new client"
 #define PR_CL_CONNECT		"New client connected on socket fd "
+
 #define	PR_IN_MSG	"Register to join the server. Execute PASS, NICK, USER commands\r\n"
 #define PR_USAGE	"Usage:\n"\
 	"· KICK - Eject a client from the channel\n"\

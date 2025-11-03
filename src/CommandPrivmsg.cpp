@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 14:40:12 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/10/31 21:19:49 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/11/02 20:35:21 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,12 +20,15 @@ void Command::executePrivmsg(Client *client)
         return client->queueMsg(ERR_NOTREGISTERED(client->getSafeNickname(), "PRIVMSG"));
 
     const std::string& nick = client->getNickname();
+    if (_args.size() == 2)
+    {
+        if(_args[0] == ":")
+            return client->queueMsg(ERR_NORECIPIENT(nick, "PRIVMSG"));
+        else if (_args[1] == ":")
+            return client->queueMsg(ERR_NOTEXTTOSEND(nick));
+    }
     if(_args.size() < 2)
         return client->queueMsg(ERR_NEEDMOREPARAMS(nick, "PRIVMSG"));
-    if(_args[0] == ":")
-         return client->queueMsg(ERR_NORECIPIENT(nick, "PRIVMSG"));
-    if (_args[_args.size() - 2] != ":")
-        return client->queueMsg(ERR_NOTEXTTOSEND(nick));
  
     for (unsigned int i = 0; i < (_args.size() - 2); i++)
     {

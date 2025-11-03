@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 14:43:07 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/10/29 20:33:09 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/11/02 21:06:42 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ void Command::executeNick(Client *client)
 void Command::executeUser(Client *client)
 {
     const std::string& nick = client->getSafeNickname();
-    if (client->isRegistered())
+    if (client->isRegistered() || !client->getUsername().empty())
         return client->queueMsg(ERR_ALREADYREGISTRED(nick));
     if (_args.size() != 5 || _args[3] != ":")
         return client->queueMsg(ERR_NEEDMOREPARAMS(nick, "USER"));
