@@ -28,16 +28,10 @@ public:
             args.push_back(":");
             std::string rest;
             std::getline(iss, rest);
-            std::cout << GREEN << "REST: " << rest << RE << std::endl;
-            if (!rest.empty())
-            {
-              if (arg[1])
-                args.push_back(arg.substr(1) + rest);
-              else
-                args.push_back(rest);
-            }
-            else if (arg[1])
-              args.push_back(arg.substr(1));
+            while (rest[0] && rest[0] == ' ')
+              rest = rest.substr(1);
+            if (arg[1] || rest[0])
+              args.push_back(arg.substr(1) + rest);
             break ;
           }
           if (!arg.empty())

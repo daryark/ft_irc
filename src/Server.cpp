@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 20:45:16 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/11/02 20:30:26 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/11/06 15:23:10 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -156,42 +156,28 @@ void    Server::processInMsg(int fd, char* buf, int len)
     std::string& all_buf = client->getIncompleteMsg().append(buf, static_cast<size_t>(len)); //non-const Ref& of _incomplete_msg
 
     size_t pos = 0;
-    // char ss[MAX_MSG];
-    // strncpy(ss, buf, len);
-    // ss[len] = '\0';
-    
-    // Command command = CommandFactory::parse(this,ss);
-    // command.executeCommand(getClient(fd));
-    // std::cout << MAGENTA << ss << RE << std::endl;//############
     while((pos = all_buf.find("\r\n")) != std::string::npos)
     {
-        // std::cout << BG_RED << "BUF: " << all_buf << RE << std::endl;
         std::string line = all_buf.substr(0, pos);
         all_buf.erase(0, pos + 2);
         if (line.empty())
             continue ;
         
-        std::cout << MAGENTA << line << RE << std::endl;//############
+        std::cout << BG_I_YELLOW << "LINE: " << line << RE << std::endl;//############
         Command command = CommandFactory::parse(this,line);
         command.executeCommand(client);
     }
-    if (pos == std::string::npos)
-        std::cout << YELLOW << "\nYES" << RE << std::endl;
-    // if (all_buf[len - 1] == )
-    // std::cout << BG_BLUE << all_buf[len - 3] << RE << std::endl;
-    // std::cout << BG_GREEN << "pos - 1: " << pos - 1 << " ,len: " << len << RE << std::endl;
 
 }
 
 void    Server::readMsg(int fd)
 {
-    char buf[MAX_MSG + 3];
+    char buf[MAX_MSG + 2];
     std::cout << B_YELLOW << "fd: " << fd << RE << "; ";//##########
     int recv_bytes = recv(fd, buf, MAX_MSG, 0);
     std::cout << "recived bytes: " << recv_bytes << "; ";//#########
-    buf[recv_bytes + 1] = '\r';
-    buf[recv_bytes + 2] = '\n';
-    buf[recv_bytes + 3] = '\0';
+    buf[recv_bytes] = '\r';
+    buf[recv_bytes + 1] = '\n';
     if (recv_bytes <= 0)
     {
         std::cerr << (recv_bytes == 0 
@@ -199,7 +185,7 @@ void    Server::readMsg(int fd)
             : "Connection problem on fd: ") << fd <<std::endl;
             disconnectClient(fd);
     }
-    processInMsg(fd, buf, recv_bytes + 3);
+    processInMsg(fd, buf, recv_bytes + 2);
 }
 
 //*------------------helpers--------------------

@@ -29,17 +29,17 @@
 #define RPL_NOTOPIC(channel)(PREFIX("331") + channel + " :No topic is set\r\n")
 #define RPL_TOPIC(channel, topic)(PREFIX("332") + channel + " : " + topic + "\r\n")
 
-#define RPL_NAMREPLY(nick, channel, names_list)(PREFIX("353") +  nick + " = " + channel + " :" + names_list + "\r\n")
+#define RPL_NAMREPLY(nick, channel, names_list)(PREFIX("353") +  nick + " = " + channel + " : " + names_list + "\r\n")
 #define RPL_ENDOFNAMES(nick, channel)(PREFIX("366") + nick + " " + channel + " :End of /NAMES list.\r\n")
 
 #define ERR_NOSUCHNICK(nick)(PREFIX("401") + nick + " :No such nick/channel\r\n")
 #define ERR_CANNOTSENDTOCHAN(channel)(PREFIX("404") + channel + " :Cannot send to channel\r\n")
 
-#define ERR_NORECIPIENT(nick, command)(PREFIX("411") + nick + " :No recipient given ( " + command + " )\r\n")
+#define ERR_NORECIPIENT(nick, command)(PREFIX("411") + nick + " :No recipient given (" + command + ")\r\n")
 #define ERR_NOTEXTTOSEND(nick)(PREFIX("412") + nick + " :No text to send\r\n")
 
 #define ERR_NONICKNAMEGIVEN(nick)(PREFIX("431") + nick + " :No nickname given\r\n")
-#define ERR_ERRONEUSNICKNAME(nick, new_nick)(PREFIX("432") + nick + new_nick + " :Erroneous nickname\r\n")
+#define ERR_ERRONEUSNICKNAME(nick, new_nick)(PREFIX("432") + nick + " " + new_nick + " :Erroneous nickname\r\n")
 #define ERR_NICKNAMEINUSE(nick)(PREFIX("433") + nick +" :Nickname is already in use\r\n")
 
 #define ERR_NOTREGISTERED(nick, command)(PREFIX("451") + nick + " " + command + " :You have not registered\r\n")

@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 14:40:12 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/11/02 20:35:21 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/11/06 15:47:21 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,24 +20,22 @@ void Command::executePrivmsg(Client *client)
         return client->queueMsg(ERR_NOTREGISTERED(client->getSafeNickname(), "PRIVMSG"));
 
     const std::string& nick = client->getNickname();
-    if (_args.size() == 2)
-    {
-        if(_args[0] == ":")
-            return client->queueMsg(ERR_NORECIPIENT(nick, "PRIVMSG"));
-        else if (_args[1] == ":")
-            return client->queueMsg(ERR_NOTEXTTOSEND(nick));
-    }
-    if(_args.size() < 2)
+    if(_args.size() == 1)
         return client->queueMsg(ERR_NEEDMOREPARAMS(nick, "PRIVMSG"));
+    if (_args[1] == ":" && _args.size() == 2)
+        return client->queueMsg(ERR_NOTEXTTOSEND(nick));
+    if(_args[0] == ":" || _args.size() != 3)
+        return client->queueMsg(ERR_NORECIPIENT(nick, "PRIVMSG"));
  
-    for (unsigned int i = 0; i < (_args.size() - 2); i++)
-    {
-        const std::string &target = _args[i];
+    const std::vector<std::string> vec = split(_args[0], ',');
+    const std::set<std::string> targets(vec.begin(), vec.end());
 
-        if(target[0] == '#' || target[0] == '&')
-            executePrivmsgToChannel(client, target);
+    for (std::set<std::string>::iterator it = targets.begin(); it != targets.end(); it++)
+    {
+        if((*it)[0] == '#' || (*it)[0] == '&')
+            executePrivmsgToChannel(client, *it);
         else
-            executePrivmsgToClient(client, target);
+            executePrivmsgToClient(client, *it);
     }
 }
 

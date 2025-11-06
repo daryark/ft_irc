@@ -80,3 +80,4 @@ public:
 	void PrintMembersInChannel( Server& server, const std::string& channelName);
 };
 
+std::vector<std::string> split(const std::string& input, char delimiter);

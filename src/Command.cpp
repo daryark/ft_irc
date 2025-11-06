@@ -7,7 +7,7 @@ Command::Command(Server *server, const std::string &command, const std::vector<s
 {
     _server = server;
     if (_commandMap.empty())
-    initCommandMap();
+        initCommandMap();
 }
 
 void Command::initCommandMap()
@@ -35,7 +35,7 @@ Command::~Command()
 
 void Command::executeCommand(Client *client)
 {
-    std::cout << "[" << _command << "]";
+    std::cout << "[" << _command << "]\n";
 
     std::map<std::string, CommandHandler>::iterator it = _commandMap.find(_command);
     if (it != _commandMap.end())
