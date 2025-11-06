@@ -18,6 +18,7 @@ void Command::initCommandMap()
     _commandMap["JOIN"] = &Command::executeJoin;
     _commandMap["PRIVMSG"] = &Command::executePrivmsg;
     _commandMap["KICK"] = &Command::executeKick;
+    _commandMap["PART"] = &Command::executePart;
     _commandMap["INVITE"] = &Command::executeInvite;
     _commandMap["TOPIC"] = &Command::executeTopic;
     _commandMap["MODE"] = &Command::executeMode;
@@ -95,30 +96,56 @@ void Command::executeQuit(Client* client) {
 
 void Command::executeKick(Client *client)
 {
-    // if(!client->isRegistered())
-    //     return client->queueMsg("451 JOIN :Not registered");
-    // Реализация метода executeKick
+    if(!client->isRegistered())
+        return client->queueMsg(ERR_NOTREGISTERED(client->getNickname(), "KICK"));
     if(_args.size() < 2)
-        return client->queueMsg("461 KICK :Not enough parameters");
+        return client->queueMsg(ERR_NEEDMOREPARAMS(client->getNickname(), "KICK"));
     
-    const std::string &channelName = _args[0];
-    const std::string &targetNick = _args[1];
+    const std::string &channel_name = _args[0];
+    const std::string &target_nick = _args[1];
     std::string comment = (_args.size() >= 3) ? _args[2] : "No reason";
 
-    Channel* channel = _server->getChannelByName(channelName);
+    Channel* channel = _server->getChannelByName(channel_name);
     if(!channel)
-        return client->queueMsg("403 " + channelName + " :No such channel");
+        return client->queueMsg(ERR_NOSUCHCHANNEL(channel_name));
     if(!channel->isOperator(client))
-        return client->queueMsg("482 " + channelName + " :You're not channel operator");
-    Client* targetClient = _server->getClientByNickname(targetNick);
+        return client->queueMsg("482 " + channel_name + " :You're not channel operator");
+    Client* targetClient = _server->getClientByNickname(target_nick);
     if(!targetClient)
-        return client->queueMsg("401 " + targetNick + " :No such nick");
+        return client->queueMsg("401 " + target_nick + " :No such nick");
     if(!channel->isMember(targetClient))
-        return client->queueMsg("441 " + targetNick + " " + channelName + " :They aren't on that channel");
+        return client->queueMsg("441 " + target_nick + " " + channel_name + " :They aren't on that channel");
     channel->removeClient(targetClient);
-    targetClient->removeChannel(channelName);
-    channel->globalMessage(client, "KICK " + channelName + " " + targetNick + " :" + comment);
+    targetClient->removeChannel(channel_name);
+    channel->globalMessage(client, "KICK " + channel_name + " " + target_nick + " :" + comment);
     // Notify target client about being kicked
+}
+
+void Command::executePart(Client *client)
+{
+    if(!client->isRegistered())
+        return client->queueMsg(ERR_NOTREGISTERED(client->getNickname(), "PART"));
+    if(_args.size() < 1)
+        return client->queueMsg(ERR_NEEDMOREPARAMS(client->getNickname(), "PART"));
+    //no channel error check
+    //not a channel member check
+    // const std::set<std::string> targets = splitSet(_args[0], ',');
+
+    // for (std::set<std::string>::iterator it = targets.begin(); it != targets.end(); it++)
+    // {
+    //     if((*it)[0] == '#' || (*it)[0] == '&')  //!add isValidChannelName
+    //     {
+    //         if(*it == client->_joined_channels)
+    //             return ;
+    //         if(!targetClient)
+    //             return client->queueMsg(ERR_NOSUCHNICK(target));
+    //         targetClient->queueMsg(
+    //             MSG(client->getNickname(), client->getUsername(), client->getHostname(), "PRIVMSG", target, _args.back()));
+    //     }
+    //     else
+    //         client->queueMsg("Not a valid channel name: " + channels[i]);
+    // }
+    //to all channel members msg: _args[1] ? _args[1] : "Default leaving msg"
 }
 
 void Command::executeInvite(Client *client)

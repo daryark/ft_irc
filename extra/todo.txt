@@ -27,8 +27,8 @@
 2. stop/close the server (look in docs, how exactly to do) ✅
 3. close the client connection (look in docs)✅
 4. close all the clients, if server closed and send and error ❌
-5. HexChat syntax and specifics? ❌
-    5.1. HexChat problem with registration visibility ❌
+5. HexChat syntax and specifics? ✅
+    5.1. HexChat problem with registration visibility ✅
 
 //->Problems to fix and overall tasks:
 1. Server closes after 3 connected clients ✅
@@ -40,5 +40,6 @@
 6. Make the template fn for find inside map (for keys = default, for values, for const ofc too)  ❌ ❌ ❌
 7. hostname (pass as this to the new created  client, but need to pass the host (like local), which var need to take ??) ❌
 8. why make is not triggered, for example when i change Command.cpp ❌
+9. channel (validity fn).
 ---------------------гайд делает сервер с одним клиентом
 чтоб работать со многими fd - pull or/and select fncs

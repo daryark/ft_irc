@@ -24,7 +24,7 @@
 	"· 	l: Set/remove the user limit to channel\n"
 	
 #define MSG_PREFIX(nick, user, ip, command)(std::string(":") + nick + "!" + user + "@" + ip + " " + command + " ")
-#define MSG(nick, user, ip, command, target, msg)(MSG_PREFIX(nick, user, ip, command) + target + ":" + msg + "\r\n")
+#define MSG(nick, user, ip, command, target, msg)(MSG_PREFIX(nick, user, ip, command) + target + " : " + msg + "\r\n")
 
 #define RPL_NOTOPIC(channel)(PREFIX("331") + channel + " :No topic is set\r\n")
 #define RPL_TOPIC(channel, topic)(PREFIX("332") + channel + " : " + topic + "\r\n")
@@ -32,7 +32,8 @@
 #define RPL_NAMREPLY(nick, channel, names_list)(PREFIX("353") +  nick + " = " + channel + " : " + names_list + "\r\n")
 #define RPL_ENDOFNAMES(nick, channel)(PREFIX("366") + nick + " " + channel + " :End of /NAMES list.\r\n")
 
-#define ERR_NOSUCHNICK(nick)(PREFIX("401") + nick + " :No such nick/channel\r\n")
+#define ERR_NOSUCHNICK(nick)(PREFIX("401") + nick + " :No such nick\r\n")
+#define ERR_NOSUCHCHANNEL(channel)(PREFIX("403") + channel + " :No such channel\r\n")
 #define ERR_CANNOTSENDTOCHAN(channel)(PREFIX("404") + channel + " :Cannot send to channel\r\n")
 
 #define ERR_NORECIPIENT(nick, command)(PREFIX("411") + nick + " :No recipient given (" + command + ")\r\n")
@@ -42,7 +43,16 @@
 #define ERR_ERRONEUSNICKNAME(nick, new_nick)(PREFIX("432") + nick + " " + new_nick + " :Erroneous nickname\r\n")
 #define ERR_NICKNAMEINUSE(nick)(PREFIX("433") + nick +" :Nickname is already in use\r\n")
 
+#define ERR_NOTONCHANNEL(channel)(PREFIX("442") + channel + " :You're not on that channel\r\n")
+#define ERR_USERONCHANNEL(nick, channel)(PREFIX("443") + nick + " " + channel + " :is already on channel\r\n")
+
 #define ERR_NOTREGISTERED(nick, command)(PREFIX("451") + nick + " " + command + " :You have not registered\r\n")
 #define ERR_NEEDMOREPARAMS(nick, command)(PREFIX("461") + nick + " " + command + " :Not enough parameters\r\n")
 #define ERR_ALREADYREGISTRED(nick)(PREFIX("462") + nick + " :Unauthorized command (already registered)\r\n")
 #define ERR_PASSWDMISMATCH(nick)(PREFIX("464") + nick + " :Password incorrect\r\n")
+
+#define ERR_CHANNELISFULL(channel)(PREFIX("471") + channel + " :Cannot join channel (+l)\r\n")
+#define ERR_INVITEONLYCHAN(channel)(PREFIX("473") + channel + " :Cannot join channel (+i)\r\n")
+#define ERR_BADCHANNELKEY(channel)(PREFIX("475") + channel + " :Cannot join channel (+k)\r\n")
+
+#define ERR_BADCHANNAME(channel)(PREFIX("479") + channel + ": Bad channel name\r\n")

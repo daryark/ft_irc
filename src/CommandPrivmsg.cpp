@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 14:40:12 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/11/06 15:47:21 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/11/06 20:13:30 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,8 +27,7 @@ void Command::executePrivmsg(Client *client)
     if(_args[0] == ":" || _args.size() != 3)
         return client->queueMsg(ERR_NORECIPIENT(nick, "PRIVMSG"));
  
-    const std::vector<std::string> vec = split(_args[0], ',');
-    const std::set<std::string> targets(vec.begin(), vec.end());
+    const std::set<std::string> targets = splitSet(_args[0], ',');
 
     for (std::set<std::string>::iterator it = targets.begin(); it != targets.end(); it++)
     {
@@ -55,7 +54,7 @@ void Command::executePrivmsgToChannel(Client* client, const std::string& target)
 {
     Channel* channel = _server->getChannelByName(target);
     if(!channel)
-        return client->queueMsg(ERR_NOSUCHNICK(target));
+        return client->queueMsg(ERR_NOSUCHCHANNEL(target));
     if(!channel->isMember(client))
         return client->queueMsg(ERR_CANNOTSENDTOCHAN(target));
     channel->globalMessage(client,

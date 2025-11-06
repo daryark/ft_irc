@@ -49,6 +49,7 @@ private:
 	void executeJoin(Client *client);//+
 	void executePrivmsg(Client *client);
 	void executeKick(Client *client);
+	void executePart(Client *client);
 	void executeInvite(Client *client);
 	void executeTopic(Client *client);
 	void executeMode(Client *client);
@@ -66,6 +67,8 @@ private:
 
 	void sendJoinInfo(Client *client, Channel *channel);
 	const std::string formChannelMembersList(Channel *channel);
+	Channel* createNewChannel(Client *client, const std::string &channel_name, const std::string& pass);
+	void joinExistingChannel(Client *client, Channel *channel, const std::string& pass);
 
 public:
 	Command(Server *server, const std::string &command, const std::vector<std::string> &args);
@@ -80,4 +83,5 @@ public:
 	void PrintMembersInChannel( Server& server, const std::string& channelName);
 };
 
-std::vector<std::string> split(const std::string& input, char delimiter);
+std::vector<std::string> splitVec(const std::string& input, char delimiter);
+std::set<std::string> splitSet(const std::string& input, char delimiter);

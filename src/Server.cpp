@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 20:45:16 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/11/06 15:23:10 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/11/06 20:55:17 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -232,9 +232,9 @@ Channel* Server::getChannelByName(const std::string& name) {
     return NULL;
 }
 
-Channel* Server::createChannel(const std::string& nameChannel) {
-    Channel *channel = new Channel(nameChannel);
-    _channels[nameChannel] = channel;
+Channel* Server::createChannel(const std::string& channel_name, const std::string& channel_password) {
+    Channel *channel = new Channel(channel_name, channel_password);
+    _channels[channel_name] = channel;
     return channel;
 }
 

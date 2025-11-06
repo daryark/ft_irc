@@ -1,13 +1,13 @@
 #include "../incl/Channel.hpp"
 
-Channel::Channel(const std::string &name)
+Channel::Channel(const std::string &name, const std::string &password): _name(name), _password(password)
 {
-	_name = name;
+  std::cout << "constrution new" << std::endl;
 	_topic = "Not set up"; //#change for topic ? topic : "Not set up" -> in the code
-	_password = "";
 	_max_clients = -1;
-  _hasPassword = false;
+  _hasPassword = (password == "" ? false : true);
 	_is_invite_only = false;
+  std::cout << "constrution end" << std::endl;
 }
 
 Channel::~Channel()
@@ -26,9 +26,9 @@ const std::string &Channel::getTopic() const { return _topic; }
 
 void Channel::setPassword(const std::string &password) { _password = password; }
 
-bool Channel::checkKey(const std::string &password) const
-{
-	return (password == _password || _password.empty()) ? true : false;
+bool Channel::checkPasswordEquality(const std::string &password) const 
+{ 
+  return (password == _password || _password.empty()) ? true : false;
 }
 
 bool Channel::hasPassword() const { return _hasPassword; }

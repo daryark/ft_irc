@@ -31,7 +31,7 @@ private:
 	bool _is_invite_only;
 
 public:
-	Channel(const std::string &name);
+	Channel(const std::string &name, const std::string &password);
 	~Channel();
 
 	// metchods
@@ -42,9 +42,7 @@ public:
 	const std::string &getTopic() const;	 //+
 
 	void setPassword(const std::string &password);	  //+
-	bool checkPassword(const std::string &password) const; //+
-
-	bool checkKey(const std::string &password) const;//#not the same as checkPassword????
+	bool checkPasswordEquality(const std::string &password) const; //+
 
 	bool hasPassword() const;//+
 

@@ -78,7 +78,7 @@ private:
 
 	Channel* getChannelByName(const std::string& name);//+
 
-	Channel* createChannel(const std::string& nameChannel); //+
+	Channel* createChannel(const std::string& channel_name, const std::string& channel_password); //+
 
 	Client* getClientByNickname(const std::string& nickname); //-
 
