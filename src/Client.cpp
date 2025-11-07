@@ -93,7 +93,7 @@ void Client::joinChannel(const std::string &channel)
 	_joined_channels.push_back(channel);
 }
 
-void Client::removeChannel(const std::string &channel)
+void Client::removeFromChannel(const std::string &channel)
 {
 	/*std::vector<std::string>::iterator it = std::find(joined_channels.begin(), joined_channels.end(), channel);
 	if (it != joined_channels.end()) {

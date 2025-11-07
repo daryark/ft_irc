@@ -77,7 +77,7 @@ public:
 	std::string& getIncompleteMsg();		   //+
 
 	void joinChannel(const std::string &channel);	//+
-	void removeChannel(const std::string &channel); //+
+	void removeFromChannel(const std::string &channel); //+
 
 	void queueMsg(const std::string &message);
 	void printInfo() const; //+

@@ -34,7 +34,7 @@ public:
 	Channel(const std::string &name, const std::string &password);
 	~Channel();
 
-	// metchods
+	// methods
 	void setName(const std::string &name); //+
 	const std::string &getName() const;	   //+
 
@@ -53,10 +53,12 @@ public:
 	void addClient(Client *client);		 //+
 	void removeClient(Client *client);	 //+
 	bool isMember(Client *client) const; //+
+	const std::set<Client *>::const_iterator getMembersBegin() const;
 
 	void addOperator(Client *client);	   //+
 	void removeOperator(Client *client);   //+
 	bool isOperator(Client *client) const; //+
+	bool hasOperator() const; //+
 
 	bool isFull() const;//+
 

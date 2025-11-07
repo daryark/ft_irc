@@ -103,6 +103,10 @@ bool Channel::isOperator(Client *client) const
   //return std::find(_operators.begin(), _operators.end(), client) != _operators.end();
 }
 
+bool Channel::hasOperator() const { return !_operators.empty(); }
+
+const std::set<Client *>::const_iterator Channel::getMembersBegin() const { return _members.begin(); }
+
 bool Channel::isFull() const{ return (int)_members.size() == _max_clients; }
 
 //need to improve send to all members

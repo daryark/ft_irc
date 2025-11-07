@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 20:45:16 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/11/06 20:55:17 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/11/07 19:14:07 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ void    Server::init()
     if (_head_socket == -1)
         throw std::runtime_error("socket");
 
-    int opt = 1;                                                                     // true;
+    int opt = 1; // true;
     if (setsockopt(_head_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1) //*2
         throw std::runtime_error("setsockopt");
 
@@ -79,21 +79,6 @@ void Server::run()
     }
 }
 
-
-void    Server::sendMsg(int fd)
-{
-    Client* client = getClient(fd);
-    std::deque<std::string>& msg_queue = client->getMsgQueue();
-    while(!msg_queue.empty())
-    {
-        int n = send(fd, msg_queue.front().c_str(), msg_queue.front().size(), MSG_NOSIGNAL);
-        if (n <= 0)
-            break; // socket full, wait for next POLLOUT
-        msg_queue.pop_front();
-    }
-    _pollfds[fd].events &= ~POLLOUT; // stop monitoring POLLOUT until new msg
-}
-
 void    Server::acceptClient()
 {
     sockaddr_in client;
@@ -111,31 +96,13 @@ void    Server::acceptClient()
     getClient(client_sock)->queueMsg(PR_IN_MSG);
 }
 
-// std::vector<pollfd>::iterator   Server::disconnect_client(int fd)
-// {
-//     std::map<int, Client*>::iterator to_disconnect = _clients.find(fd);
-//     delete to_disconnect->second;
-//     _clients.erase(to_disconnect); //map
-//     close(fd);
-    
-//     for (std::vector<pollfd>::iterator it = _pollfds.begin(); it != _pollfds.end(); it++)
-//     {
-//         if (it->fd == fd)
-//         {
-//             // shutdown(fd, SHUT_RDWR);
-//             std::cout << "disconnected" << "; ";
-//             return _pollfds.erase(it); //vector
-//         }
-//     }
-//     return _pollfds.end();
-// }
 void   Server::disconnectClient(int fd)
 {
     std::map<int, Client*>::iterator to_disconnect = _clients.find(fd);
     delete to_disconnect->second;
     _clients.erase(to_disconnect); //map
     close(fd);
-
+    
     for (std::vector<pollfd>::iterator it = _pollfds.begin(); it != _pollfds.end(); it++)
     {
         if (it->fd == fd)
@@ -145,29 +112,6 @@ void   Server::disconnectClient(int fd)
             break;
         }
     }
-}
-
-void    Server::processInMsg(int fd, char* buf, int len)
-{
-    Client* client = getClient(fd);
-    if (!client)
-        return ;
-
-    std::string& all_buf = client->getIncompleteMsg().append(buf, static_cast<size_t>(len)); //non-const Ref& of _incomplete_msg
-
-    size_t pos = 0;
-    while((pos = all_buf.find("\r\n")) != std::string::npos)
-    {
-        std::string line = all_buf.substr(0, pos);
-        all_buf.erase(0, pos + 2);
-        if (line.empty())
-            continue ;
-        
-        std::cout << BG_I_YELLOW << "LINE: " << line << RE << std::endl;//############
-        Command command = CommandFactory::parse(this,line);
-        command.executeCommand(client);
-    }
-
 }
 
 void    Server::readMsg(int fd)
@@ -184,8 +128,44 @@ void    Server::readMsg(int fd)
             ? "Client disconnected on socket fd: " 
             : "Connection problem on fd: ") << fd <<std::endl;
             disconnectClient(fd);
-    }
+        }
     processInMsg(fd, buf, recv_bytes + 2);
+}
+
+void    Server::processInMsg(int fd, char* buf, int len)
+{
+    Client* client = getClient(fd);
+    if (!client)
+    return ;
+    
+    std::string& all_buf = client->getIncompleteMsg().append(buf, static_cast<size_t>(len)); //non-const Ref& of _incomplete_msg
+    
+    size_t pos = 0;
+    while((pos = all_buf.find("\r\n")) != std::string::npos)
+    {
+        std::string line = all_buf.substr(0, pos);
+        all_buf.erase(0, pos + 2);
+        if (line.empty())
+        continue ;
+        
+        std::cout << BG_I_YELLOW << "LINE: " << line << RE << std::endl;//############
+        Command command = CommandFactory::parse(this,line);
+        command.executeCommand(client);
+    }
+}
+
+void    Server::sendMsg(int fd)
+{
+    Client* client = getClient(fd);
+    std::deque<std::string>& msg_queue = client->getMsgQueue();
+    while(!msg_queue.empty())
+    {
+        int n = send(fd, msg_queue.front().c_str(), msg_queue.front().size(), MSG_NOSIGNAL);
+        if (n <= 0)
+            break; // socket full, wait for next POLLOUT
+        msg_queue.pop_front();
+    }
+    _pollfds[fd].events &= ~POLLOUT; // stop monitoring POLLOUT until new msg
 }
 
 //*------------------helpers--------------------
@@ -200,17 +180,6 @@ void    Server::markPfdForPollout(int fd)
         }
     }
 }
-
-// void    Server::send_color(int fd, const std::string& msg, const std::string& color)
-// {
-//     std::string colored = color + msg + RE + '\n';
-//     int sent = send(fd, colored.c_str(), colored.length(), 0);
-//     if (sent < 0)
-//         std::cerr << "ERR queueMsg()" << std::endl;
-//     // else
-//     //     std::cout << "sent bytes: " << sent << std::endl;//#############
-// }
-
 
 //*getters
 const std::string& Server::getPassword() const { return _password; }
@@ -232,12 +201,6 @@ Channel* Server::getChannelByName(const std::string& name) {
     return NULL;
 }
 
-Channel* Server::createChannel(const std::string& channel_name, const std::string& channel_password) {
-    Channel *channel = new Channel(channel_name, channel_password);
-    _channels[channel_name] = channel;
-    return channel;
-}
-
 Client* Server::getClientByNickname(const std::string& nickname) {
     for (std::map<int, Client*>::const_iterator it = _clients.begin(); it != _clients.end(); ++it) {
         if (it->second->getNickname() == nickname) {
@@ -246,4 +209,21 @@ Client* Server::getClientByNickname(const std::string& nickname) {
     }
     return NULL;
     // return std::find(_clients.begin(), _clients.end(), nickname);
+}
+
+Channel* Server::createChannel(const std::string& channel_name, const std::string& channel_password) {
+    Channel *channel = new Channel(channel_name, channel_password);
+    _channels[channel_name] = channel;
+    return channel;
+}
+
+void Server::deleteChannel(const std::string& channel_name)
+{
+    Channel *channel = getChannelByName(channel_name);
+    if (channel)
+    {
+        _channels.erase(channel_name);
+        delete channel;
+        std::cout << B_RED << "channel: " << channel_name << " deleted" << RE << std::endl; //##########
+    }
 }

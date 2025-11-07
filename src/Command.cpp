@@ -36,7 +36,7 @@ Command::~Command()
 
 void Command::executeCommand(Client *client)
 {
-    std::cout << "[" << _command << "]\n";
+    std::cout << "[" << _command << "]\n"; //###########
 
     std::map<std::string, CommandHandler>::iterator it = _commandMap.find(_command);
     if (it != _commandMap.end())
@@ -45,7 +45,7 @@ void Command::executeCommand(Client *client)
         (this->*handle)(client);
     }
     else
-        client->queueMsg("Command not found\r\n");
+        client->queueMsg(ERR_UNKNOWNCOMMAND(_command));
 }
 
 void Command::executeAllInfo(Client* client) 
@@ -69,14 +69,9 @@ void Command::executeAllMembersInChannel(Client* client)
 {
     (void)client;
     if(_args.empty())
-    return client->queueMsg("461 allMC :Not enough parameters");
+        return client->queueMsg("461 allMC :Not enough parameters");
     PrintMembersInChannel(*_server, _args[0]);
 }
-
-    // Отправить клиенту:
-    //1. подтверждение JOIN,
-    //2.TOPIC (если есть),
-    //3.NAMES (список участников).
 
 // void Command::executePong(Client* client) {
 //     // Реализация метода executePong
@@ -89,64 +84,6 @@ void Command::executeQuit(Client* client) {
         std::cout << BG_WHITE << "send this quit msg to everyone(SENT TO EVERYONE WITH POLLOUT) ALL THE _args ARR: " << BG_YELLOW << _args[0] << RE << std::endl;
     _server->disconnectClient(client->getFd());
     }
-
-// void Command::executePart(Client* client) {
-//     // Реализация метода executePart
-// }
-
-void Command::executeKick(Client *client)
-{
-    if(!client->isRegistered())
-        return client->queueMsg(ERR_NOTREGISTERED(client->getNickname(), "KICK"));
-    if(_args.size() < 2)
-        return client->queueMsg(ERR_NEEDMOREPARAMS(client->getNickname(), "KICK"));
-    
-    const std::string &channel_name = _args[0];
-    const std::string &target_nick = _args[1];
-    std::string comment = (_args.size() >= 3) ? _args[2] : "No reason";
-
-    Channel* channel = _server->getChannelByName(channel_name);
-    if(!channel)
-        return client->queueMsg(ERR_NOSUCHCHANNEL(channel_name));
-    if(!channel->isOperator(client))
-        return client->queueMsg("482 " + channel_name + " :You're not channel operator");
-    Client* targetClient = _server->getClientByNickname(target_nick);
-    if(!targetClient)
-        return client->queueMsg("401 " + target_nick + " :No such nick");
-    if(!channel->isMember(targetClient))
-        return client->queueMsg("441 " + target_nick + " " + channel_name + " :They aren't on that channel");
-    channel->removeClient(targetClient);
-    targetClient->removeChannel(channel_name);
-    channel->globalMessage(client, "KICK " + channel_name + " " + target_nick + " :" + comment);
-    // Notify target client about being kicked
-}
-
-void Command::executePart(Client *client)
-{
-    if(!client->isRegistered())
-        return client->queueMsg(ERR_NOTREGISTERED(client->getNickname(), "PART"));
-    if(_args.size() < 1)
-        return client->queueMsg(ERR_NEEDMOREPARAMS(client->getNickname(), "PART"));
-    //no channel error check
-    //not a channel member check
-    // const std::set<std::string> targets = splitSet(_args[0], ',');
-
-    // for (std::set<std::string>::iterator it = targets.begin(); it != targets.end(); it++)
-    // {
-    //     if((*it)[0] == '#' || (*it)[0] == '&')  //!add isValidChannelName
-    //     {
-    //         if(*it == client->_joined_channels)
-    //             return ;
-    //         if(!targetClient)
-    //             return client->queueMsg(ERR_NOSUCHNICK(target));
-    //         targetClient->queueMsg(
-    //             MSG(client->getNickname(), client->getUsername(), client->getHostname(), "PRIVMSG", target, _args.back()));
-    //     }
-    //     else
-    //         client->queueMsg("Not a valid channel name: " + channels[i]);
-    // }
-    //to all channel members msg: _args[1] ? _args[1] : "Default leaving msg"
-}
 
 void Command::executeInvite(Client *client)
 {

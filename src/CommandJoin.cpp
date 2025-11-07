@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 14:41:01 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/11/06 20:54:53 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/11/07 19:06:37 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,6 +55,7 @@ void Command::sendJoinInfo(Client *client, Channel *channel)
     // JOIN message (sent to everyone in the channel)
     std::string join_msg = MSG_PREFIX(client->getNickname(), client->getUsername(),
         client->getHostname(), "JOIN") + ":" + channel->getName() + "\r\n";
+    client->queueMsg(join_msg);
     channel->globalMessage(client, join_msg);
 
     if (!channel->getTopic().empty())
@@ -90,32 +91,32 @@ void Command::executeJoin(Client *client)
         std::cout << BG_RED << "leave all the channels request from user: " << client->getNickname() << RE << std::endl;
 
     const std::vector<std::string> channel_names = splitVec(_args[0], ',');
-    //print channel names
-    for(size_t i = 0; i < channel_names.size(); i++) {
-        if(channel_names[i].empty() || (channel_names[i][0] != '#' && channel_names[i][0] != '&')) //!add isValidChannelName
-            std::cout << "Invalid channel name: " << channel_names[i] << std::endl;
-        std::cout << "Channel to join: " << channel_names[i] << std::endl;
-    }
     std::vector<std::string> channels_passwords;
     if(_args.size() == 2)
         channels_passwords = splitVec(_args[1], ',');
-
-
-    for (long unsigned int i = 0; i < channel_names.size(); i++) {
+    std::cout << "hello from JOIN 3" << std::endl;
+    size_t p = 0;
+    for (size_t i = 0; i < channel_names.size(); i++)
+    {
+        std::cout << "hello from JOIN 4" << std::endl;
         Channel* channel = _server->getChannelByName(channel_names[i]);
-        std::string pass = (i < channels_passwords.size()) ? channels_passwords[i] : "";
+        
+        std::string pass = (!channel || (channel && channel->hasPassword())) && p < channels_passwords.size()  
+            ? channels_passwords[p++] : "";
+        std::cout << "hello from JOIN 5" << std::endl;
+        std::cout << BG_GREEN << "channel: " << channel_names[i] << ", password: '" << pass << "'" << RE << std::endl; //#########
         if(!channel)
         {
             if (!isValidChannelName(channel_names[i]))
                 return client->queueMsg(ERR_BADCHANNAME(channel_names[i]));
-            channel = createNewChannel(client, channel_names[i], pass);
+            channel = joinNewChannel(client, channel_names[i], pass);
         }
         else
-            joinExistingChannel(client, channel, channels_passwords[i]);
+        joinExistingChannel(client, channel, pass);
     }
 }
 
-Channel* Command::createNewChannel(Client *client, const std::string &channel_name, const std::string& pass)
+Channel* Command::joinNewChannel(Client *client, const std::string &channel_name, const std::string& pass)
 {
     Channel* channel = _server->createChannel(channel_name, pass);
     channel->addOperator(client);

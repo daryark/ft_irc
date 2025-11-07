@@ -67,7 +67,7 @@ private:
 
 	void sendJoinInfo(Client *client, Channel *channel);
 	const std::string formChannelMembersList(Channel *channel);
-	Channel* createNewChannel(Client *client, const std::string &channel_name, const std::string& pass);
+	Channel* joinNewChannel(Client *client, const std::string &channel_name, const std::string& pass);
 	void joinExistingChannel(Client *client, Channel *channel, const std::string& pass);
 
 public:
