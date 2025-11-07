@@ -14,6 +14,8 @@ static inline const std::string joinVecIntoStr(std::vector<std::string>::const_i
 
 //!MUST be 1-to-1 channel and user amount of elems
 //!or 1 channel -> 1-to multiple clients.
+//#no valid kicking yourself
+//#join 0 - add working like PART loop
 void Command::executeKick(Client *client)
 {
     if(!client->isRegistered())

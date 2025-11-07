@@ -41,5 +41,6 @@
 7. hostname (pass as this to the new created  client, but need to pass the host (like local), which var need to take ??) ❌
 8. why make is not triggered, for example when i change Command.cpp ❌
 9. channel (validity fn).
+10. CLEAN PROPERLY on every user,channel leaving or kicking, quiting and so on. And on server close
 ---------------------гайд делает сервер с одним клиентом
 чтоб работать со многими fd - pull or/and select fncs
