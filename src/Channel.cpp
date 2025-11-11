@@ -2,12 +2,10 @@
 
 Channel::Channel(const std::string &name, const std::string &password): _name(name), _password(password)
 {
-  std::cout << "constrution new" << std::endl;
-	_topic = "Not set up"; //#change for topic ? topic : "Not set up" -> in the code
+	_topic = "Default";
 	_max_clients = -1;
   _hasPassword = (password == "" ? false : true);
 	_is_invite_only = false;
-  std::cout << "constrution end" << std::endl;
 }
 
 Channel::~Channel()

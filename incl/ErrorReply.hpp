@@ -3,14 +3,6 @@
 #include "Server.hpp"
 #include "Command.hpp"
 
-#define PREFIX(rpl_code)(std::string(":") + SERVER_NAME + " " + rpl_code + " ")
-#define RPL_WELCOME(nick, user, host)(PREFIX("001") + nick + " :Welcome to the Internet Relay Network " + nick + "!" + user + "@" + host + "\r\n")
-#define PR_RUN		"Server is running on port"
-#define PR_CLOSE	"Server closed"
-#define PR_LISTEN	"Waiting for connections..."
-#define PR_CL_NOT_CONNECT	"Can't connect the new client"
-#define PR_CL_CONNECT		"New client connected on socket fd "
-
 #define	PR_IN_MSG	"Register to join the server. Execute PASS, NICK, USER commands\r\n"
 #define PR_USAGE	"Usage:\n"\
 	"· KICK - Eject a client from the channel\n"\
@@ -22,9 +14,18 @@
 	"· 	k: Set/remove the channel key (password)\n"\
 	"· 	o: Give/take channel operator privilege\n"\
 	"· 	l: Set/remove the user limit to channel\n"
+
+#define PR_RUN		"Server is running on port"
+#define PR_CLOSE	"Server closed"
+#define PR_LISTEN	"Waiting for connections..."
+#define PR_CL_NOT_CONNECT	"Can't connect the new client"
+#define PR_CL_CONNECT		"New client connected on socket fd "
 	
 #define MSG_PREFIX(nick, user, ip, command)(std::string(":") + nick + "!" + user + "@" + ip + " " + command + " ")
 #define MSG(nick, user, ip, command, target, msg)(MSG_PREFIX(nick, user, ip, command) + target + " : " + msg + "\r\n")
+
+#define PREFIX(rpl_code)(std::string(":") + SERVER_NAME + " " + rpl_code + " ")
+#define RPL_WELCOME(nick, user, ip)(PREFIX("001") + nick + " :Welcome to the Internet Relay Network " + nick + "!" + user + "@" + ip + "\r\n")
 
 #define RPL_NOTOPIC(channel)(PREFIX("331") + channel + " :No topic is set\r\n")
 #define RPL_TOPIC(channel, topic)(PREFIX("332") + channel + " : " + topic + "\r\n")

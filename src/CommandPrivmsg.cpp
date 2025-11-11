@@ -35,7 +35,6 @@ void Command::executePrivmsgToClient(Client* client, const std::string& target)
         return client->queueMsg(ERR_NOSUCHNICK(target));
     targetClient->queueMsg(
         MSG(client->getNickname(), client->getUsername(), client->getHostname(), "PRIVMSG", target, _args.back()));
-
 }
 
 void Command::executePrivmsgToChannel(Client* client, const std::string& target)

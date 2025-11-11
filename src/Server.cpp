@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 20:45:16 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/11/07 19:14:07 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/11/11 15:29:25 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,9 @@ Server::Server(int port, std::string password): _port(port), _password(password)
 Server::~Server()
 {
     close(_head_socket);
-    // _pollfds.clear();//????!
+    // _pollfds.erase();
+    // deleteChan();
+
     fancyPrint(PR_CLOSE);
 }
 
@@ -91,7 +93,8 @@ void    Server::acceptClient()
         return ;
     }
     pushPollfd(client_sock, POLLIN | POLLOUT, 0);
-    _clients.insert(std::pair<int, Client*>(client_sock, new Client(client_sock, client, this)));
+    const std::string& ip = inet_ntoa(client.sin_addr);
+    _clients.insert(std::pair<int, Client*>(client_sock, new Client(client_sock, ip, this)));
     std::cout << B_GREEN << PR_CL_CONNECT << client_sock << RE << std::endl;
     getClient(client_sock)->queueMsg(PR_IN_MSG);
 }
@@ -227,3 +230,5 @@ void Server::deleteChannel(const std::string& channel_name)
         std::cout << B_RED << "channel: " << channel_name << " deleted" << RE << std::endl; //##########
     }
 }
+
+// void Server::delete

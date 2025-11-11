@@ -77,6 +77,7 @@ void Command::executeAllMembersInChannel(Client* client)
 //     // Реализация метода executePong
 // }
 
+//!if this member was an op in the channels, act the same way as in PART,KICK
 void Command::executeQuit(Client* client) {
     if (_args.size() == 0)
         std::cout << BG_I_BLUE << client->getNickname() << " disconnected(SENT TO EVERYONE WITH POLLOUT)" << RE << "; ";
@@ -122,31 +123,34 @@ void Command::executeInvite(Client *client)
 //*TOPIC <channel> [: [<topic>]]
 void Command::executeTopic(Client *client)
 {
-    // if(!client->isRegistered())
-    //     return client->queueMsg("451 JOIN :Not registered");
-    // Реализация метода executeTopic
+    if(!client->isRegistered())
+        return client->queueMsg(ERR_NOTREGISTERED(client->getSafeNickname(), "TOPIC"));
     if(_args.empty())
-        return client->queueMsg("461 TOPIC :Not enough parameters");
+        return client->queueMsg(ERR_NEEDMOREPARAMS(client->getNickname(), "TOPIC"));
     
     const std::string &channelName = _args[0];
     Channel* channel = _server->getChannelByName(channelName);
     if(!channel)
-        return client->queueMsg("403 " + channelName + " :No such channel");
+        return client->queueMsg(ERR_NOSUCHCHANNEL(channelName));
     if(!channel->isMember(client))
-        return client->queueMsg("442 " + channelName + " :You're not on that channel");
+        return client->queueMsg(ERR_NOTONCHANNEL(channelName));
     if(_args.size() == 1) {
         if(channel->getTopic().empty())
-            return client->queueMsg("331 " + channelName + " :No topic is set");
+            return client->queueMsg(RPL_NOTOPIC(channelName));
         else
-            return client->queueMsg("332 " + channelName + " :" + channel->getTopic());
-    } else {
-        if(!channel->isOperator(client) && channel->getTopic().empty())
-            return client->queueMsg("482 " + channelName + " :You're not channel operator");
-        
-        
-        const std::string &newTopic = _args[1];
+            return client->queueMsg(RPL_TOPIC(channelName, channel->getTopic()));
+    } else
+    {
+        if (_args[1] != ':')
+            return client->queueMsg(ERR_NEEDMOREPARAMS(client->getNickname(), "TOPIC"));
+        //!if -t (flag) - then only operator can change the topic
+        // if(!channel->isOperator(client) && channel->getTopic().empty())
+        //     return client->queueMsg(ERR_CHANOPRIVSNEEDED(channelName));
+        const std::string &newTopic = _args.size() == 2 ? "" : _args[2];
         channel->setTopic(newTopic);
-        channel->globalMessage(client, "TOPIC " + channelName + " :" + newTopic);
+        channel->globalMessage(client,
+        MSG(client->getNickname(),client->getUsername(), client->getHostname(),
+        "TOPIC", channelName, newTopic));
     }
 }
 

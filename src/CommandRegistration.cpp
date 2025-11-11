@@ -48,7 +48,7 @@ void Command::executeUser(Client *client)
         
     const std::string &username = _args[0];
     const std::string &realname = _args[3];
-    client->setUserDefault(username, realname);
+    client->setUser(username, realname);
     welcomeIfRegister(client);
 }
 

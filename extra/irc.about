@@ -29,3 +29,8 @@ TOPIC channel : new_topic - set the new topic (if privilegies are ok)
 Ex: MODE channel +li-k 10 key (set limit to 10, +invite-only(no param), -key old-pass as param)
 //*
 //*
+//->HexChat syntx differences
+//* to call PRIVMSG and open chat with the other user from main tab
+    /msg nick msg (without :)
+    when the user answers (just with msg, without any command),
+    then the chat will appear for the second client too

@@ -1,10 +1,9 @@
 #include "../incl/Client.hpp"
 
-Client::Client(int fd,  sockaddr_in addr, Server* server): _fd(fd), _addr(addr), _server(server)
+Client::Client(const int fd,  const std::string& hostname, Server* server): _fd(fd), _hostname(hostname), _server(server)
 {
 	_nickname = "";
 	_username = "";
-	_hostname = "";
 	_servername = "";
 	_realname = "";
 	_authenticated = false;
@@ -12,31 +11,13 @@ Client::Client(int fd,  sockaddr_in addr, Server* server): _fd(fd), _addr(addr),
 	_incomplete_msg = "";
 }
 
-// Client::Client(int fd, std::string nickname, std::string username, std::string hostname, std::string servername, std::string realname)
-// {
-// 	_fd = fd;
-// 	_nickname = nickname;
-// 	_username = username;
-// 	_hostname = hostname;
-// 	_servername = servername;
-// 	_realname = realname;
-// 	_authenticated = false;
-// 	_registered = false;
-// }
-
 Client::~Client()
 {
 	close(_fd);
 	//_joined_channels.clear();
 }
 
-// void Client::sendMessage(const std::string &message) const
-// {
-// 	// Command::parse(message, this).executeCommand();
-// 	// send(_fd, message.c_str(), message.size(), 0);
-// }
-
-int& Client::getFd() { return _fd; }
+const int& Client::getFd() const { return _fd; }
 
 std::deque<std::string>& Client::getMsgQueue() { return _msg_queue; };
 
@@ -50,11 +31,7 @@ void Client::setUsername(const std::string &username) { _username = username; }
 
 const std::string &Client::getUsername() const { return _username; }
 
-void Client::setHostname(const std::string &hostname) { _hostname = hostname; }
-
 const std::string &Client::getHostname() const { return _hostname; }
-
-void Client::setServername(const std::string &servername) { _servername = servername; }
 
 const std::string &Client::getServername() const { return _servername; }
 
@@ -74,18 +51,11 @@ std::string& Client::getIncompleteMsg(){ return _incomplete_msg; }
 
 void Client::setIncompleteMsg(const std::string &incomplete_msg) { _incomplete_msg = incomplete_msg; }
 
-void Client::setUser(const std::string& username, const std::string& hostname, const std::string& servername, const std::string& realname){
-  _username = username;
-  _hostname = hostname;
-  _servername = servername;
-  _realname = realname;
-}
 
-void Client::setUserDefault(const std::string& username, const std::string& realname){
+void Client::setUser(const std::string& username, const std::string& realname){
   _username = username;
   _realname = realname;
-  _hostname = "0";
-  _servername = "*";
+  _servername = SERVER_NAME;
 }
 
 void Client::joinChannel(const std::string &channel)
