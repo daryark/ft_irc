@@ -3,6 +3,7 @@
 !*.*
 !Makefile
 **/*.o
+**/*.d
 **/*.replace
 
 

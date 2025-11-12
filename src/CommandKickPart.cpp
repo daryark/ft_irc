@@ -35,29 +35,29 @@ void Command::executeKick(Client *client)
     //!most probably different check for +o condition (KICKer must be an op. - PART person - must not, but can)
     std::string comment = (_args.size() >= 3) ? _args[2] : "No reason\r\n"; //#\r\n ???
 
-    if (channels.size() == 1)
-    {
-        for (size_t i = 0; i < nicks.size(); i++)
-        {
-            //if he is
-            //removeClient();
-        }
-    }
-    Channel* channel = _server->getChannelByName(channel_name);
-    if(!channel)
-        return client->queueMsg(ERR_NOSUCHCHANNEL(channel_name));
-    if(!channel->isOperator(client))
-        return client->queueMsg(ERR_CHANOPRIVSNEEDED(channel_name));
-    Client* targetClient = _server->getClientByNickname(target_nick);
-    if(!targetClient)
-        return client->queueMsg(ERR_NOSUCHNICK(target_nick));
-    if(!channel->isMember(targetClient))
-        return client->queueMsg(ERR_USERNOTINCHANNEL(target_nick, channel_name));
-    channel->removeClient(targetClient);
-    targetClient->removeFromChannel(channel_name);
-    channel->globalMessage(client,
-    MSG(client->getNickname(), client->getUsername(), client->getHostname(),
-    "KICK", channel_name, comment));
+    // if (channels.size() == 1)
+    // {
+    //     for (size_t i = 0; i < nicks.size(); i++)
+    //     {
+    //         //if he is
+    //         //removeClient();
+    //     }
+    // }
+//     Channel* channel = _server->getChannelByName(channel_name);
+//     if(!channel)
+//         return client->queueMsg(ERR_NOSUCHCHANNEL(channel_name));
+//     if(!channel->isOperator(client))
+//         return client->queueMsg(ERR_CHANOPRIVSNEEDED(channel_name));
+//     Client* targetClient = _server->getClientByNickname(target_nick);
+//     if(!targetClient)
+//         return client->queueMsg(ERR_NOSUCHNICK(target_nick));
+//     if(!channel->isMember(targetClient))
+//         return client->queueMsg(ERR_USERNOTINCHANNEL(target_nick, channel_name));
+//     channel->removeClient(targetClient);
+//     targetClient->removeFromChannel(channel_name);
+//     channel->globalMessage(client,
+//     MSG(client->getNickname(), client->getUsername(), client->getHostname(),
+//     "KICK", channel_name, comment));
 }
 
 void Command::executePart(Client *client)
