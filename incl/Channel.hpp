@@ -28,6 +28,9 @@ private:
 	bool _hasPassword;
 
 	int _max_clients;
+	bool _hasLimit;
+
+	bool _isTopicSetByOperator;
 	bool _is_invite_only;
 
 public:
@@ -63,6 +66,12 @@ public:
 	bool isFull() const;//+
 
 	void globalMassage(const std::string &message) const; //+
+
+	bool isTopicSetByOperator() const; //+
+	void setTopicSetByOperator(bool state); //+
+
+	bool hasLimit() const; //+
+	void setMaxClients(int max_clients); //+
 
 	// void addClient(int client_fd);
 
