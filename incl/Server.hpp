@@ -1,115 +1,78 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   Server.hpp                                         :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/01/15 20:09:46 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/10/22 23:22:17 by dyarkovs         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #pragma once
 
 #include <iostream>
-#include <cstring> // memset
 #include <vector>
 #include <map>
 #include <algorithm>
-
+#include <cstring> // memset
 #include <csignal> //*9
+#include <cerrno>
+#include <cstdlib>		//exit
 #include <sys/socket.h> // socket, bind, listen, accept
 #include <netinet/in.h> // sockaddr_in
 #include <arpa/inet.h>	// htons
 #include <netdb.h>		//NII_MAXHOST, NI_MAXSERV
 #include <fcntl.h>		//fnctl - O_NONBLOCK mode
 #include <poll.h>		// pollfd
-#include <cstdlib>		//exit
 #include <unistd.h>		//close
-
-#include <cerrno>
-
 #include <stdio.h>
 
-#include "../incl/colors.hpp"
-// class CommandFactory;
-class Command;
-  class Channel;
-  class Client;
-
-#include "Channel.hpp"
-
 #include "../incl/Client.hpp"
+#include "../incl/ErrorReply.hpp"
+#include "../incl/colors.hpp"
+class Command;
+class Channel;
+class Client;
 
+#define SERVER_NAME "ircserv"
 #define MAX_MSG	512
 
-//# CREATE ERR CODES FILE
-#define PR_RUN		"Server is running on port"
-#define PR_CLOSE	"Server closed"
-#define PR_LISTEN	"Waiting for connections..."
-#define PR_CL_NOT_CONNECT	"Can't connect the new client"
-#define PR_CL_CONNECT		"New client connected on socket fd "
-#define PR_WELCOME	" :Welcome to the IRC server"
-#define	PR_IN_MSG	"Register to join the server. Execute PASS, NICK, USER commands"
-#define PR_USAGE	"Usage:\n"\
-	"· KICK - Eject a client from the channel\n"\
-	"· INVITE - Invite a client to a channel\n"\
-	"· TOPIC - Change or view the channel topic\n"\
-	"· MODE - Change the channel’s mode:\n"\
-	"· 	i: Set/remove Invite-only channel\n"\
-	"· 	t: Set/remove the restrictions of the TOPIC command to channel operators\n"\
-	"· 	k: Set/remove the channel key (password)\n"\
-	"· 	o: Give/take channel operator privilege\n"\
-	"· 	l: Set/remove the user limit to channel\n"\
+extern volatile sig_atomic_t g_runnning;//*9
 
 class Server
 {
 private:
-	int						_head_socket; // used fo bind(), listen(), accept()
-	int 					_port;
-	std::string 			_password;
-	struct sockaddr_in		_addr;
-	std::vector<pollfd> 	_pollfds;
-	std::map<int, Client*>	_clients; // int - fd_client and ptr to Client
+	int _head_socket;
+	int _port;
+	std::string _password;
+	struct sockaddr_in _addr;
+	std::vector<pollfd> _pollfds;
+	std::map<int, Client*> _clients; // int - fd_client and ptr to Client
 	std::map<std::string, Channel*> _channels; // name_channel and ptr to Channel
 
 	Server(const Server &){};
 	Server &operator=(const Server &){return *this;};
-	//helpers //#REWRITE to CamelCase!!!!
-	void					accept_client();
-	void					read_msg(int fd);
-	void					push_pollfd(int, short, short);
-	void					process_msg(int fd, char* buf, unsigned int len);
-	void					fill_sockaddr_in(struct sockaddr_in& addr, short int in_family, unsigned short int in_port ,uint32_t s_addr);
-	void					fancy_print(const std::string& opt);
+	void acceptClient();
+	void readMsg(int fd);
+	void pushPollfd(int, short, short);
+	void processInMsg(int fd, char* buf, int len);
+	void fillSockaddrIn(struct sockaddr_in& addr, short int in_family, unsigned short int in_port ,uint32_t s_addr);
+	void fancyPrint(const std::string& opt);
 	
 	public:
-		Server();
-		Server(int port, std::string password);
-		~Server();
+	Server();
+	Server(int port, std::string password);
+	~Server();
 	
 	// methods
-	void					init();
-	void					run();
-	void					disconnect_client(int fd);
+	void init();
+	void run();
+	// std::vector<pollfd>::iterator	disconnect_client(int fd);
+	void disconnectClient(int fd);
 	
-	void					send_color(int fd, const std::string& msg, const std::string& color = RE);
-
-	// void handelNewConnection();
-
-	// Channel *creatChannel(const std::string& name);
-	// Channel *creatChannel(std::string name);
-
+	void markPfdForPollout(int fd);
+	void sendMsg(int fd);
+	
 	const std::string &getPassword() const; //+
 	const std::map<int, Client*> &getClients() const; //+
 	const std::map<std::string, Channel*> &getChannel() const;//+
-
+	
 	Client*	getClient(int fd)	const;
-
+	
 	Channel* getChannelByName(const std::string& name);//+
-
-	Channel* createChannel(const std::string& nameChannel); //+
+	// Channel *creatChannel(Client* client, const std::string& channel_name, const std::string& pass);
+	Channel* createChannel(const std::string& channel_name, const std::string& channel_password); //+
+	void deleteChannel(const std::string& channel_name);
 
 	Client* getClientByNickname(const std::string& nickname); //-
 

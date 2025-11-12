@@ -35,10 +35,10 @@ private:
 	bool _is_invite_only;
 
 public:
-	Channel(const std::string &name);
+	Channel(const std::string &name, const std::string &password);
 	~Channel();
 
-	// metchods
+	// methods
 	void setName(const std::string &name); //+
 	const std::string &getName() const;	   //+
 
@@ -46,9 +46,7 @@ public:
 	const std::string &getTopic() const;	 //+
 
 	void setPassword(const std::string &password);	  //+
-	bool checkPassword(const std::string &password) const; //+
-
-	bool checkKey(const std::string &password) const;//#not the same as checkPassword????
+	bool checkPasswordEquality(const std::string &password) const; //+
 
 	bool hasPassword() const;//+
 
@@ -59,14 +57,20 @@ public:
 	void addClient(Client *client);		 //+
 	void removeClient(Client *client);	 //+
 	bool isMember(Client *client) const; //+
+	const std::set<Client *>::const_iterator getMembersBegin() const;
 
 	void addOperator(Client *client);	   //+
 	void removeOperator(Client *client);   //+
 	bool isOperator(Client *client) const; //+
+	bool hasOperator() const; //+
 
 	bool isFull() const;//+
 
-	void globalMassage(const std::string &message) const; //+
+	void globalMessage(Client* sender, std::string message) const; //+
+
+	int getSize() const; //+
+
+	std::set<Client *> getClients();
 
 	//	new methods
 	bool isTopicSetByOperator() const; //+

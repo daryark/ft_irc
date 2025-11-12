@@ -7,7 +7,7 @@ Command::Command(Server *server, const std::string &command, const std::vector<s
 {
     _server = server;
     if (_commandMap.empty())
-    initCommandMap();
+        initCommandMap();
 }
 
 void Command::initCommandMap()
@@ -18,17 +18,20 @@ void Command::initCommandMap()
     _commandMap["JOIN"] = &Command::executeJoin;
     _commandMap["PRIVMSG"] = &Command::executePrivmsg;
     _commandMap["KICK"] = &Command::executeKick;
+    _commandMap["PART"] = &Command::executePart;
     _commandMap["INVITE"] = &Command::executeInvite;
     _commandMap["TOPIC"] = &Command::executeTopic;
     _commandMap["MODE"] = &Command::executeMode;
     _commandMap["QUIT"] = &Command::executeQuit;
     _commandMap["INVITE"] = &Command::executeInvite;
 
-    // _commandMap["allClients"] = &Command::executeAllClients; 
-    // _commandMap["allChannel"] = &Command::executeAllChannel; 
-    // _commandMap["allMC"] = &Command::executeAllMembersInChannel;
-    // _commandMap["info"] = &Command::executeAllInfo; 
+    
+    _commandMap["allClients"] = &Command::executeAllClients; 
+    _commandMap["allChannel"] = &Command::executeAllChannel; 
+    _commandMap["allMC"] = &Command::executeAllMembersInChannel;
+    _commandMap["info"] = &Command::executeAllInfo; 
 }
+
 
 Command::~Command()
 {
@@ -36,6 +39,8 @@ Command::~Command()
 
 void Command::executeCommand(Client *client)
 {
+    std::cout << "[" << _command << "]\n"; //###########
+
     std::map<std::string, CommandHandler>::iterator it = _commandMap.find(_command);
     if (it != _commandMap.end())
     {
@@ -43,191 +48,75 @@ void Command::executeCommand(Client *client)
         (this->*handle)(client);
     }
     else
-    _server->send_color(client->getFd(), "Command not found", RED);
+        client->queueMsg(ERR_UNKNOWNCOMMAND(_command));
 }
 
-void Command::executePrivmsg(Client *client)
+void Command::executeAllInfo(Client* client) 
 {
-    //    Command: PRIVMSG
-    //    Parameters: <msgtarget>{,<msgtarget>} :<text to be sent>
-    if(!client->isRegistered())
-        return _server->send_color(client->getFd(), "451 JOIN :Not registered", RED);
-    // if (_args.size() < 2)
-    // {
-    //     if (_args.size() == 1)
-    //     {
-    //         if (_args[0].length() < 10)
-    //             _server->send_color(client->getFd(), "ERR_NOTEXTTOSEND");
-    //         else
-    //             _server->send_color(client->getFd(), "ERR_NORECIPIENT");
-    //     }
-    // }
-    // // for (std::vector<std::string>::iterator i = 0; i < (_args.size() - 1); i++)
-    // // {
-    // //     if (i == 0)
-    // //         _server->send_color(client->getFd(), "no target to send msg to", RED);
-    // //     else
-    // //         _server->send_color(client->getFd(), "send msg", BG_WHITE);
-    // //     break ;
-    // // }
-
-    // std::cout << BG_GREEN << _args.size() << RE << std::endl;
-    if(_args.size() < 2)
-        return _server->send_color(client->getFd(), "461 PRIVMSG :Not enough parameters", RED);
-    
-    const std::string &target = _args[0];
-    const std::string &message = _args[1];
-
-    //? need to test, but probably unreal becauce parsing splits by space
-    if(target.empty())
-        return _server->send_color(client->getFd(), "411 :No recipient given (PRIVMSG)", RED);
-    if(message.empty())
-        return _server->send_color(client->getFd(), "412 :No text to send", RED);
-    
-
-    if(target[0] == '#' || target[0] == '&') {
-        Channel* channel = _server->getChannelByName(target);
-        if(!channel)
-            return _server->send_color(client->getFd(), "403 " + target + " :No such channel", RED);
-        if(!channel->isMember(client))
-            return _server->send_color(client->getFd(), "404 " + target + " :Cannot send to channel", RED);
-
-        channel->globalMassage(target + " :" + message);
-        // for each member in channel->getMembers()
-        //     _server->send_color(member->getFd(), "PRIVMSG " + target + " :" + message, GREEN);
-    } else {
-        Client* targetClient = _server->getClientByNickname(target);
-        if(!targetClient)
-            return _server->send_color(client->getFd(), "401 " + target + " :No such nick", RED);
-        // send(targetClient->getFd(), message.c_str(), message.length(), 0);         
-        _server->send_color(targetClient->getFd(), "PRIVMSG " + target + " :" + message, GREEN);
-    }
+    client->printInfo();
 }
 
-//#out of class, move to the helper file?!
-std::vector<std::string> split(const std::string& input, char delimiter) {
-    std::vector<std::string> tokens;
-    std::istringstream iss(input);
-    std::string token;
-    while (std::getline(iss, token, delimiter)) {
-        tokens.push_back(token);
-    }
-    return tokens;
-}
-
-void Command::executeJoin(Client *client)
+void Command::executeAllClients(Client* client) 
 {
-    if(!client->isRegistered())
-        return _server->send_color(client->getFd(), "451 JOIN :Not registered", RED);
+    (void)client;
+    PrintAllClients(*_server);
+}
+
+void Command::executeAllChannel(Client* client) 
+{
+    (void)client;
+    PrintAllChannels(*_server);
+}
+
+void Command::executeAllMembersInChannel(Client* client)
+{
+    (void)client;
     if(_args.empty())
-        return _server->send_color(client->getFd(), "461 JOIN :Not enough parameters", RED);
-
-    const std::vector<std::string> channelNames = split(_args[0], ',');
-    std::vector<std::string> channelsPasswords;
-    if(_args.size() == 2)
-        channelsPasswords = split(_args[1], ',');
-
-    for (long unsigned int i = 0; i < channelNames.size(); i++) {
-        Channel* channel = _server->getChannelByName(channelNames[i]);
-        std::string pass = (i < channelsPasswords.size()) ? channelsPasswords[i] : "";
-        if(!channel) {
-            channel = _server->createChannel(pass);
-            channel->addOperator(client);
-        } else {
-            if(channel->isInviteOnly() && !channel->isInvitedClient(client)) {
-                _server->send_color(client->getFd(), "error", RED);
-            }
-            if(channel->hasPassword() && !channel->checkKey(channelsPasswords[i])) { //# changed checkPassword for checkKey only here!
-                _server->send_color(client->getFd(), "error", RED);
-            }
-            if(channel->isFull()) {
-                _server->send_color(client->getFd(), "error", RED);
-            }
-        }
-        channel->addClient(client);
-    }
-
-
-    // Отправить клиенту:
-    //1. подтверждение JOIN,
-    //2.TOPIC (если есть),
-    //3.NAMES (список участников).
-
+        return client->queueMsg("461 allMC :Not enough parameters");
+    PrintMembersInChannel(*_server, _args[0]);
 }
 
 // void Command::executePong(Client* client) {
 //     // Реализация метода executePong
 // }
 
+//!if this member was an op in the channels, act the same way as in PART,KICK
 void Command::executeQuit(Client* client) {
     if (_args.size() == 0)
         std::cout << BG_I_BLUE << client->getNickname() << " disconnected(SENT TO EVERYONE WITH POLLOUT)" << RE << "; ";
     else
         std::cout << BG_WHITE << "send this quit msg to everyone(SENT TO EVERYONE WITH POLLOUT) ALL THE _args ARR: " << BG_YELLOW << _args[0] << RE << std::endl;
-    _server->disconnect_client(client->getFd());
-    shutdown(client->getFd(), SHUT_RDWR);
+    _server->disconnectClient(client->getFd());
     }
-
-// void Command::executePart(Client* client) {
-//     // Реализация метода executePart
-// }
-
-void Command::executeKick(Client *client)
-{
-    if(!client->isRegistered())
-        return _server->send_color(client->getFd(), "451 JOIN :Not registered", RED);
-    // Реализация метода executeKick
-    if(_args.size() < 2)
-        return _server->send_color(client->getFd(), "461 KICK :Not enough parameters", RED);
-    
-    const std::string &channelName = _args[0];
-    const std::string &targetNick = _args[1];
-    std::string comment = (_args.size() >= 3) ? _args[2] : "No reason";
-
-    Channel* channel = _server->getChannelByName(channelName);
-    if(!channel)
-        return _server->send_color(client->getFd(), "403 " + channelName + " :No such channel", RED);
-    if(!channel->isOperator(client))
-        return _server->send_color(client->getFd(), "482 " + channelName + " :You're not channel operator", RED);
-    Client* targetClient = _server->getClientByNickname(targetNick);
-    if(!targetClient)
-        return _server->send_color(client->getFd(), "401 " + targetNick + " :No such nick", RED);
-    if(!channel->isMember(targetClient))
-        return _server->send_color(client->getFd(), "441 " + targetNick + " " + channelName + " :They aren't on that channel", RED);
-    channel->removeClient(targetClient);
-    targetClient->removeChannel(channelName);
-    channel->globalMassage("KICK " + channelName + " " + targetNick + " :" + comment);
-    // Notify target client about being kicked
-}
 
 void Command::executeInvite(Client *client)
 {
-    if(!client->isRegistered())
-        return _server->send_color(client->getFd(), "451 JOIN :Not registered", RED);
+    // if(!client->isRegistered())
+    //     return client->queueMsg("451 JOIN :Not registered");
     // Реализация метода executeInvite
 
     if(_args.size() < 2)
-        return _server->send_color(client->getFd(), "461 INVITE :Not enough parameters", RED);
+        return client->queueMsg("461 INVITE :Not enough parameters");
     
     const std::string &targetNick = _args[0];
     const std::string &channelName = _args[1];
 
     Channel* channel = _server->getChannelByName(channelName);
     if(!channel)
-        return _server->send_color(client->getFd(), "403 " + channelName + " :No such channel", RED);
+        return client->queueMsg("403 " + channelName + " :No such channel");
     
     if(!channel->isMember(client))
-        return _server->send_color(client->getFd(), "442 " + channelName + " :You're not on that channel", RED);
+        return client->queueMsg("442 " + channelName + " :You're not on that channel");
     
     if(!channel->isOperator(client))
-        return _server->send_color(client->getFd(), "482 " + channelName + " :You're not channel operator", RED);
+        return client->queueMsg("482 " + channelName + " :You're not channel operator");
     
     Client* targetClient = _server->getClientByNickname(targetNick);
     if(!targetClient)
-        return _server->send_color(client->getFd(), "401 " + targetNick + " :No such nick", RED);
+        return client->queueMsg("401 " + targetNick + " :No such nick");
     
     if(channel->isMember(targetClient))
-        return _server->send_color(client->getFd(), "443 " + targetNick + " " + channelName + " :is already on channel", RED);
+        return client->queueMsg("443 " + targetNick + " " + channelName + " :is already on channel");
     
     channel->addClient(targetClient);
     targetClient->joinChannel(channelName);
@@ -238,37 +127,40 @@ void Command::executeInvite(Client *client)
 void Command::executeTopic(Client *client)
 {
     if(!client->isRegistered())
-        return _server->send_color(client->getFd(), "451 JOIN :Not registered", RED);
-    // Реализация метода executeTopic
+        return client->queueMsg(ERR_NOTREGISTERED(client->getSafeNickname(), "TOPIC"));
     if(_args.empty())
-        return _server->send_color(client->getFd(), "461 TOPIC :Not enough parameters", RED);
+        return client->queueMsg(ERR_NEEDMOREPARAMS(client->getNickname(), "TOPIC"));
     
     const std::string &channelName = _args[0];
     Channel* channel = _server->getChannelByName(channelName);
     if(!channel)
-        return _server->send_color(client->getFd(), "403 " + channelName + " :No such channel", RED);
+        return client->queueMsg(ERR_NOSUCHCHANNEL(channelName));
     if(!channel->isMember(client))
-        return _server->send_color(client->getFd(), "442 " + channelName + " :You're not on that channel", RED);
+        return client->queueMsg(ERR_NOTONCHANNEL(channelName));
     if(_args.size() == 1) {
         if(channel->getTopic().empty())
-            return _server->send_color(client->getFd(), "331 " + channelName + " :No topic is set", YELLOW);
+            return client->queueMsg(RPL_NOTOPIC(channelName));
         else
-            return _server->send_color(client->getFd(), "332 " + channelName + " :" + channel->getTopic(), GREEN);
-    } else {
-        if(!channel->isOperator(client) && channel->getTopic().empty())
-            return _server->send_color(client->getFd(), "482 " + channelName + " :You're not channel operator", RED);
-        
-        
-        const std::string &newTopic = _args[1];
+            return client->queueMsg(RPL_TOPIC(channelName, channel->getTopic()));
+    } else
+    {
+        if (_args[1] != ':')
+            return client->queueMsg(ERR_NEEDMOREPARAMS(client->getNickname(), "TOPIC"));
+        //!if -t (flag) - then only operator can change the topic
+        // if(!channel->isOperator(client) && channel->getTopic().empty())
+        //     return client->queueMsg(ERR_CHANOPRIVSNEEDED(channelName));
+        const std::string &newTopic = _args.size() == 2 ? "" : _args[2];
         channel->setTopic(newTopic);
-        channel->globalMassage("TOPIC " + channelName + " :" + newTopic);
+        channel->globalMessage(client,
+        MSG(client->getNickname(),client->getUsername(), client->getHostname(),
+        "TOPIC", channelName, newTopic));
     }
 }
 
 void Command::executeMode(Client *client)
 {
     if(!client->isRegistered())
-        return _server->send_color(client->getFd(), "451 JOIN :Not registered", RED);
+        return client->queueMsg("451 JOIN :Not registered");
     // Реализация метода executeMode
 
     if(_args.empty())

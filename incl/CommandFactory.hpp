@@ -1,9 +1,4 @@
-//
-// Created by mperetia on 08.06.25.
-//
-
-#ifndef COMMANDFACTORY_H
-#define COMMANDFACTORY_H
+#pragma once
 
 #include <vector>
 #include <string>
@@ -33,15 +28,18 @@ public:
             args.push_back(":");
             std::string rest;
             std::getline(iss, rest);
-            arg = arg.substr(1) + rest;
-            args.push_back(arg);
-            break;
+            while (rest[0] && rest[0] == ' ')
+              rest = rest.substr(1);
+            if (arg[1] || rest[0])
+              args.push_back(arg.substr(1) + rest);
+            break ;
           }
-          args.push_back(arg);
+          if (!arg.empty())
+            args.push_back(arg);
         }
-        std::cout << "args.size = " << args.size()<< "; ";//########################
+        std::cout << BG_RED << args.size() << " args.size" << RE << std::endl;//########################
+        for (size_t i = 0; i < args.size(); i++)  //########################
+            std:: cout << BG_MAGENTA << args[i] << " args[" << i << "]" << RE << std::endl;//########################
         return Command(server, command, args);
     }
 };
-
-#endif // COMMANDFACTORY_H

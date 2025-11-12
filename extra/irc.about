@@ -3,15 +3,19 @@
 mode - 0(default), other modes for user don't need to be handled according to the subj.
 //*NICK <nick>
 //*PASS <pass>
-//*JOIN <channel> [, <channel>...] <key> [, <key>...] |or "0"
+//*JOIN <channel> [,<channel>...] <key> [,<key>...] |or "0"
 JOIN 0 - is a special request to leave all channels the user is currently a member of
-//*PRIVMSG <target> [, <target>...] : <msg>
-//*KICK <channel> [, <channel>...] <user> [, <user>...]
+//*PRIVMSG <target> [,<target>...] : <msg> 
+multiple targets (mix of user/channel), separated by commas (without spaces!)
+and the same msg to all valid target will be sent
+//*KICK <channel> [,<channel>...] <user> [, <user>...]
 MUST be multiple <channels> and equal amount of <users>, paired 1-to-1 (#ch us, #ch2 us2, ..) 
      or 1 <channel> and multiple <users> to kick.
         In that case kick msg MUST be sent to channel for each user separately.
         Ex: :Operator!op@server KICK usr1: msg
             :Operator!op@server KICK usr2: msg
+//*PART <channel> [,<channel>] [<msg>]
+if msg is not provided - default msg is sent to all the channels this person leaves
 //*INVITE <nick> <channel>
 //*TOPIC <channel> [: [<topic>]]
 TOPIC channel - returns the topic of the channel
@@ -25,3 +29,8 @@ TOPIC channel : new_topic - set the new topic (if privilegies are ok)
 Ex: MODE channel +li-k 10 key (set limit to 10, +invite-only(no param), -key old-pass as param)
 //*
 //*
+//->HexChat syntx differences
+//* to call PRIVMSG and open chat with the other user from main tab
+    /msg nick msg (without :)
+    when the user answers (just with msg, without any command),
+    then the chat will appear for the second client too

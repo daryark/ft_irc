@@ -6,13 +6,13 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/23 13:18:06 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/10/23 14:01:16 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/10/29 14:07:08 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../incl/Server.hpp"
 
-void    Server::push_pollfd(int fd, short event, short revent)
+void    Server::pushPollfd(int fd, short event, short revent)
 {
     pollfd new_pollfd;
     new_pollfd.fd = fd;
@@ -21,7 +21,7 @@ void    Server::push_pollfd(int fd, short event, short revent)
     _pollfds.push_back(new_pollfd);
 }
 
-void    Server::fill_sockaddr_in(struct sockaddr_in& addr, short int in_family, unsigned short int in_port, uint32_t s_addr)
+void    Server::fillSockaddrIn(struct sockaddr_in& addr, short int in_family, unsigned short int in_port, uint32_t s_addr)
 {
     std::memset(&addr, 0, sizeof(addr));//*4
     addr.sin_family = in_family;
@@ -29,7 +29,7 @@ void    Server::fill_sockaddr_in(struct sockaddr_in& addr, short int in_family, 
     addr.sin_addr.s_addr = htonl(s_addr);// inet_pton(AF_INET, "0.0.0.0", &_addr.sin_addr);
 }
 
-void    Server::fancy_print(const std::string& opt)
+void    Server::fancyPrint(const std::string& opt)
 {
     std::cout << std::endl << B_BLUE << opt;
     if (opt == PR_RUN)

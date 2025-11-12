@@ -49,13 +49,26 @@ private:
 	void executeJoin(Client *client);//+
 	void executePrivmsg(Client *client);
 	void executeKick(Client *client);
+	void executePart(Client *client);
 	void executeInvite(Client *client);
 	void executeTopic(Client *client);
 	void executeMode(Client *client);
 	void executeQuit(Client *client);
 
 	bool isValidNickname()	const;
+	void welcomeIfRegister(Client *client);
+	void executePrivmsgToChannel(Client *client, const std::string& target);
+	void executePrivmsgToClient(Client *client, const std::string& target);
 
+	void executeAllClients(Client *client);
+	void executeAllChannel(Client *client);
+	void executeAllMembersInChannel(Client *client);
+	void executeAllInfo(Client* client);
+
+	void sendJoinInfo(Client *client, Channel *channel);
+	const std::string formChannelMembersList(Channel *channel);
+	Channel* joinNewChannel(Client *client, const std::string &channel_name, const std::string& pass);
+	void joinExistingChannel(Client *client, Channel *channel, const std::string& pass);
 
 public:
 	Command(Server *server, const std::string &command, const std::vector<std::string> &args);
@@ -63,4 +76,12 @@ public:
 	// metchods
 
 	void executeCommand(Client *client);
+	
+	//debug metchods
+	void PrintAllClients( Server& server);
+	void PrintAllChannels( Server& server);
+	void PrintMembersInChannel( Server& server, const std::string& channelName);
 };
+
+std::vector<std::string> splitVec(const std::string& input, char delimiter);
+std::set<std::string> splitSet(const std::string& input, char delimiter);

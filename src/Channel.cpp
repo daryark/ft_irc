@@ -1,12 +1,10 @@
 #include "../incl/Channel.hpp"
 
-Channel::Channel(const std::string &name)
+Channel::Channel(const std::string &name, const std::string &password): _name(name), _password(password)
 {
-	_name = name;
-	_topic = "unkmown";
-	_password = "";
+	_topic = "Default";
 	_max_clients = -1;
-  _hasPassword = false;
+  _hasPassword = (password == "" ? false : true);
 	_is_invite_only = false;
 }
 
@@ -26,9 +24,9 @@ const std::string &Channel::getTopic() const { return _topic; }
 
 void Channel::setPassword(const std::string &password) { _password = password; }
 
-bool Channel::checkKey(const std::string &password) const
-{
-	return (password == _password || _password.empty()) ? true : false;
+bool Channel::checkPasswordEquality(const std::string &password) const 
+{ 
+  return (password == _password || _password.empty()) ? true : false;
 }
 
 bool Channel::hasPassword() const { return _hasPassword; }
@@ -103,14 +101,27 @@ bool Channel::isOperator(Client *client) const
   //return std::find(_operators.begin(), _operators.end(), client) != _operators.end();
 }
 
+bool Channel::hasOperator() const { return !_operators.empty(); }
+
+const std::set<Client *>::const_iterator Channel::getMembersBegin() const { return _members.begin(); }
+
 bool Channel::isFull() const{ return (int)_members.size() == _max_clients; }
 
 //need to improve send to all members
-void Channel::globalMassage(const std::string &message) const
+void Channel::globalMessage(Client* sender, std::string message) const
 {
   for (std::set<Client *>::iterator it = _members.begin(); it != _members.end(); ++it)
-    send((*it)->getFd(), message.c_str(), message.length(), 0);  
+  {
+    if (*it == sender)
+      continue;
+    (*it)->queueMsg(message);
+  }
 }
+
+int Channel::getSize() const { return _members.size(); }
+
+std::set<Client *> Channel::getClients(){return _members; }
+
 
 //new methods
 bool Channel::isTopicSetByOperator() const { return _isTopicSetByOperator; }  

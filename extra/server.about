@@ -67,6 +67,10 @@ because it will be overwritten by the system when poll() is invoked (to POLLIN/P
 //?The revents field is a bitmask that indicates the events that occurred for a file descriptor.
 Multiple events can occur at the same time (e.g., POLLIN, POLLOUT, POLLHUP), and they are stored as separate bits in the revents integer.
 POLLOUT - almost always is this revent, as it says that server has space to pass the data(write into OUT)
+//*6.2 event-Revent 
+pollfds.events - what you want to monitor on the socket
+pollfds.revents - what actually happened after poll() returns. So (revent)POLLOUT-out-write is almost always available,
+                  but (event)POLLOUT is being set by manually, when there's smth to write in the queue(msg to send on channel/user)
 
 //*7 poll(_pollfds.data(), _pollfds.size(), 1000);
 First param: poll work with direct pointer to data storage, not with vector, so we pass the pointer to data array stored in vector container.
@@ -91,6 +95,7 @@ To tell the compiler that objects qualified with volatile may either be modified
 or cause side effects in ways unknown to the compiler; therefore, not to optimize
 away accesses to such objects nor reorder their accesses with respect to other
 operations that have visible side effects.
+//*extern - variable is just declared, it exists and can be used in some other file
 
 
 //! write about std::runtime_error and STDEXCEPT

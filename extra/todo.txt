@@ -1,39 +1,45 @@
+
+✅ ❌
+//->Server:
+
 1. дочитать Subject ✅
 2. разобрать использование функций из списка ✅
 3. сделать Makefile ✅
 4. узнать про IRC и протокол достаточно, чтобы понять, как с ним взаимодействовать ✅
 5. накинуть общую структуру/класс проекта. насмотреться немного у других, если необходимо ✅
 6. прикинуть, насколько сложно делать бонусы (трансфер файлов и бот),
-    надо ли под них с самого начала менять структуру проекта? ✅
+    6.1 надо ли под них с самого начала менять структуру проекта? ✅
 7. начать писать проекта ✅
-8. дописать Server::init(); - создание сокета на порте и открытие
-9. написать Server::run(); - слушать на всех входящих клиентов
-
-
-✅ ❌
-
-//->Server:
-открыть сокеты ✅
-связать с айпи портом ✅
-какая разница: poll/epoll #???? ❌
-принять: ❌
-и обработать в цикле ❌
-обработать выход когда, клиент не доступен/медленный: ❌
-    вход клиент -> еррор соединения ❌
-    выход клиент -> ловим еррор. (входящий пишет в свой буфер) и мониторим циклом, пока выход клиент выйдет на связь. ❌
-предусматривать ли отдельное поведение для макс числа клиентов? или просто accept fail и оно выйдет на ерроре коннекта?
+8. дописать Server::init(); - создание сокета на порте и открытие  ✅
+9. написать Server::run(); - слушать на всех входящих клиентов  ✅
+    9.1 открыть сокеты ✅
+    9.2 связать с ip портом ✅
+    9.3 какая разница: poll/epoll #???? ❌
+    9.4 принять: ✅
+    9.5 и обработать в цикле ✅
+    9.6 обработать выход когда, клиент не доступен/медленный: ❌
+    9.7 вход клиент -> еррор соединения ❌
+    9.8 выход клиент -> ловим еррор. (входящий пишет в свой буфер) и мониторим циклом, пока выход клиент выйдет на связь. ❌
+    9.9 предусматривать ли отдельное поведение для макс числа клиентов? или просто accept fail и оно выйдет на ерроре коннекта?
 
 //->Client:
-privMsg method ❌
-stop/close the server (look in docs, how exactly to do) ❌
-close the client connection (look in docs)❌
+1. privMsg method (targets separated by commans without spaces is only valid) ❌
+2. stop/close the server (look in docs, how exactly to do) ✅
+3. close the client connection (look in docs)✅
+4. close all the clients, if server closed and send and error ❌
+5. HexChat syntax and specifics? ✅
+    5.1. HexChat problem with registration visibility ✅
 
-//->Problems to fix:
-1. Server closes after 3 connected clients ❌
-1.1 even if just 1 client disconnected and reconnected 3 times overall! ✅
+//->Problems to fix and overall tasks:
+1. Server closes after 3 connected clients ✅
+    1.1 even if just 1 client disconnected and reconnected 3 times overall! ✅
 2. Clients hang on open, after the server closed with Ctrl+C ❌
-3. Conditional jump, when send msg more than MAX_BUF size. Search in Server::read_msg ❌
-4. Separate and clean the code ❌
-5. Change the CommandFactory parsing - leave ':' as a an identificator(separate in own node??) ❌
----------------------гайд делает сервер с одним клиентом
-чтоб работать со многими fd - pull or/and select fncs
+3. Conditional jump, when send msg more than MAX_BUF size. Search in Server::readMsg ❌
+4. Separate and clean the code ❌ / ✅
+5. Change the CommandFactory parsing - leave ':' as a an identificator(separate in own node??)  ✅
+6. Make the template fn for find inside map (for keys = default, for values, for const ofc too)  ✅
+7. hostname (pass as this to the new created  client, but need to pass the host (like local), which var need to take ??) ❌
+8. why make is not triggered, for example when i change Command.cpp ✅
+9. channel (validity fn).
+10. CLEAN PROPERLY on every user,channel leaving or kicking, quiting and so on. And on server close
+

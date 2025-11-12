@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 14:41:01 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/11/07 19:06:37 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/11/11 13:55:01 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,16 +94,13 @@ void Command::executeJoin(Client *client)
     std::vector<std::string> channels_passwords;
     if(_args.size() == 2)
         channels_passwords = splitVec(_args[1], ',');
-    std::cout << "hello from JOIN 3" << std::endl;
     size_t p = 0;
     for (size_t i = 0; i < channel_names.size(); i++)
     {
-        std::cout << "hello from JOIN 4" << std::endl;
         Channel* channel = _server->getChannelByName(channel_names[i]);
         
-        std::string pass = (channel && channel->hasPassword()) && p < channels_passwords.size()  
+        std::string pass = (!channel || (channel && channel->hasPassword())) && p < channels_passwords.size()  
             ? channels_passwords[p++] : "";
-        std::cout << "hello from JOIN 5" << std::endl;
         std::cout << BG_GREEN << "channel: " << channel_names[i] << ", password: '" << pass << "'" << RE << std::endl; //#########
         if(!channel)
         {
