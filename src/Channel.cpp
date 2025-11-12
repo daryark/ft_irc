@@ -111,3 +111,10 @@ void Channel::globalMassage(const std::string &message) const
   for (std::set<Client *>::iterator it = _members.begin(); it != _members.end(); ++it)
     send((*it)->getFd(), message.c_str(), message.length(), 0);  
 }
+
+//new methods
+bool Channel::isTopicSetByOperator() const { return _isTopicSetByOperator; }  
+void Channel::setTopicSetByOperator(bool state) { _isTopicSetByOperator = state; }
+
+bool Channel::hasLimit() const { return _hasLimit; }
+void Channel::setMaxClients(int max_clients){_max_clients = max_clients; }

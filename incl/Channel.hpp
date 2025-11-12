@@ -27,6 +27,7 @@ private:
 	std::string _password;
 	bool _hasPassword;
 
+	//new state
 	int _max_clients;
 	bool _hasLimit;
 
@@ -67,6 +68,7 @@ public:
 
 	void globalMassage(const std::string &message) const; //+
 
+	//	new methods
 	bool isTopicSetByOperator() const; //+
 	void setTopicSetByOperator(bool state); //+
 
