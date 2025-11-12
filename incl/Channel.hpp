@@ -19,11 +19,6 @@ private:
 	std::set<Client *> _operators;
 	std::set<Client *> _invitedClient;
 
-	//vector
-	// std::vector<Client *> _members;
-	// std::vector<Client *> _operators;
-	// std::vector<Client *> _invitedClient;
-
 	std::string _password;
 	bool _hasPassword;
 

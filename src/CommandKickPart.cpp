@@ -33,36 +33,16 @@ void Command::executeKick(Client *client)
     //!separate if, if 1 channel, or in loop condition?
     //*PART commented. check if it fits here ideally -> separate into fn. else, modify -> how much???
     //!most probably different check for +o condition (KICKer must be an op. - PART person - must not, but can)
-    // Channel *channel = _server->getChannelByName(*it);
-    //     if (!channel)
-    //         client->queueMsg(ERR_NOSUCHCHANNEL(*it));
-    //     else if (!channel->isMember(client))
-    //         client->queueMsg(ERR_NOTONCHANNEL(*it));
-    //     else
-    //     {
-    //         client->removeFromChannel(*it);
-    //         if (channel->isOperator(client))
-    //             channel->removeOperator(client);
-    //         channel->removeClient(client);
-    //         if (channel->getSize() == 0)
-    //             _server->deleteChannel(*it);
-    //         else
-    //         {
-    //             if (!channel->hasOperator())
-    //             {
-    //                 std::cout << BG_GREEN << "has operator: " << channel->hasOperator() << RE << std::endl;
-    //                 channel->addOperator(*(channel->getMembersBegin()));
-    //                 std::cout << BG_GREEN << "is operator: " << channel->isOperator(*(channel->getMembersBegin())) << RE << std::endl;
-    //             //?!tell in the channel that Client is now an operator!?
-    //             //*solution -> send MODE +o command and it will auto send globalMessage to the channel with needed syntax
-    //             }
-    //             channel->globalMessage(client,
-    //             MSG(client->getNickname(), client->getUsername(), client->getHostname(),
-    //             "PART", *it, part_msg));
-    //         }
-    //     }
     std::string comment = (_args.size() >= 3) ? _args[2] : "No reason\r\n"; //#\r\n ???
 
+    if (channels.size() == 1)
+    {
+        for (size_t i = 0; i < nicks.size(); i++)
+        {
+            //if he is
+            //removeClient();
+        }
+    }
     Channel* channel = _server->getChannelByName(channel_name);
     if(!channel)
         return client->queueMsg(ERR_NOSUCHCHANNEL(channel_name));
