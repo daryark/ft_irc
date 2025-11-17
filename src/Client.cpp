@@ -51,43 +51,23 @@ std::string& Client::getIncompleteMsg(){ return _incomplete_msg; }
 
 void Client::setIncompleteMsg(const std::string &incomplete_msg) { _incomplete_msg = incomplete_msg; }
 
-
 void Client::setUser(const std::string& username, const std::string& realname){
-  _username = username;
-  _realname = realname;
-  _servername = SERVER_NAME;
+	_username = username;
+	_realname = realname;
+	_servername = SERVER_NAME;
 }
 
-void Client::joinChannel(const std::string &channel)
-{
-	_joined_channels.push_back(channel);
-}
+const std::set<std::string>& Client::getJoinedChannels() const { return _joined_channels; }
 
-void Client::removeFromChannel(const std::string &channel)
-{
-	/*std::vector<std::string>::iterator it = std::find(joined_channels.begin(), joined_channels.end(), channel);
-	if (it != joined_channels.end()) {
-		joined_channels.erase(it);
-	}
-	std::cout << "Client::removeChannel" << std::endl;*/
+void Client::joinChannel(const std::string &channel){ _joined_channels.insert(channel); }
 
-	_joined_channels.erase(std::remove(_joined_channels.begin(), _joined_channels.end(), channel), _joined_channels.end());
-}
+void Client::removeFromChannel(const std::string &channel){ _joined_channels.erase(channel); }
 
 void Client::queueMsg(const std::string &message)
 {
 	_msg_queue.push_back(message);
 	_server->markPfdForPollout(getFd());
 }
-/*void Client::setAddr(const struct sockaddr_in &addr)
-{
-	_addr = addr;
-}
-
-const struct sockaddr_in &Client::getAddr() const
-{
-	return _addr;
-}*/
 
 void Client::printInfo() const
 {
@@ -101,10 +81,10 @@ void Client::printInfo() const
 	// std::cout << "Authenticated: " << (_authenticated ? "Yes" : "No") << std::endl;
 	// std::cout << "Registered: " << (_registered ? "Yes" : "No") << std::endl;
 	std::cout << "Joined Channels: ";
-	for (size_t i = 0; i < _joined_channels.size(); ++i)
+	for (std::set<std::string>::iterator it = _joined_channels.begin(); it != _joined_channels.end(); ++it)
 	{
-		std::cout << _joined_channels[i];
-		if (i != _joined_channels.size() - 1)
+		std::cout << *it;
+		if (it != _joined_channels.end())
 			std::cout << ", ";
 	}
 	std::cout << std::endl;

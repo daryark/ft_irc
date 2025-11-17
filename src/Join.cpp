@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   CommandJoin.cpp                                    :+:      :+:    :+:   */
+/*   Join.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 14:41:01 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/11/11 13:55:01 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/11/18 00:16:17 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,12 +83,10 @@ inline bool isValidChannelName(const std::string &channel_name)
 //*JOIN <channel> [, <channel>...] <key> [, <key>...] |or "0"
 void Command::executeJoin(Client *client)
 {
-    if(!client->isRegistered())
-        return client->queueMsg(ERR_NOTREGISTERED(client->getNickname(), "JOIN"));
-    if(_args.empty())
-        return client->queueMsg(ERR_NEEDMOREPARAMS(client->getNickname(), "JOIN"));
+    if (!checkPreconditions(client, 1))
+        return ;
     if (_args.size() == 1 && _args[0] == "0")
-        std::cout << BG_RED << "leave all the channels request from user: " << client->getNickname() << RE << std::endl;
+        leaveChannels(client, client->getJoinedChannels());
 
     const std::vector<std::string> channel_names = splitVec(_args[0], ',');
     std::vector<std::string> channels_passwords;

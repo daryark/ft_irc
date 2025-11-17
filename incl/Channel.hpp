@@ -52,7 +52,7 @@ public:
 	void addClient(Client *client);		 //+
 	void removeClient(Client *client);	 //+
 	bool isMember(Client *client) const; //+
-	const std::set<Client *>::const_iterator getMembersBegin() const;
+	std::set<Client *> getClients(); //+
 
 	void addOperator(Client *client);	   //+
 	void removeOperator(Client *client);   //+
@@ -65,7 +65,6 @@ public:
 
 	int getSize() const; //+
 
-	std::set<Client *> getClients();
 
 	//	new methods
 	bool isTopicSetByOperator() const; //+
