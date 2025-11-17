@@ -4,11 +4,11 @@ void Command::executeMode(Client *client)
 {
     if (!checkPreconditions(client, 1))
         return ;
-    const std::string &channel_name = _args[0];
-    Channel* channel = _server->getChannelByName(channel_name);
+    const std::string &channelName = _args[0];
+    Channel* channel = _server->getChannelByName(channelName);
 
     if(!channel)
-        return client->queueMsg(ERR_NOSUCHCHANNEL(channel_name));
+        return client->queueMsg("403 " + channelName + " :No such channel");
 
     //only made #channel
     if(_args.size() == 1) {
@@ -21,12 +21,12 @@ void Command::executeMode(Client *client)
             modes += "t";
         if(channel->hasLimit())
             modes += "l";
-        return client->queueMsg("324 " + channel_name + " " + modes);
+        return client->queueMsg("324 " + channelName + " " + modes);
     }
 
     // check is operator
     if(!channel->isOperator(client))
-        return client->queueMsg(ERR_CHANOPRIVSNEEDED(channel_name));
+        return client->queueMsg("482 " + channelName + " :You're not channel operator");
 
     bool adding = true;
 
@@ -59,7 +59,7 @@ void Command::executeMode(Client *client)
                     if (adding)
                     {
                         if (argIndex >= _args.size())
-                            return client->queueMsg(ERR_NEEDMOREPARAMS(client, _command));
+                            return client->queueMsg("461 MODE :Not enough parameters for +k");
                         const std::string &newPass = _args[argIndex++];
                         channel->setPassword(newPass);
                         modeChanges += "+k ";
@@ -73,18 +73,18 @@ void Command::executeMode(Client *client)
                     break;
                 case 'o':
                     if(argIndex >= _args.size())
-                        return client->queueMsg(ERR_NEEDMOREPARAMS(client, _command));
+                        return client->queueMsg("461 MODE :Not enough parameters for o");
                     {
                         std::string nick = _args[argIndex++];
                         Client *target = _server->getClientByNickname(nick);
                         if (!target)
                         {
-                            client->queueMsg(ERR_NOSUCHNICK(nick));
+                            client->queueMsg("401 " + nick + " :No such nick");
                             continue;
                         }
                         if (!channel->isMember(target))
                         {
-                            client->queueMsg(ERR_USERNOTINCHANNEL(client, channel_name));
+                            client->queueMsg("441 " + nick + " " + channelName + " :They aren't on that channel");
                             continue;
                         }
                         if (adding)
@@ -99,7 +99,7 @@ void Command::executeMode(Client *client)
                     if (adding)
                     {
                         if (argIndex >= _args.size())
-                            return client->queueMsg(ERR_NEEDMOREPARAMS(client, _command));
+                            return client->queueMsg("461 MODE :Not enough parameters for +l");
                         int maxClients = std::stoi(_args[argIndex++]);
                         channel->setMaxClients(maxClients);
                         modeChanges += "+l ";
@@ -121,7 +121,7 @@ void Command::executeMode(Client *client)
     if(!modeChanges.empty())
     {
         modeChanges.pop_back(); // remove trailing space
-        channel->globalMessage(client, "MODE " + channel_name + " " + modeChanges + modes);
+        channel->globalMessage(client, "MODE " + channelName + " " + modeChanges + modes);
     }
 }
 }
