@@ -12,6 +12,7 @@ Channel::~Channel()
 {
 	_members.clear();
 	_operators.clear();
+  _invitedClient.clear();
 }
 
 void Channel::setName(const std::string &name) { _name = name; }

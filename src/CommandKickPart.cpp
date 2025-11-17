@@ -16,11 +16,14 @@ static inline const std::string joinVecIntoStr(std::vector<std::string>::const_i
 //!or 1 channel -> 1-to multiple clients.
 //#no valid kicking yourself
 //#join 0 - add working like PART loop
+
+//*KICK <channel> [,<channel>...] <user> [, <user>...]  [<comment>]
+
 void Command::executeKick(Client *client)
 {
     if(!client->isRegistered())
         return client->queueMsg(ERR_NOTREGISTERED(client->getNickname(), "KICK"));
-    if(_args.size() != 2)
+    if(_args.size() < 2)
         return client->queueMsg(ERR_NEEDMOREPARAMS(client->getNickname(), "KICK"));
     
     const std::vector<std::string> channels = splitVec(_args[0], ',');
@@ -48,7 +51,10 @@ void Command::executeKick(Client *client)
                     targetClient->removeFromChannel(channels[0]);
                     channel->globalMessage(client,
                     MSG(client->getNickname(), client->getUsername(), client->getHostname(),
-                    "KICK", channels[0], "is kicked"));   
+                    "KICK", channels[0], "is kicked"));
+                    if(channel->getSize() == 0){
+                       _server->deleteChannel(channel->getName());
+                    }
                 }
         }
     }
@@ -75,7 +81,7 @@ void Command::executeKick(Client *client)
                     channel->removeClient(targetClient);
                     targetClient->removeFromChannel(channels[0]);
                     if (channel->getSize() == 0)
-                        _server->deleteChannel(nicks[i]);
+                        _server->deleteChannel(channels[i]);
                     else
                     {
                         channel->globalMessage(client,
@@ -96,48 +102,50 @@ void Command::executeKick(Client *client)
     }
 }
 
-void Command::executePart(Client *client)
-{
-    if(!client->isRegistered())
-        return client->queueMsg(ERR_NOTREGISTERED(client->getNickname(), "PART"));
-    if(_args.size() < 1)
-        return client->queueMsg(ERR_NEEDMOREPARAMS(client->getNickname(), "PART"));
-    const std::set<std::string> nicks = splitSet(_args[0], ',');
-    const std::string part_msg = (_args.size() > 1 
-        ? joinVecIntoStr(_args.begin() + 1, _args.end()) : "Leaving\r\n");  //#\r\n ???
-    
-    for (size_t i = 0; i < nicks.size(); i++)
-    {
-        Channel *channel = _server->getChannelByName(nicks[i]);
-        if (!channel)
-            client->queueMsg(ERR_NOSUCHCHANNEL(nicks[i]));
-        else if (!channel->isMember(client))
-            client->queueMsg(ERR_NOTONCHANNEL(nicks[i]));
-        else
-        {
-            client->removeFromChannel(nicks[i]);
-            if (channel->isOperator(client))
-                channel->removeOperator(client);
-            channel->removeClient(client);
-            targetClient->removeFromChannel(channels[0]);
-            if (channel->getSize() == 0)
-                _server->deleteChannel(nicks[i]);
-            else
-            {
-                channel->globalMessage(client,
-                MSG(client->getNickname(), client->getUsername(), client->getHostname(),
-                "PART", nicks[i], part_msg));
-                if (!channel->hasOperator())
-                {
-                    std::cout << BG_GREEN << "has operator: " << channel->hasOperator() << RE << std::endl;
-                    channel->addOperator(*(channel->getMembersBegin()));
-                    std::cout << BG_GREEN << "is operator: " << channel->isOperator(*(channel->getMembersBegin())) << RE << std::endl;
-                //?!tell in the channel that Client is now an operator!?
-                //*solution -> send MODE +o command and it will auto send globalMessage to the channel with needed syntax
-                }
-            }
-        }
-        
-    }
-    std::cout << "PART channels: " << _args[0];
+void Command::executePart(Client *client){
+    (void)(client);
 }
+// {
+//     if(!client->isRegistered())
+//         return client->queueMsg(ERR_NOTREGISTERED(client->getNickname(), "PART"));
+//     if(_args.size() < 1)
+//         return client->queueMsg(ERR_NEEDMOREPARAMS(client->getNickname(), "PART"));
+//     const std::set<std::string> nicks = splitSet(_args[0], ',');
+//     const std::string part_msg = (_args.size() > 1 
+//         ? joinVecIntoStr(_args.begin() + 1, _args.end()) : "Leaving\r\n");  //#\r\n ???
+    
+//     for (size_t i = 0; i < nicks.size(); i++)
+//     {
+//         Channel *channel = _server->getChannelByName(nicks[i]);
+//         if (!channel)
+//             client->queueMsg(ERR_NOSUCHCHANNEL(nicks[i]));
+//         else if (!channel->isMember(client))
+//             client->queueMsg(ERR_NOTONCHANNEL(nicks[i]));
+//         else
+//         {
+//             client->removeFromChannel(nicks[i]);
+//             if (channel->isOperator(client))
+//                 channel->removeOperator(client);
+//             channel->removeClient(client);
+//             targetClient->removeFromChannel(channels[0]);
+//             if (channel->getSize() == 0)
+//                 _server->deleteChannel(nicks[i]);
+//             else
+//             {
+//                 channel->globalMessage(client,
+//                 MSG(client->getNickname(), client->getUsername(), client->getHostname(),
+//                 "PART", nicks[i], part_msg));
+//                 if (!channel->hasOperator())
+//                 {
+//                     std::cout << BG_GREEN << "has operator: " << channel->hasOperator() << RE << std::endl;
+//                     channel->addOperator(*(channel->getMembersBegin()));
+//                     std::cout << BG_GREEN << "is operator: " << channel->isOperator(*(channel->getMembersBegin())) << RE << std::endl;
+//                 //?!tell in the channel that Client is now an operator!?
+//                 //*solution -> send MODE +o command and it will auto send globalMessage to the channel with needed syntax
+//                 }
+//             }
+//         }
+        
+//     }
+//     std::cout << "PART channels: " << _args[0];
+// }

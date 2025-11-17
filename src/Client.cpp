@@ -79,15 +79,6 @@ void Client::queueMsg(const std::string &message)
 	_msg_queue.push_back(message);
 	_server->markPfdForPollout(getFd());
 }
-/*void Client::setAddr(const struct sockaddr_in &addr)
-{
-	_addr = addr;
-}
-
-const struct sockaddr_in &Client::getAddr() const
-{
-	return _addr;
-}*/
 
 void Client::printInfo() const
 {

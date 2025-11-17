@@ -8,7 +8,7 @@ JOIN 0 - is a special request to leave all channels the user is currently a memb
 //*PRIVMSG <target> [,<target>...] : <msg> 
 multiple targets (mix of user/channel), separated by commas (without spaces!)
 and the same msg to all valid target will be sent
-//*KICK <channel> [,<channel>...] <user> [, <user>...]
+//*KICK <channel> [,<channel>...] <user> [, <user>...]  [<comment>]
 MUST be multiple <channels> and equal amount of <users>, paired 1-to-1 (#ch us, #ch2 us2, ..) 
      or 1 <channel> and multiple <users> to kick.
         In that case kick msg MUST be sent to channel for each user separately.
