@@ -144,7 +144,7 @@ void Command::executeTopic(Client *client)
             return client->queueMsg(RPL_TOPIC(channelName, channel->getTopic()));
     } else
     {
-        if (_args[1] != ":")
+    if (_args[1] != ":")
             return client->queueMsg(ERR_NEEDMOREPARAMS(client->getNickname(), "TOPIC"));
         //!if -t (flag) - then only operator can change the topic
         // if(!channel->isOperator(client) && channel->getTopic().empty())
