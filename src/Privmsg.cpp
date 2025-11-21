@@ -1,22 +1,10 @@
 #include "../incl/Command.hpp"
 
-//    Command: PRIVMSG
-//    Parameters: <msgtarget>{,<msgtarget>} :<text to be sent>
 void Command::executePrivmsg(Client *client)
 {
-    if(!client->isRegistered())
-        return client->queueMsg(ERR_NOTREGISTERED(client->getSafeNickname(), "PRIVMSG"));
-
-    const std::string& nick = client->getNickname();
-    if(_args.size() == 1)
-        return client->queueMsg(ERR_NEEDMOREPARAMS(nick, "PRIVMSG"));
-    if (_args[1] == ":" && _args.size() == 2)
-        return client->queueMsg(ERR_NOTEXTTOSEND(nick));
-    if(_args[0] == ":" || _args.size() != 3)
-        return client->queueMsg(ERR_NORECIPIENT(nick, "PRIVMSG"));
- 
+    if(!checkPreconditions(client, 3))
+        return ;
     const std::set<std::string> targets = splitSet(_args[0], ',');
-
     for (std::set<std::string>::iterator it = targets.begin(); it != targets.end(); it++)
     {
         if((*it)[0] == '#' || (*it)[0] == '&')

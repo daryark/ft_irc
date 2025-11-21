@@ -36,8 +36,8 @@
 #define ERR_NOSUCHCHANNEL(channel)(PREFIX("403") + channel + " :No such channel\r\n")
 #define ERR_CANNOTSENDTOCHAN(channel)(PREFIX("404") + channel + " :Cannot send to channel\r\n")
 
-#define ERR_NORECIPIENT(nick, command)(PREFIX("411") + nick + " :No recipient given (" + command + ")\r\n")
-#define ERR_NOTEXTTOSEND(nick)(PREFIX("412") + nick + " :No text to send\r\n")
+// #define ERR_NORECIPIENT(nick, command)(PREFIX("411") + nick + " :No recipient given (" + command + ")\r\n")
+// #define ERR_NOTEXTTOSEND(nick)(PREFIX("412") + nick + " :No text to send\r\n")
 
 #define ERR_UNKNOWNCOMMAND(command)(PREFIX("421") + command + " :Unknown command\r\n")
 #define ERR_NONICKNAMEGIVEN(nick)(PREFIX("431") + nick + " :No nickname given\r\n")

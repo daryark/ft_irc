@@ -2,8 +2,8 @@ GREEN = \033[0;32m
 RE = \033[0m
 
 SRC =	main.cpp Server.cpp Client.cpp Command.cpp Channel.cpp \
-		CommandJoin.cpp CommandPrivmsg.cpp CommandRegistration.cpp CommandKickPart.cpp\
-		server_helpers.cpp debug_file.cpp Mode.cpp
+		Join.cpp Privmsg.cpp Registration.cpp Kick.cpp Part.cpp Mode.cpp\
+		server_helpers.cpp debug_file.cpp
 HDR = Server.hpp Client.hpp CommandFactory.hpp Command.hpp Channel.hpp ErrorReply.hpp
 
 SRC_F = src/

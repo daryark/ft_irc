@@ -2,13 +2,9 @@
 
 void Command::executeMode(Client *client)
 {
-	if (!client->isRegistered())
-		return client->queueMsg(ERR_NOTREGISTERED(client->getNickname(), "MODE"));
-	// Реализация метода executeMode
-
-	if (_args.empty())
-		return client->queueMsg(ERR_NEEDMOREPARAMS());
-
+    if (!checkPreconditions(client, 1))
+		return ;
+	
 	const std::string &channelName = _args[0];
 	Channel *channel = _server->getChannelByName(channelName);
 

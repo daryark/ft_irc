@@ -57,8 +57,12 @@ private:
 
 	bool isValidNickname()	const;
 	void welcomeIfRegister(Client *client);
+	bool checkPreconditions(Client* client, size_t in_args_size);
 	void executePrivmsgToChannel(Client *client, const std::string& target);
 	void executePrivmsgToClient(Client *client, const std::string& target);
+	bool canKickFromChannel(Client* client, const std::string& channel_name);
+	void executeKickOne(Client* client, const std::string& channel_name, const std::string& target_nick, const std::string& comment);
+	void leaveChannels(Client* client, const std::set<std::string>& channels);
 
 	void executeAllClients(Client *client);
 	void executeAllChannel(Client *client);
@@ -85,3 +89,4 @@ public:
 
 std::vector<std::string> splitVec(const std::string& input, char delimiter);
 std::set<std::string> splitSet(const std::string& input, char delimiter);
+const std::string joinVecIntoStr(std::vector<std::string>::const_iterator start, std::vector<std::string>::const_iterator end);

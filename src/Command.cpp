@@ -74,6 +74,21 @@ void Command::executeAllMembersInChannel(Client *client)
     PrintMembersInChannel(*_server, _args[0]);
 }
 
+bool Command::checkPreconditions(Client* client, size_t min_args_size)
+{
+    if (!client->isRegistered())
+    {
+        client->queueMsg(ERR_NOTREGISTERED(client->getSafeNickname(), _command));
+        return false;
+    }
+    else if (_args.size() < min_args_size)
+    {
+        client->queueMsg(ERR_NEEDMOREPARAMS(client->getNickname(), _command));
+        return false;
+    }
+    return true;
+}
+
 // void Command::executePong(Client* client) {
 //     // Реализация метода executePong
 // }
@@ -82,7 +97,7 @@ void Command::executeAllMembersInChannel(Client *client)
 void Command::executeQuit(Client *client)
 {
     if (_args.size() == 0)
-        std::cout << BG_I_BLUE << client->getNickname() << " disconnected(SENT TO EVERYONE WITH POLLOUT)" << RE << "; ";
+        std::cout << BG_I_BLUE << client->getNickname() << " disconnected(SENT TO EVERYONE on all channels where he is a member)" << RE << "; ";
     else
         std::cout << BG_WHITE << "send this quit msg to everyone(SENT TO EVERYONE WITH POLLOUT) ALL THE _args ARR: " << BG_YELLOW << _args[0] << RE << std::endl;
     _server->disconnectClient(client->getFd());
@@ -152,7 +167,8 @@ void Command::executeTopic(Client *client)
         const std::string &newTopic = _args.size() == 2 ? "" : _args[2];
         channel->setTopic(newTopic);
         channel->globalMessage(client,
-                               MSG(client->getNickname(), client->getUsername(), client->getHostname(),
-                                   "TOPIC", channelName, newTopic));
+        MSG(client->getNickname(),client->getUsername(), client->getHostname(),
+        "TOPIC", channelName, newTopic));
     }
 }
+

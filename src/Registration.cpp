@@ -6,7 +6,7 @@ void Command::executePass(Client *client)
     if (client->isAuthenticated() || client->isRegistered())
         return client->queueMsg(ERR_ALREADYREGISTRED(nick));
     if (_args.empty())
-        return client->queueMsg(ERR_NEEDMOREPARAMS(nick, "PASS"));
+        return client->queueMsg(ERR_NEEDMOREPARAMS(nick, _command));
 
     client->authenticate(_args[0] == _server->getPassword());
     if (!client->isAuthenticated())
@@ -21,7 +21,6 @@ void Command::executeNick(Client *client)
     
     if (_args.empty())    
         return client->queueMsg(ERR_NONICKNAMEGIVEN(client->getSafeNickname()));
-
     if (!isValidNickname())
         return client->queueMsg(ERR_ERRONEUSNICKNAME(client->getSafeNickname(), new_nick));
     
@@ -44,7 +43,7 @@ void Command::executeUser(Client *client)
     if (client->isRegistered() || !client->getUsername().empty())
         return client->queueMsg(ERR_ALREADYREGISTRED(nick));
     if (_args.size() != 5 || _args[3] != ":")
-        return client->queueMsg(ERR_NEEDMOREPARAMS(nick, "USER"));
+        return client->queueMsg(ERR_NEEDMOREPARAMS(nick, _command));
         
     const std::string &username = _args[0];
     const std::string &realname = _args[3];
@@ -61,7 +60,7 @@ bool Command::isValidNickname() const
     if (nick.empty() || nick.size() > 9)
         return false;
 
-    const std::string special = "[]\\`_^{|}"; //(RFC 2812) 
+    const std::string special = "[]\\`_^{|}"; //(RFC 2812 docs) 
     char c = nick[0];
     if (!isalpha(c) && special.find(c) == std::string::npos)
         return false;   
