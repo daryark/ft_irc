@@ -122,7 +122,7 @@ void Command::executeMode(Client *client)
 		if (!modeChanges.empty())
 		{
 			modeChanges.pop_back(); // remove trailing space
-			channel->globalMessage(client, "MODE " + channelName + " " + modeChanges + modes);
+			channel->globalMessage(client, "MODE " + channelName + " " + modeChanges + modes, true);
 		}
 	}
 }

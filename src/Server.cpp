@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 20:45:16 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/11/11 15:29:25 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/11/24 23:51:21 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,15 @@ Server::~Server()
 {
     close(_head_socket);
     // _pollfds.erase();
-    // deleteChan();
+    std::map<std::string, Channel*>::iterator it;
+    for (it = _channels.begin(); it != _channels.end(); ++it)
+        delete it->second;
+    _channels.clear();
+
+    std::map<int, Client*>::iterator it2;
+    for (it2 = _clients.begin(); it2 != _clients.end(); ++it2)
+        delete it2->second;
+    _clients.clear();
 
     fancyPrint(PR_CLOSE);
 }
@@ -64,19 +72,19 @@ void Server::run()
     {
         if (poll(_pollfds.data(), (int)_pollfds.size(), 1000) < 0) //*7
             break ; //!clean up & break
-        for (int it = 0; it < (int)_pollfds.size(); it++)
+        for (int i = 0; i < (int)_pollfds.size(); i++)
         {
-            if (_pollfds[it].revents & (POLLHUP | POLLERR | POLLNVAL))
-                disconnectClient(_pollfds[it].fd);
-            else if (_pollfds[it].revents & POLLIN) //*6.1
+            if (_pollfds[i].revents & (POLLHUP | POLLERR | POLLNVAL))
+                disconnectClient(_pollfds[i].fd);
+            else if (_pollfds[i].revents & POLLIN) //*6.1
             {
-                if (_pollfds[it].fd == _head_socket)
+                if (_pollfds[i].fd == _head_socket)
                    acceptClient();
                 else
-                    readMsg(_pollfds[it].fd);
+                    readMsg(_pollfds[i].fd);
             }
-            else if (_pollfds[it].revents & POLLOUT)
-               sendMsg(_pollfds[it].fd);
+            else if (_pollfds[i].revents & POLLOUT)
+               sendMsg(_pollfds[i]);
         }
     }
 }
@@ -157,18 +165,18 @@ void    Server::processInMsg(int fd, char* buf, int len)
     }
 }
 
-void    Server::sendMsg(int fd)
+void    Server::sendMsg(pollfd& pollfd)
 {
-    Client* client = getClient(fd);
+    Client* client = getClient(pollfd.fd);
     std::deque<std::string>& msg_queue = client->getMsgQueue();
     while(!msg_queue.empty())
     {
-        int n = send(fd, msg_queue.front().c_str(), msg_queue.front().size(), MSG_NOSIGNAL);
+        int n = send(pollfd.fd, msg_queue.front().c_str(), msg_queue.front().size(), MSG_NOSIGNAL);
         if (n <= 0)
             break; // socket full, wait for next POLLOUT
         msg_queue.pop_front();
     }
-    _pollfds[fd].events &= ~POLLOUT; // stop monitoring POLLOUT until new msg
+    pollfd.events &= ~POLLOUT; // stop monitoring POLLOUT until new msg
 }
 
 //*------------------helpers--------------------
@@ -198,7 +206,7 @@ Client* Server::getClient(int fd)   const
 }
 
 Channel* Server::getChannelByName(const std::string& name) {
-    std::map<std::string, Channel*>::const_iterator it = _channels.find(name);
+    std::map<std::string, Channel*>::iterator it = _channels.find(name);
     if (it != _channels.end())
         return it->second;
     return NULL;

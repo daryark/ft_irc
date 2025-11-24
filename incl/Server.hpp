@@ -35,8 +35,10 @@ private:
 	int _head_socket;
 	int _port;
 	std::string _password;
+
 	struct sockaddr_in _addr;
 	std::vector<pollfd> _pollfds;
+
 	std::map<int, Client*> _clients; // int - fd_client and ptr to Client
 	std::map<std::string, Channel*> _channels; // name_channel and ptr to Channel
 
@@ -61,7 +63,7 @@ private:
 	void disconnectClient(int fd);
 	
 	void markPfdForPollout(int fd);
-	void sendMsg(int fd);
+	void sendMsg(pollfd& pollfd);
 	
 	const std::string &getPassword() const; //+
 	const std::map<int, Client*> &getClients() const; //+

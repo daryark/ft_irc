@@ -22,7 +22,7 @@ TOPIC channel - returns the topic of the channel
 TOPIC channel : - removes the topic of the channel //need to do++
 TOPIC channel : new_topic - set the new topic (if privilegies are ok)
 //*QUIT [: <msg>]
-//*MODE {[+|-]|o|p|s|i|t|n|b|v} [<limit>] [<user>] [<ban mask>]
+//*MODE <channel> modes{[+|-]|o|p|s|i|t|n|b|v} modeparams[<limit>] [<user>] [<ban mask>]
     -params only for the modes that need it, one for each mode max.
 Ex: MODE channel +li-k 10 key (set limit to 10, +invite-only(no param), -key old-pass as param)
 

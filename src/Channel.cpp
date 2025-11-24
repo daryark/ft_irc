@@ -4,8 +4,10 @@ Channel::Channel(const std::string &name, const std::string &password): _name(na
 {
 	_topic = "Default";
 	_max_clients = -1;
-  _hasPassword = (password == "" ? false : true);
+  _hasPassword = (password.empty() ? false : true);
 	_is_invite_only = false;
+  _hasLimit = false;
+  _isTopicSetByOperator = false;
 }
 
 Channel::~Channel()
@@ -107,12 +109,12 @@ bool Channel::hasOperator() const { return !_operators.empty(); }
 bool Channel::isFull() const{ return (int)_members.size() == _max_clients; }
 
 //need to improve send to all members
-void Channel::globalMessage(Client* sender, std::string message) const
+void Channel::globalMessage(Client* sender, std::string message, bool send_to_sender) const
 {
   for (std::set<Client *>::iterator it = _members.begin(); it != _members.end(); ++it)
   {
-    if (*it == sender)
-      continue;
+    if (*it == sender && !send_to_sender)
+      continue ;
     (*it)->queueMsg(message);
   }
 }

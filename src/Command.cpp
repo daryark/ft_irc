@@ -96,11 +96,11 @@ bool Command::checkPreconditions(Client* client, size_t min_args_size)
 //! if this member was an op in the channels, act the same way as in PART,KICK
 void Command::executeQuit(Client *client)
 {
-    if (_args.size() == 0)
-        std::cout << BG_I_BLUE << client->getNickname() << " disconnected(SENT TO EVERYONE on all channels where he is a member)" << RE << "; ";
-    else
-        std::cout << BG_WHITE << "send this quit msg to everyone(SENT TO EVERYONE WITH POLLOUT) ALL THE _args ARR: " << BG_YELLOW << _args[0] << RE << std::endl;
-    _server->disconnectClient(client->getFd());
+    if (!checkPreconditions(client, 0))
+        return ;
+    leaveChannels(client, client->getJoinedChannels());
+    // _server->disconnectClient(client->getFd());
+    _server->disconnectClient(1111);
 }
 
 void Command::executeInvite(Client *client)
@@ -168,7 +168,7 @@ void Command::executeTopic(Client *client)
         channel->setTopic(newTopic);
         channel->globalMessage(client,
         MSG(client->getNickname(),client->getUsername(), client->getHostname(),
-        "TOPIC", channelName, newTopic));
+        "TOPIC", channelName, newTopic), true);
     }
 }
 

@@ -6,33 +6,23 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 14:41:01 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/11/21 17:10:51 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/11/24 22:32:38 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../incl/Command.hpp"
 
-
-//#out of class, move to the helper file?!
-std::vector<std::string> splitVec(const std::string& input, char delimiter) {
-    std::vector<std::string> tokens;
-    std::istringstream iss(input);
-    std::string token;
-    while (std::getline(iss, token, delimiter)) {
-        tokens.push_back(token);
+//#move smwhere to helpers!
+inline bool isValidChannelName(const std::string &channel_name)
+{
+    if (channel_name[0] != '#' && channel_name[0] != '&')
+        return false;
+    for (size_t i = 1; i < channel_name.size(); i++)
+    {
+        if (!isalnum(channel_name[i]))
+            return false;
     }
-    return tokens;
-}
-
-//#out of class, move to the helper file?!
-std::set<std::string> splitSet(const std::string& input, char delimiter) {
-    std::set<std::string> tokens;
-    std::istringstream iss(input);
-    std::string token;
-    while (std::getline(iss, token, delimiter)) {
-        tokens.insert(token);
-    }
-    return tokens;
+    return true;
 }
 
 const std::string Command::formChannelMembersList(Channel *channel)
@@ -55,8 +45,7 @@ void Command::sendJoinInfo(Client *client, Channel *channel)
     // JOIN message (sent to everyone in the channel)
     std::string join_msg = MSG_PREFIX(client->getNickname(), client->getUsername(),
         client->getHostname(), "JOIN") + ":" + channel->getName() + "\r\n";
-    client->queueMsg(join_msg);
-    channel->globalMessage(client, join_msg);
+    channel->globalMessage(client, join_msg, true);
 
     if (!channel->getTopic().empty())
         client->queueMsg(RPL_TOPIC(channel->getName(), channel->getTopic()));
@@ -67,20 +56,7 @@ void Command::sendJoinInfo(Client *client, Channel *channel)
     client->queueMsg(RPL_ENDOFNAMES(client->getNickname(), channel->getName()));
 }
 
-//#move smwhere to helpers!
-inline bool isValidChannelName(const std::string &channel_name)
-{
-    if (channel_name[0] != '#' && channel_name[0] != '&')
-        return false;
-    for (size_t i = 1; i < channel_name.size(); i++)
-    {
-        if (!isalnum(channel_name[i]))
-            return false;
-    }
-    return true;
-}
-
-//*JOIN <channel> [, <channel>...] <key> [, <key>...] |or "0"
+//JOIN <channel> [, <channel>...] <key> [, <key>...] |or "0"
 void Command::executeJoin(Client *client)
 {
     if (!checkPreconditions(client, 1))

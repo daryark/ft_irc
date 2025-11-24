@@ -10,23 +10,6 @@
 #include "Server.hpp"
 #include "Channel.hpp"
 
-
-enum CommandType
-{
-	UNKNOWN = 0,
-	USER = 1,
-	NICK,
-	PASS,
-	JOIN,
-	PRIVMSG,
-	QUIT,
-	// PONG,
-	// PART,
-	KICK,
-	INVITE,
-	TOPIC,
-	MODE
-};
 class Channel;
 class Client;
 class Server;
@@ -63,6 +46,7 @@ private:
 	bool canKickFromChannel(Client* client, const std::string& channel_name);
 	void executeKickOne(Client* client, const std::string& channel_name, const std::string& target_nick, const std::string& comment);
 	void leaveChannels(Client* client, const std::set<std::string>& channels);
+	void leaveChannel(Client* client, Channel* channel);
 
 	void executeAllClients(Client *client);
 	void executeAllChannel(Client *client);
@@ -90,3 +74,4 @@ public:
 std::vector<std::string> splitVec(const std::string& input, char delimiter);
 std::set<std::string> splitSet(const std::string& input, char delimiter);
 const std::string joinVecIntoStr(std::vector<std::string>::const_iterator start, std::vector<std::string>::const_iterator end);
+const std::string joinSetIntoStr(std::set<std::string>::const_iterator start, std::set<std::string>::const_iterator end);

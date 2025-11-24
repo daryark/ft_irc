@@ -1,17 +1,5 @@
 #include "../incl/Command.hpp"
 
-//#helper function, move out of here
-const std::string joinVecIntoStr(std::vector<std::string>::const_iterator start,
-                                               std::vector<std::string>::const_iterator end)
-{
-    std::string result;
-    for (std::vector<std::string>::const_iterator it = start; it != end; it++)
-        result += (*it + " ");
-    if (!result.empty())
-        return result.substr(0, result.length() - 2);
-    return "";
-}
-
 void Command::executeKick(Client *client)
 {
     if (!checkPreconditions(client, 2))
@@ -54,7 +42,7 @@ void Command::executeKickOne(Client* client, const std::string& channel_name, co
         _server->deleteChannel(target_nick);
     else
         channel->globalMessage(client, 
-        MSG(client->getNickname(), client->getUsername(), client->getHostname(), _command, channel_name, comment));
+        MSG(client->getNickname(), client->getUsername(), client->getHostname(), _command, channel_name, comment), true);
 }
 
 bool Command::canKickFromChannel(Client* client, const std::string& channel_name)

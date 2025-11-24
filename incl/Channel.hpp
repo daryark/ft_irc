@@ -24,9 +24,9 @@ private:
 
 	//new state
 	int _max_clients;
-	bool _hasLimit;
+	bool _hasLimit;//#into snake case
 
-	bool _isTopicSetByOperator;
+	bool _isTopicSetByOperator;//#into snake case
 	bool _is_invite_only;
 
 public:
@@ -61,7 +61,7 @@ public:
 
 	bool isFull() const;//+
 
-	void globalMessage(Client* sender, std::string message) const; //+
+	void globalMessage(Client* sender, std::string message, bool send_to_sender) const; //+
 
 	int getSize() const; //+
 
