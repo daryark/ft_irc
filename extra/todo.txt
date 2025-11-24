@@ -43,3 +43,6 @@
 9. channel (validity fn).
 10. CLEAN PROPERLY on every user,channel leaving or kicking, quiting and so on. And on server close
 
+
+link for testing
+https://docs.google.com/spreadsheets/d/1tKZzmB0d4VhaMV5CTRxc4Gg6gz65olQ20BWtj_wIeao/edit?usp=sharing

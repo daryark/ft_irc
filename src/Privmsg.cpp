@@ -33,6 +33,6 @@ void Command::executePrivmsgToChannel(Client* client, const std::string& target)
     if(!channel->isMember(client))
         return client->queueMsg(ERR_CANNOTSENDTOCHAN(target));
     channel->globalMessage(client,
-        MSG(client->getNickname(), client->getUsername(), client->getHostname(), "PRIVMSG", target, _args.back()));
+        MSG(client->getNickname(), client->getUsername(), client->getHostname(), "PRIVMSG", target, _args.back()), false);
 
 }

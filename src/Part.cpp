@@ -30,13 +30,13 @@ void Command::leaveChannels(Client* client, const std::set<std::string>& channel
             client->removeFromChannel(*it);
             
             channel->globalMessage(client,
-            MSG(client->getNickname(), client->getUsername(), client->getHostname(), _command, *it, part_msg));
+            MSG(client->getNickname(), client->getUsername(), client->getHostname(), _command, *it, part_msg), false);
             
             if (!channel->hasOperator())
             {
                 channel->addOperator(*(channel->getClients().begin()));
                 channel->globalMessage(client,
-                MSG(SERVER_NAME, SERVER_NAME, SERVER_NAME, "MODE", *it, "is an operator now"));
+                MSG(SERVER_NAME, SERVER_NAME, SERVER_NAME, "MODE", *it, "is an operator now"), false);
             }
         }
     }

@@ -3,33 +3,36 @@
 /*                                                        :::      ::::::::   */
 /*   Join.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mperetia <mperetia@student.42wolfsburg.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 14:41:01 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/11/21 17:10:51 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/11/24 22:32:11 by mperetia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../incl/Command.hpp"
 
-
-//#out of class, move to the helper file?!
-std::vector<std::string> splitVec(const std::string& input, char delimiter) {
+// #out of class, move to the helper file?!
+std::vector<std::string> splitVec(const std::string &input, char delimiter)
+{
     std::vector<std::string> tokens;
     std::istringstream iss(input);
     std::string token;
-    while (std::getline(iss, token, delimiter)) {
+    while (std::getline(iss, token, delimiter))
+    {
         tokens.push_back(token);
     }
     return tokens;
 }
 
-//#out of class, move to the helper file?!
-std::set<std::string> splitSet(const std::string& input, char delimiter) {
+// #out of class, move to the helper file?!
+std::set<std::string> splitSet(const std::string &input, char delimiter)
+{
     std::set<std::string> tokens;
     std::istringstream iss(input);
     std::string token;
-    while (std::getline(iss, token, delimiter)) {
+    while (std::getline(iss, token, delimiter))
+    {
         tokens.insert(token);
     }
     return tokens;
@@ -54,9 +57,10 @@ void Command::sendJoinInfo(Client *client, Channel *channel)
 {
     // JOIN message (sent to everyone in the channel)
     std::string join_msg = MSG_PREFIX(client->getNickname(), client->getUsername(),
-        client->getHostname(), "JOIN") + ":" + channel->getName() + "\r\n";
-    client->queueMsg(join_msg);
-    channel->globalMessage(client, join_msg);
+                                      client->getHostname(), "JOIN") +
+                           ":" + channel->getName() + "\r\n";
+    // client->queueMsg(join_msg);
+    channel->globalMessage(client, join_msg, true);
 
     if (!channel->getTopic().empty())
         client->queueMsg(RPL_TOPIC(channel->getName(), channel->getTopic()));
@@ -67,7 +71,7 @@ void Command::sendJoinInfo(Client *client, Channel *channel)
     client->queueMsg(RPL_ENDOFNAMES(client->getNickname(), channel->getName()));
 }
 
-//#move smwhere to helpers!
+// #move smwhere to helpers!
 inline bool isValidChannelName(const std::string &channel_name)
 {
     if (channel_name[0] != '#' && channel_name[0] != '&')
@@ -84,23 +88,24 @@ inline bool isValidChannelName(const std::string &channel_name)
 void Command::executeJoin(Client *client)
 {
     if (!checkPreconditions(client, 1))
-        return ;
+        return;
     if (_args.size() == 1 && _args[0] == "0")
         return leaveChannels(client, client->getJoinedChannels());
 
     const std::vector<std::string> channel_names = splitVec(_args[0], ',');
     std::vector<std::string> channels_passwords;
-    if(_args.size() == 2)
+    if (_args.size() == 2)
         channels_passwords = splitVec(_args[1], ',');
     size_t p = 0;
     for (size_t i = 0; i < channel_names.size(); i++)
     {
-        Channel* channel = _server->getChannelByName(channel_names[i]);
-        
-        std::string pass = (!channel || (channel && channel->hasPassword())) && p < channels_passwords.size()  
-            ? channels_passwords[p++] : "";
-        std::cout << BG_GREEN << "channel: " << channel_names[i] << ", password: '" << pass << "'" << RE << std::endl; //#########
-        if(!channel)
+        Channel *channel = _server->getChannelByName(channel_names[i]);
+
+        std::string pass = (!channel || (channel && channel->hasPassword())) && p < channels_passwords.size()
+                               ? channels_passwords[p++]
+                               : "";
+        std::cout << BG_GREEN << "channel: " << channel_names[i] << ", password: '" << pass << "'" << RE << std::endl; // #########
+        if (!channel)
         {
             if (isValidChannelName(channel_names[i]))
                 channel = joinNewChannel(client, channel_names[i], pass);
@@ -112,9 +117,9 @@ void Command::executeJoin(Client *client)
     }
 }
 
-Channel* Command::joinNewChannel(Client *client, const std::string &channel_name, const std::string& pass)
+Channel *Command::joinNewChannel(Client *client, const std::string &channel_name, const std::string &pass)
 {
-    Channel* channel = _server->createChannel(channel_name, pass);
+    Channel *channel = _server->createChannel(channel_name, pass);
     channel->addOperator(client);
     channel->addClient(client);
     client->joinChannel(channel_name);
@@ -122,20 +127,25 @@ Channel* Command::joinNewChannel(Client *client, const std::string &channel_name
     return channel;
 }
 
-void Command::joinExistingChannel(Client *client, Channel *channel, const std::string& pass)
+void Command::joinExistingChannel(Client *client, Channel *channel, const std::string &pass)
 {
-    if(channel->isMember(client))
+    if (channel->isMember(client))
         return client->queueMsg(ERR_USERONCHANNEL(client->getNickname(), channel->getName()));
-    else if(channel->isInviteOnly() && !channel->isInvitedClient(client))
+    else if (channel->isInviteOnly() && !channel->isInvitedClient(client))
         return client->queueMsg(ERR_INVITEONLYCHAN(channel->getName()));
-    else if(channel->hasPassword() && !channel->checkPasswordEquality(pass))
+    else if (channel->hasPassword() && !channel->checkPasswordEquality(pass))
         return client->queueMsg(ERR_BADCHANNELKEY(channel->getName()));
-    else if(channel->isFull())
+    else if (channel->isFull())
         return client->queueMsg(ERR_CHANNELISFULL(channel->getName()));
+
+    if (channel->isInviteOnly())
+        channel->removeInvitedClient(client);
+
     channel->addClient(client);
     client->joinChannel(channel->getName());
     // const std::string& message = client->getNickname() + ":" + _args.back() + "\r\n";
+
     sendJoinInfo(client, channel);
 
-    //channel->globalMessage(client, ":" + client->getNickname() + " JOIN " + channel_names[i] + "\r\n");      
+    // channel->globalMessage(client, ":" + client->getNickname() + " JOIN " + channel_names[i] + "\r\n");
 }
