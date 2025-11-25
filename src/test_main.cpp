@@ -5,8 +5,5 @@
 #include "../incl/Command.hpp"
 
 int main() {
-
-
-
   return 0;
 }
