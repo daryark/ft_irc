@@ -8,7 +8,8 @@
 tests/
 .pytest_cache
 pytest.ini
-
+.idea/
+.vscode/
 
 
 # *       #ignore all
