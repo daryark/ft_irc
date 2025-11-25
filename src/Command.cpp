@@ -74,7 +74,7 @@ void Command::executeAllMembersInChannel(Client *client)
     PrintMembersInChannel(*_server, _args[0]);
 }
 
-bool Command::checkPreconditions(Client* client, size_t min_args_size)
+bool Command::checkPreconditions(Client *client, size_t min_args_size)
 {
     if (!client->isRegistered())
     {
@@ -105,8 +105,8 @@ void Command::executeQuit(Client *client)
 
 void Command::executeInvite(Client *client)
 {
-    // if(!client->isRegistered())
-    //     return client->queueMsg("451 JOIN :Not registered");
+    if (!client->isRegistered())
+        return client->queueMsg(ERR_NOTREGISTERED(client->getSafeNickname(), "INVITE"));
     // Реализация метода executeInvite
 
     if (_args.size() < 2)
@@ -116,24 +116,26 @@ void Command::executeInvite(Client *client)
     const std::string &channelName = _args[1];
 
     Channel *channel = _server->getChannelByName(channelName);
-    if (!channel)
+    if(!channel)
         return client->queueMsg(ERR_NOSUCHCHANNEL(channelName));
 
-    if (!channel->isMember(client))
+    if(!channel->isMember(client))
         return client->queueMsg(ERR_NOTONCHANNEL(channelName));
 
-    if (!channel->isOperator(client))
+    if(!channel->isOperator(client))
         return client->queueMsg(ERR_CHANOPRIVSNEEDED(channelName));
 
     Client *targetClient = _server->getClientByNickname(targetNick);
-    if (!targetClient)
+    if(!targetClient)
         return client->queueMsg(ERR_NOSUCHNICK(targetNick));
 
-    if (channel->isMember(targetClient))
+    if(channel->isMember(targetClient))
         return client->queueMsg(ERR_USERONCHANNEL(targetNick, channelName));
 
-    channel->addClient(targetClient);
-    targetClient->joinChannel(channelName);
+    // channel->addClient(targetClient);
+    // targetClient->joinChannel(channelName);
+    channel->addInvitedClient(targetClient);
+    targetClient->queueMsg(RPL_INVITING(client->getNickname(), targetClient->getNickname(), channel->getName()));
 }
 
 //*TOPIC <channel> [: [<topic>]]
@@ -162,8 +164,8 @@ void Command::executeTopic(Client *client)
         if (_args[1] != ":")
             return client->queueMsg(ERR_NEEDMOREPARAMS(client->getNickname(), "TOPIC"));
         //! if -t (flag) - then only operator can change the topic
-        // if(!channel->isOperator(client) && channel->getTopic().empty())
-        //     return client->queueMsg(ERR_CHANOPRIVSNEEDED(channelName));
+        if (!channel->isOperator(client) && channel->isTopicSetByOperator())
+            return client->queueMsg(ERR_CHANOPRIVSNEEDED(channelName));
         const std::string &newTopic = _args.size() == 2 ? "" : _args[2];
         channel->setTopic(newTopic);
         channel->globalMessage(client,
@@ -171,4 +173,3 @@ void Command::executeTopic(Client *client)
         "TOPIC", channelName, newTopic), true);
     }
 }
-

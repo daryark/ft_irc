@@ -59,5 +59,8 @@
 #define ERR_BADCHANNAME(channel)(PREFIX("479") + channel + ": Bad channel name\r\n")
 #define ERR_CHANOPRIVSNEEDED(channel)(PREFIX("482") + channel + " :You're not channel operator\r\n")
 
-#define RPL_CHANNELMODEIS(channel, modes) (PREFIX("324") + channel + " " + modes + " :is now channel modes\r\n")
-#define ERR_UNKNOWNMODE(nick, mode) (PREFIX("472") + nick + " " + mode + " :is unknown mode\r\n")
+#define RPL_CHANNELMODEIS(channel, modes)(PREFIX("324") + channel + " " + modes + " :is now channel modes\r\n")
+#define ERR_UNKNOWNMODE(nick, mode)(PREFIX("472") + nick + " " + mode + " :is unknown mode\r\n")
+
+
+#define RPL_INVITING(nick, target, channel)(PREFIX("341") + nick + " " + target + " " + channel + "\r\n")

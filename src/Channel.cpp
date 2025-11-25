@@ -6,8 +6,6 @@ Channel::Channel(const std::string &name, const std::string &password): _name(na
 	_max_clients = -1;
   _hasPassword = (password.empty() ? false : true);
 	_is_invite_only = false;
-  _hasLimit = false;
-  _isTopicSetByOperator = false;
 }
 
 Channel::~Channel()
@@ -113,8 +111,8 @@ void Channel::globalMessage(Client* sender, std::string message, bool send_to_se
 {
   for (std::set<Client *>::iterator it = _members.begin(); it != _members.end(); ++it)
   {
-    if (*it == sender && !send_to_sender)
-      continue ;
+    if (*it == sender)
+      continue;
     (*it)->queueMsg(message);
   }
 }
@@ -122,6 +120,8 @@ void Channel::globalMessage(Client* sender, std::string message, bool send_to_se
 int Channel::getSize() const { return _members.size(); }
 
 std::set<Client *> Channel::getClients(){return _members; }
+std::set<Client *> Channel::getOperators(){return _operators; }
+std::set<Client *> Channel::getInvitedClients(){return _invitedClient; }
 
 
 //new methods
@@ -130,3 +130,8 @@ void Channel::setTopicSetByOperator(bool state) { _isTopicSetByOperator = state;
 
 bool Channel::hasLimit() const { return _hasLimit; }
 void Channel::setMaxClients(int max_clients){_max_clients = max_clients; }
+
+
+void Channel::addInvitedClient(Client *client){_invitedClient.insert(client);}
+void Channel::removeInvitedClient(Client *client) {_invitedClient.erase(client);}
+  

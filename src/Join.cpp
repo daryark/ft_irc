@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   Join.cpp                                           :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/10/28 14:41:01 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/11/24 22:32:38 by dyarkovs         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "../incl/Command.hpp"
 
 //#move smwhere to helpers!
@@ -60,23 +48,24 @@ void Command::sendJoinInfo(Client *client, Channel *channel)
 void Command::executeJoin(Client *client)
 {
     if (!checkPreconditions(client, 1))
-        return ;
+        return;
     if (_args.size() == 1 && _args[0] == "0")
         return leaveChannels(client, client->getJoinedChannels());
 
     const std::vector<std::string> channel_names = splitVec(_args[0], ',');
     std::vector<std::string> channels_passwords;
-    if(_args.size() == 2)
+    if (_args.size() == 2)
         channels_passwords = splitVec(_args[1], ',');
     size_t p = 0;
     for (size_t i = 0; i < channel_names.size(); i++)
     {
-        Channel* channel = _server->getChannelByName(channel_names[i]);
-        
-        std::string pass = (!channel || (channel && channel->hasPassword())) && p < channels_passwords.size()  
-            ? channels_passwords[p++] : "";
-        std::cout << BG_GREEN << "channel: " << channel_names[i] << ", password: '" << pass << "'" << RE << std::endl; //#########
-        if(!channel)
+        Channel *channel = _server->getChannelByName(channel_names[i]);
+
+        std::string pass = (!channel || (channel && channel->hasPassword())) && p < channels_passwords.size()
+                               ? channels_passwords[p++]
+                               : "";
+        std::cout << BG_GREEN << "channel: " << channel_names[i] << ", password: '" << pass << "'" << RE << std::endl; // #########
+        if (!channel)
         {
             if (isValidChannelName(channel_names[i]))
                 channel = joinNewChannel(client, channel_names[i], pass);
@@ -88,9 +77,9 @@ void Command::executeJoin(Client *client)
     }
 }
 
-Channel* Command::joinNewChannel(Client *client, const std::string &channel_name, const std::string& pass)
+Channel *Command::joinNewChannel(Client *client, const std::string &channel_name, const std::string &pass)
 {
-    Channel* channel = _server->createChannel(channel_name, pass);
+    Channel *channel = _server->createChannel(channel_name, pass);
     channel->addOperator(client);
     channel->addClient(client);
     client->joinChannel(channel_name);
@@ -98,20 +87,25 @@ Channel* Command::joinNewChannel(Client *client, const std::string &channel_name
     return channel;
 }
 
-void Command::joinExistingChannel(Client *client, Channel *channel, const std::string& pass)
+void Command::joinExistingChannel(Client *client, Channel *channel, const std::string &pass)
 {
-    if(channel->isMember(client))
+    if (channel->isMember(client))
         return client->queueMsg(ERR_USERONCHANNEL(client->getNickname(), channel->getName()));
-    else if(channel->isInviteOnly() && !channel->isInvitedClient(client))
+    else if (channel->isInviteOnly() && !channel->isInvitedClient(client))
         return client->queueMsg(ERR_INVITEONLYCHAN(channel->getName()));
-    else if(channel->hasPassword() && !channel->checkPasswordEquality(pass))
+    else if (channel->hasPassword() && !channel->checkPasswordEquality(pass))
         return client->queueMsg(ERR_BADCHANNELKEY(channel->getName()));
-    else if(channel->isFull())
+    else if (channel->isFull())
         return client->queueMsg(ERR_CHANNELISFULL(channel->getName()));
+
+    if (channel->isInviteOnly())
+        channel->removeInvitedClient(client);
+
     channel->addClient(client);
     client->joinChannel(channel->getName());
     // const std::string& message = client->getNickname() + ":" + _args.back() + "\r\n";
+
     sendJoinInfo(client, channel);
 
-    //channel->globalMessage(client, ":" + client->getNickname() + " JOIN " + channel_names[i] + "\r\n");      
+    // channel->globalMessage(client, ":" + client->getNickname() + " JOIN " + channel_names[i] + "\r\n");
 }

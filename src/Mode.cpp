@@ -2,9 +2,9 @@
 
 void Command::executeMode(Client *client)
 {
-    if (!checkPreconditions(client, 1))
-		return ;
-	
+	if (!checkPreconditions(client, 1))
+		return;
+
 	const std::string &channelName = _args[0];
 	Channel *channel = _server->getChannelByName(channelName);
 
@@ -122,7 +122,10 @@ void Command::executeMode(Client *client)
 		if (!modeChanges.empty())
 		{
 			modeChanges.pop_back(); // remove trailing space
-			channel->globalMessage(client, "MODE " + channelName + " " + modeChanges + modes, true);
+			channel->globalMessage(client, "MODE " + channelName + " " + modeChanges + modes + "\r\n", true);
+			// channel->globalMessage(client,
+			// MSG(client->getNickname(),client->getUsername(), client->getHostname(),
+        	// "TOPIC", channelName, newTopic), true)
 		}
 	}
 }

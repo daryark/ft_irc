@@ -42,7 +42,7 @@ void Command::executeKickOne(Client* client, const std::string& channel_name, co
         _server->deleteChannel(target_nick);
     else
         channel->globalMessage(client, 
-        MSG(client->getNickname(), client->getUsername(), client->getHostname(), _command, channel_name, comment), true);
+        MSG(client->getNickname(), client->getUsername(), client->getHostname(), _command, channel_name, comment), false);
 }
 
 bool Command::canKickFromChannel(Client* client, const std::string& channel_name)

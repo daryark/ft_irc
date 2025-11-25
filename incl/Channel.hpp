@@ -22,7 +22,7 @@ private:
 	std::string _password;
 	bool _hasPassword;
 
-	//new state
+	// new state
 	int _max_clients;
 	bool _hasLimit;//#into snake case
 
@@ -40,48 +40,38 @@ public:
 	void setTopic(const std::string &topic); //+
 	const std::string &getTopic() const;	 //+
 
-	void setPassword(const std::string &password);	  //+
+	void setPassword(const std::string &password);				   //+
 	bool checkPasswordEquality(const std::string &password) const; //+
 
-	bool hasPassword() const;//+
+	bool hasPassword() const; //+
 
 	void setInviteOnly(bool state); // +
 	bool isInviteOnly() const;
-	bool isInvitedClient(Client* client) const;
+	bool isInvitedClient(Client *client) const;
+	void addInvitedClient(Client *client);
+	void removeInvitedClient(Client *client); //+
 
 	void addClient(Client *client);		 //+
 	void removeClient(Client *client);	 //+
 	bool isMember(Client *client) const; //+
-	std::set<Client *> getClients(); //+
-
+	
 	void addOperator(Client *client);	   //+
 	void removeOperator(Client *client);   //+
 	bool isOperator(Client *client) const; //+
-	bool hasOperator() const; //+
-
-	bool isFull() const;//+
-
-	void globalMessage(Client* sender, std::string message, bool send_to_sender) const; //+
-
+	bool hasOperator() const;			   //+
+	bool isFull() const; //+
+	
+	void globalMessage(Client *sender, std::string message, bool send_to_sender) const; //+
+	
 	int getSize() const; //+
-
+	std::set<Client *> getClients();	 //+
+	std::set<Client *> getOperators();
+	std::set<Client *> getInvitedClients();
 
 	//	new methods
-	bool isTopicSetByOperator() const; //+
+	bool isTopicSetByOperator() const;		//+
 	void setTopicSetByOperator(bool state); //+
 
-	bool hasLimit() const; //+
+	bool hasLimit() const;				 //+
 	void setMaxClients(int max_clients); //+
-
-	// void addClient(int client_fd);
-
-	// void removeClient(int client_fd);
-
-	//    void addOperator(int client_fd);
-
-	// void removeOperator(int client_fd);
-
-	// bool isOperator(int client_fd) const;
-
-	// void broadcast(const std::string& message, int exclude_fd = -1) const;
 };
