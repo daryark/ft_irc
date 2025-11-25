@@ -5,6 +5,8 @@
 **/*.o
 **/*.d
 **/*.replace
+.idea/
+.vscode/
 tests/
 .pytest_cache
 pytest.ini

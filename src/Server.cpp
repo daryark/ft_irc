@@ -6,7 +6,7 @@
 /*   By: dyarkovs <dyarkovs@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 20:45:16 by dyarkovs          #+#    #+#             */
-/*   Updated: 2025/11/24 23:51:21 by dyarkovs         ###   ########.fr       */
+/*   Updated: 2025/11/25 10:59:51 by dyarkovs         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,12 +70,12 @@ void Server::run()
     signal(SIGTSTP, sigHandler);
     while (g_runnning)
     {
-        if (poll(_pollfds.data(), (int)_pollfds.size(), 1000) < 0) //*7
+        if (poll(_pollfds.data(), (int)_pollfds.size(), 1000) == -1) //*7
             break ; //!clean up & break
         for (int i = 0; i < (int)_pollfds.size(); i++)
         {
             if (_pollfds[i].revents & (POLLHUP | POLLERR | POLLNVAL))
-                disconnectClient(_pollfds[i].fd);
+                disconnectClient(_pollfds[i].fd); //!new valid it return!!!!
             else if (_pollfds[i].revents & POLLIN) //*6.1
             {
                 if (_pollfds[i].fd == _head_socket)
