@@ -14,7 +14,7 @@ Server::Server(int port, std::string password): _port(port), _password(password)
 Server::~Server()
 {
     close(_head_socket);
-    // _pollfds.erase();
+
     std::map<std::string, Channel*>::iterator it;
     for (it = _channels.begin(); it != _channels.end(); ++it)
         delete it->second;
@@ -38,8 +38,7 @@ void    Server::init()
     if (setsockopt(_head_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1) //*2
         throw std::runtime_error("setsockopt");
 
-    if (fcntl(_head_socket, F_SETFL, O_NONBLOCK) == -1) //*3
-        throw std::runtime_error("fcntl");
+    setSocketNonBlock(_head_socket);
 
     fillSockaddrIn(_addr, AF_INET, _port, INADDR_ANY);
     if (bind(_head_socket, (sockaddr *)&_addr, sizeof(_addr)) == -1)
@@ -56,23 +55,27 @@ void Server::run()
     pushPollfd(_head_socket, POLLIN, 0); //#6
     signal(SIGINT, sigHandler);
     signal(SIGTSTP, sigHandler);
+    bool client_disconnected = 0;
     while (g_runnning)
     {
         if (poll(_pollfds.data(), (int)_pollfds.size(), 1000) == -1) //*7
-            break ; //!clean up & break
+            break ;
         for (int i = 0; i < (int)_pollfds.size(); i++)
         {
             if (_pollfds[i].revents & (POLLHUP | POLLERR | POLLNVAL))
-                disconnectClient(_pollfds[i].fd); //!new valid it return!!!!
+                client_disconnected = disconnectClient(_pollfds[i].fd);
             else if (_pollfds[i].revents & POLLIN) //*6.1
             {
                 if (_pollfds[i].fd == _head_socket)
                    acceptClient();
                 else
-                    readMsg(_pollfds[i].fd);
+                    client_disconnected = readMsg(_pollfds[i].fd);
             }
             else if (_pollfds[i].revents & POLLOUT)
                sendMsg(_pollfds[i]);
+
+            if (client_disconnected)
+                --i;
         }
     }
 }
@@ -89,17 +92,21 @@ void    Server::acceptClient()
         return ;
     }
     pushPollfd(client_sock, POLLIN | POLLOUT, 0);
+    setSocketNonBlock(client_sock);
     const std::string& ip = inet_ntoa(client.sin_addr);
     _clients.insert(std::pair<int, Client*>(client_sock, new Client(client_sock, ip, this)));
+
     std::cout << B_GREEN << PR_CL_CONNECT << client_sock << RE << std::endl;
     getClient(client_sock)->queueMsg(PR_IN_MSG);
 }
 
-void   Server::disconnectClient(int fd)
+bool   Server::disconnectClient(int fd)
 {
-    std::map<int, Client*>::iterator to_disconnect = _clients.find(fd);
-    delete to_disconnect->second;
-    _clients.erase(to_disconnect); //map
+    std::map<int, Client*>::iterator client = _clients.find(fd);
+    if(client == _clients.end())
+        return false;
+    delete client->second;
+    _clients.erase(client); //map
     close(fd);
     
     for (std::vector<pollfd>::iterator it = _pollfds.begin(); it != _pollfds.end(); it++)
@@ -108,27 +115,29 @@ void   Server::disconnectClient(int fd)
         {
             std::cout << "disconnected" << "; ";
             _pollfds.erase(it); //vector
-            break;
+            return true;
         }
     }
+    return false;
 }
 
-void    Server::readMsg(int fd)
+bool    Server::readMsg(int fd)
 {
-    char buf[MAX_MSG + 2];
+    char buf[MAX_MSG + 2] = {0};
     std::cout << B_YELLOW << "fd: " << fd << RE << "; ";//##########
     int recv_bytes = recv(fd, buf, MAX_MSG, 0);
     std::cout << "recived bytes: " << recv_bytes << "; ";//#########
-    buf[recv_bytes] = '\r';
-    buf[recv_bytes + 1] = '\n';
+    buf[recv_bytes] = '\r';//!!!
+    buf[recv_bytes + 1] = '\n';//!!!
     if (recv_bytes <= 0)
     {
         std::cerr << (recv_bytes == 0 
             ? "Client disconnected on socket fd: " 
             : "Connection problem on fd: ") << fd <<std::endl;
-            disconnectClient(fd);
-        }
+            return disconnectClient(fd);
+    }
     processInMsg(fd, buf, recv_bytes + 2);
+    return false;
 }
 
 void    Server::processInMsg(int fd, char* buf, int len)
@@ -159,7 +168,7 @@ void    Server::sendMsg(pollfd& pollfd)
     std::deque<std::string>& msg_queue = client->getMsgQueue();
     while(!msg_queue.empty())
     {
-        int n = send(pollfd.fd, msg_queue.front().c_str(), msg_queue.front().size(), MSG_NOSIGNAL);
+        ssize_t n = send(pollfd.fd, msg_queue.front().c_str(), msg_queue.front().size(), MSG_NOSIGNAL);
         if (n <= 0)
             break; // socket full, wait for next POLLOUT
         msg_queue.pop_front();

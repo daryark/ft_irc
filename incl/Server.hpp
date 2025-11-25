@@ -45,13 +45,16 @@ private:
 	Server(const Server &){};
 	Server &operator=(const Server &){return *this;};
 	void acceptClient();
-	void readMsg(int fd);
-	void pushPollfd(int, short, short);
+	bool readMsg(int fd);
+	void sendMsg(pollfd& pollfd);
 	void processInMsg(int fd, char* buf, int len);
+	
 	void fillSockaddrIn(struct sockaddr_in& addr, short int in_family, unsigned short int in_port ,uint32_t s_addr);
+	void pushPollfd(int, short, short);
+	void setSocketNonBlock(int fd);
 	void fancyPrint(const std::string& opt);
 	
-	public:
+public:
 	Server();
 	Server(int port, std::string password);
 	~Server();
@@ -59,11 +62,9 @@ private:
 	// methods
 	void init();
 	void run();
-	// std::vector<pollfd>::iterator	disconnect_client(int fd);
-	void disconnectClient(int fd);
 	
 	void markPfdForPollout(int fd);
-	void sendMsg(pollfd& pollfd);
+	bool disconnectClient(int fd);
 	
 	const std::string &getPassword() const; //+
 	const std::map<int, Client*> &getClients() const; //+
@@ -72,7 +73,6 @@ private:
 	Client*	getClient(int fd)	const;
 	
 	Channel* getChannelByName(const std::string& name);//+
-	// Channel *creatChannel(Client* client, const std::string& channel_name, const std::string& pass);
 	Channel* createChannel(const std::string& channel_name, const std::string& channel_password); //+
 	void deleteChannel(const std::string& channel_name);
 

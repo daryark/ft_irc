@@ -93,7 +93,6 @@ bool Command::checkPreconditions(Client *client, size_t min_args_size)
 //     // Реализация метода executePong
 // }
 
-//! if this member was an op in the channels, act the same way as in PART,KICK
 void Command::executeQuit(Client *client)
 {
     if (!checkPreconditions(client, 0))
