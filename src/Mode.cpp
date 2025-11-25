@@ -23,7 +23,7 @@ void Command::executeMode(Client *client)
 			modes += "t";
 		if (channel->hasLimit())
 			modes += "l";
-		return client->queueMsg(RPL_CHANNELMODEIS(channelName, modes));
+		return client->queueMsg(RPL_CHANNELMODEIS(client->getNickname(), channelName, modes));
 	}
 
 	// check is operator
@@ -122,10 +122,10 @@ void Command::executeMode(Client *client)
 		if (!modeChanges.empty())
 		{
 			modeChanges.pop_back(); // remove trailing space
-			channel->globalMessage(client, "MODE " + channelName + " " + modeChanges + modes + "\r\n", true);
-			// channel->globalMessage(client,
-			// MSG(client->getNickname(),client->getUsername(), client->getHostname(),
-        	// "TOPIC", channelName, newTopic), true)
+			// channel->globalMessage(client, "MODE " + channelName + " " + modeChanges + modes + "\r\n", true);
+			channel->globalMessage(client,
+			MSG(client->getNickname(),client->getUsername(), client->getHostname(),
+        	"MODE", channelName, modeChanges + "  " + modes), true);
 		}
 	}
 }
