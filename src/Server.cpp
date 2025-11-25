@@ -28,7 +28,7 @@ Server::~Server()
     fancyPrint(PR_CLOSE);
 }
 
-void    Server::init()
+void Server::init()
 {
     _head_socket = socket(AF_INET, SOCK_STREAM, 0); //*1
     if (_head_socket == -1)
@@ -60,7 +60,7 @@ void Server::run()
     {
         if (poll(_pollfds.data(), (int)_pollfds.size(), 1000) == -1) //*7
             break ;
-        for (int i = 0; i < (int)_pollfds.size(); i++)
+        for (int i = 0; i < (int)_pollfds.size(); )
         {
             if (_pollfds[i].revents & (POLLHUP | POLLERR | POLLNVAL))
                 client_disconnected = disconnectClient(_pollfds[i].fd);
@@ -74,13 +74,13 @@ void Server::run()
             else if (_pollfds[i].revents & POLLOUT)
                sendMsg(_pollfds[i]);
 
-            if (client_disconnected)
-                --i;
+            if (!client_disconnected)
+                i++;
         }
     }
 }
 
-void    Server::acceptClient()
+void Server::acceptClient()
 {
     sockaddr_in client;
     std::memset(&client, 0, sizeof(client));
@@ -100,7 +100,7 @@ void    Server::acceptClient()
     getClient(client_sock)->queueMsg(PR_IN_MSG);
 }
 
-bool   Server::disconnectClient(int fd)
+bool Server::disconnectClient(int fd)
 {
     std::map<int, Client*>::iterator client = _clients.find(fd);
     if(client == _clients.end())
@@ -111,7 +111,7 @@ bool   Server::disconnectClient(int fd)
     
     for (std::vector<pollfd>::iterator it = _pollfds.begin(); it != _pollfds.end(); it++)
     {
-        if (it->fd == fd)
+        if (it->fd == fd) //#!vector std::find_if
         {
             std::cout << "disconnected" << "; ";
             _pollfds.erase(it); //vector
@@ -121,9 +121,9 @@ bool   Server::disconnectClient(int fd)
     return false;
 }
 
-bool    Server::readMsg(int fd)
+bool Server::readMsg(int fd)
 {
-    char buf[MAX_MSG + 2] = {0};
+    char buf[MAX_MSG] = {0};
     std::cout << B_YELLOW << "fd: " << fd << RE << "; ";//##########
     int recv_bytes = recv(fd, buf, MAX_MSG, 0);
     std::cout << "recived bytes: " << recv_bytes << "; ";//#########
@@ -140,7 +140,7 @@ bool    Server::readMsg(int fd)
     return false;
 }
 
-void    Server::processInMsg(int fd, char* buf, int len)
+void Server::processInMsg(int fd, char* buf, int len)
 {
     Client* client = getClient(fd);
     if (!client)
@@ -152,7 +152,7 @@ void    Server::processInMsg(int fd, char* buf, int len)
     while((pos = all_buf.find("\r\n")) != std::string::npos)
     {
         std::string line = all_buf.substr(0, pos);
-        all_buf.erase(0, pos + 2);
+        all_buf.erase(0, pos + 1);
         if (line.empty())
         continue ;
         
@@ -162,7 +162,7 @@ void    Server::processInMsg(int fd, char* buf, int len)
     }
 }
 
-void    Server::sendMsg(pollfd& pollfd)
+void Server::sendMsg(pollfd& pollfd)
 {
     Client* client = getClient(pollfd.fd);
     std::deque<std::string>& msg_queue = client->getMsgQueue();
@@ -176,18 +176,6 @@ void    Server::sendMsg(pollfd& pollfd)
     pollfd.events &= ~POLLOUT; // stop monitoring POLLOUT until new msg
 }
 
-//*------------------helpers--------------------
-void    Server::markPfdForPollout(int fd)
-{
-    for (std::vector<pollfd>::iterator it = _pollfds.begin(); it != _pollfds.end(); ++it)
-    {
-        if (it->fd == fd)
-        {
-            it->events |= POLLOUT;
-            break;
-        }
-    }
-}
 
 //*getters
 const std::string& Server::getPassword() const { return _password; }
@@ -211,7 +199,7 @@ Channel* Server::getChannelByName(const std::string& name) {
 
 Client* Server::getClientByNickname(const std::string& nickname) {
     for (std::map<int, Client*>::const_iterator it = _clients.begin(); it != _clients.end(); ++it) {
-        if (it->second->getNickname() == nickname) {
+        if (it->second->getNickname() == nickname) { //#!vector std::find_if
             return it->second;
         }
     }
