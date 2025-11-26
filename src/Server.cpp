@@ -1,5 +1,6 @@
 #include "../incl/Server.hpp"
 #include "../incl/CommandFactory.hpp"
+#include <limits>
 
 volatile sig_atomic_t g_runnning = 1;
 
@@ -102,15 +103,15 @@ void Server::acceptClient()
 
 bool Server::disconnectClient(int fd)
 {
-    std::map<int, Client*>::iterator client = _clients.find(fd);
-    if(client == _clients.end())
+    std::map<int, Client*>::iterator erase_it = _clients.find(fd);
+    if(erase_it == _clients.end())
         return false;
-    delete client->second;
-    _clients.erase(client); //map
+    delete erase_it->second;
+    _clients.erase(erase_it); //map
     close(fd);
-    
     for (std::vector<pollfd>::iterator it = _pollfds.begin(); it != _pollfds.end(); it++)
     {
+        std::cout << "inside disconnectClient6\n";
         if (it->fd == fd) //#!vector std::find_if
         {
             std::cout << "disconnected" << "; ";
@@ -118,6 +119,8 @@ bool Server::disconnectClient(int fd)
             return true;
         }
     }
+
+    std::cout << "inside disconnectClient7\n";
     return false;
 }
 
@@ -127,16 +130,14 @@ bool Server::readMsg(int fd)
     std::cout << B_YELLOW << "fd: " << fd << RE << "; ";//##########
     int recv_bytes = recv(fd, buf, MAX_MSG, 0);
     std::cout << "recived bytes: " << recv_bytes << "; ";//#########
-    buf[recv_bytes] = '\r';//!!!
-    buf[recv_bytes + 1] = '\n';//!!!
     if (recv_bytes <= 0)
     {
         std::cerr << (recv_bytes == 0 
             ? "Client disconnected on socket fd: " 
             : "Connection problem on fd: ") << fd <<std::endl;
-            return disconnectClient(fd);
+        return disconnectClient(fd);
     }
-    processInMsg(fd, buf, recv_bytes + 2);
+    processInMsg(fd, buf, recv_bytes);
     return false;
 }
 
@@ -144,22 +145,33 @@ void Server::processInMsg(int fd, char* buf, int len)
 {
     Client* client = getClient(fd);
     if (!client)
-    return ;
+        return ;
     
     std::string& all_buf = client->getIncompleteMsg().append(buf, static_cast<size_t>(len)); //non-const Ref& of _incomplete_msg
     
-    size_t pos = 0;
-    while((pos = all_buf.find("\r\n")) != std::string::npos)
+    size_t pos = all_buf.find("\n");
+    while(pos != std::string::npos)
     {
         std::string line = all_buf.substr(0, pos);
-        all_buf.erase(0, pos + 1);
-        if (line.empty())
-        continue ;
-        
-        std::cout << BG_I_YELLOW << "LINE: " << line << RE << std::endl;//############
-        Command command = CommandFactory::parse(this,line);
-        command.executeCommand(client);
+        if (!line.empty() && line[line.length() - 1] == '\r')
+            line.erase(line.length() - 1); //erase 1 char inplace
+        all_buf = all_buf.erase(0, pos + 1);
+        if (!line.empty())
+        {
+            std::cout << BG_I_YELLOW << "LINE: " << line << RE << std::endl;//############
+            Command command = CommandFactory::parse(this,line);
+            command.executeCommand(client);
+        }
+        if (pos != std::string::npos)
+            std::cout << "POS ";
+        if (pos != std::numeric_limits<size_t>::max())
+            std::cout << "POS+ ";
+        if (!all_buf.empty())
+            std::cout << "ALL BUF ";
+        std::cout << "pos:" << pos << " allbuf len:" << all_buf.length() << std::endl;
+        pos = all_buf.find("\n");
     }
+    std::cout << "incomplete msg: " << client->getIncompleteMsg() << std::endl;
 }
 
 void Server::sendMsg(pollfd& pollfd)
