@@ -56,7 +56,7 @@ void Server::run()
     pushPollfd(_head_socket, POLLIN, 0); //#6
     signal(SIGINT, sigHandler);
     signal(SIGTSTP, sigHandler);
-    bool client_disconnected = 0;
+    bool client_disconnected = false;
     while (g_runnning)
     {
         if (poll(_pollfds.data(), (int)_pollfds.size(), 1000) == -1) //*7
@@ -111,7 +111,6 @@ bool Server::disconnectClient(int fd)
     close(fd);
     for (std::vector<pollfd>::iterator it = _pollfds.begin(); it != _pollfds.end(); it++)
     {
-        std::cout << "inside disconnectClient6\n";
         if (it->fd == fd) //#!vector std::find_if
         {
             std::cout << "disconnected" << "; ";
@@ -119,8 +118,6 @@ bool Server::disconnectClient(int fd)
             return true;
         }
     }
-
-    std::cout << "inside disconnectClient7\n";
     return false;
 }
 
@@ -147,7 +144,7 @@ void Server::processInMsg(int fd, char* buf, int len)
     if (!client)
         return ;
     
-    std::string& all_buf = client->getIncompleteMsg().append(buf, static_cast<size_t>(len)); //non-const Ref& of _incomplete_msg
+    std::string& all_buf = client->getIncompleteMsg().append(buf, static_cast<size_t>(len)); //non-const Ref& of _incomplete_msg on Client
     
     size_t pos = all_buf.find("\n");
     while(pos != std::string::npos)
@@ -162,16 +159,8 @@ void Server::processInMsg(int fd, char* buf, int len)
             Command command = CommandFactory::parse(this,line);
             command.executeCommand(client);
         }
-        if (pos != std::string::npos)
-            std::cout << "POS ";
-        if (pos != std::numeric_limits<size_t>::max())
-            std::cout << "POS+ ";
-        if (!all_buf.empty())
-            std::cout << "ALL BUF ";
-        std::cout << "pos:" << pos << " allbuf len:" << all_buf.length() << std::endl;
-        pos = all_buf.find("\n");
+        pos = getClient(fd) ? all_buf.find("\n") : std::string::npos;
     }
-    std::cout << "incomplete msg: " << client->getIncompleteMsg() << std::endl;
 }
 
 void Server::sendMsg(pollfd& pollfd)
