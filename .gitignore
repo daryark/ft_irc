@@ -7,11 +7,9 @@
 **/*.replace
 .idea/
 .vscode/
-tests/
 .pytest_cache
-pytest.ini
-.idea/
-.vscode/
+# tests/
+# pytest.ini
 
 
 # *       #ignore all
