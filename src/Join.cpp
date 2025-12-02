@@ -93,9 +93,9 @@ void Command::joinExistingChannel(Client *client, Channel *channel, const std::s
         return client->queueMsg(ERR_USERONCHANNEL(client->getNickname(), channel->getName()));
     else if (channel->isInviteOnly() && !channel->isInvitedClient(client))
         return client->queueMsg(ERR_INVITEONLYCHAN(channel->getName()));
-    else if (channel->hasPassword() && !channel->checkPasswordEquality(pass))
+    else if (channel->hasPassword() && !channel->checkPasswordEquality(pass) && !channel->isInvitedClient(client))
         return client->queueMsg(ERR_BADCHANNELKEY(channel->getName()));
-    else if (channel->isFull())
+    else if (channel->hasLimit() && channel->isFull() && !channel->isInvitedClient(client))
         return client->queueMsg(ERR_CHANNELISFULL(channel->getName()));
 
     if (channel->isInviteOnly())
