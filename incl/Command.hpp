@@ -36,6 +36,7 @@ private:
 	void executeInvite(Client *client);
 	void executeTopic(Client *client);
 	void executeMode(Client *client);
+	void executePong(Client *client);
 	void executeQuit(Client *client);
 
 	bool isValidNickname()	const;

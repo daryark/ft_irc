@@ -9,11 +9,13 @@ Client::Client(const int fd,  const std::string& hostname, Server* server): _fd(
 	_authenticated = false;
 	_registered = false;
 	_incomplete_msg = "";
+	_last_activity = time(NULL);
+	_ping_sent = false;
 }
 
 Client::~Client()
 {
-	close(_fd);
+	close(_fd);//?!it's already been closed on disconnection
 	//_joined_channels.clear();
 }
 
@@ -46,6 +48,14 @@ bool Client::isAuthenticated() const { return _authenticated; }
 void Client::setRegistered(bool state) { _registered = state; }
 
 bool Client::isRegistered() const { return _registered; }
+
+time_t Client::getLastActivityTime() const { return _last_activity; }
+
+void Client::setLastActivityTime(time_t time){ _last_activity = time; }
+
+bool Client::isPingSent() const { return _ping_sent; }
+
+void Client::setPingSent(bool status){ _ping_sent = status; }
 
 std::string& Client::getIncompleteMsg(){ return _incomplete_msg; }
 

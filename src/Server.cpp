@@ -61,6 +61,8 @@ void Server::run()
     {
         if (poll(_pollfds.data(), static_cast<int>(_pollfds.size()), 1000) == -1) //*7
             break ;
+        // checkClientsTimeouts();
+        
         for (int i = 0; i < static_cast<int>(_pollfds.size()); )
         {
             if (actionOnFd(_pollfds[i]))
@@ -90,7 +92,7 @@ void Server::acceptClient()
     sockaddr_in client;
     std::memset(&client, 0, sizeof(client));
     socklen_t   clSize = sizeof(client);
-    int client_sock = accept(_head_socket, (sockaddr*)&client, &clSize);
+    int client_sock = accept(_head_socket, reinterpret_cast<sockaddr *>(&client), &clSize);
     if (client_sock == -1)
     {
         std::cerr << RED << PR_CL_NOT_CONNECT << RE << std::endl;
@@ -128,9 +130,7 @@ bool Server::disconnectClient(int fd)
 bool Server::readMsg(int fd)
 {
     char buf[MAX_MSG] = {0};
-    std::cout << B_YELLOW << "fd: " << fd << RE << "; ";//##########
     int recv_bytes = recv(fd, buf, MAX_MSG, 0);
-    std::cout << "recived bytes: " << recv_bytes << "; ";//#########
     if (recv_bytes <= 0)
     {
         std::cerr << (recv_bytes == 0 
@@ -176,6 +176,8 @@ void Server::sendMsg(pollfd& pollfd)
         ssize_t n = send(pollfd.fd, msg_queue.front().c_str(), msg_queue.front().size(), MSG_NOSIGNAL);
         if (n <= 0)
             break; // socket full, wait for next POLLOUT
+        if (msg_queue.front().find_first_of('P'))
+            std::cout << BG_BLUE << "PING MSG" << RE << std::endl; //###################
         msg_queue.pop_front();
     }
     pollfd.events &= ~POLLOUT; // stop monitoring POLLOUT until new msg

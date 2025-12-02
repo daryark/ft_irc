@@ -24,6 +24,7 @@ void Command::initCommandMap()
     _commandMap["MODE"] = &Command::executeMode;
     _commandMap["QUIT"] = &Command::executeQuit;
     _commandMap["INVITE"] = &Command::executeInvite;
+    _commandMap["PONG"] = &Command::executePong;
 
     _commandMap["allClients"] = &Command::executeAllClients;
     _commandMap["allChannel"] = &Command::executeAllChannel;
@@ -89,9 +90,11 @@ bool Command::checkPreconditions(Client *client, size_t min_args_size)
     return true;
 }
 
-// void Command::executePong(Client* client) {
-//     // Реализация метода executePong
-// }
+void Command::executePong(Client* client) {
+    // if (_args.size() == 1 && _args[0] == "server\r\n")
+    client->setLastActivityTime(time(NULL));
+    client->setPingSent(false);
+}
 
 void Command::executeQuit(Client *client)
 {
