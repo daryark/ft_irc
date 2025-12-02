@@ -27,8 +27,8 @@ class Client;
 
 #define SERVER_NAME "ircserv"
 #define MAX_MSG	512
-#define PING_INTERVAL 10 //60
-#define PONG_TIMEOUT 10000 //30
+#define PING_INTERVAL 60 //60
+#define PONG_TIMEOUT 30 //30
 
 extern volatile sig_atomic_t g_runnning;//*9
 

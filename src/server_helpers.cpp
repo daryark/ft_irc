@@ -38,6 +38,7 @@ void Server::setSocketNonBlock(int fd)
 void Server::checkClientsTimeouts()
 {
     time_t now = time(NULL);
+    std::vector<int> clients_to_disconnect;
 
     for (std::map<int, Client*>::iterator it = _clients.begin();
         it != _clients.end(); it++)
@@ -48,15 +49,17 @@ void Server::checkClientsTimeouts()
 
         if (!is_ping_sent && (now - last_activity >= PING_INTERVAL))
         {
-            // std::string msg = "PING :" + static_cast<std::string>(SERVER_NAME) + "\r\n";
-            // send(client->getFd(), msg.c_str(), msg.size(), 0);
+            std::cout << "PING" << std::endl;
             client->queueMsg("PING :" + static_cast<std::string>(SERVER_NAME) + "\r\n");
             client->setPingSent(true);
             client->setLastActivityTime(now);
         }
-        else if (is_ping_sent && last_activity >= PONG_TIMEOUT)
-            disconnectClient(client->getFd());
+        else if (is_ping_sent && (now - last_activity >= PONG_TIMEOUT))
+            clients_to_disconnect.push_back(client->getFd());
     }
+
+    for( size_t i = 0; i < clients_to_disconnect.size(); i++)
+        disconnectClient(clients_to_disconnect[i]);
 }
 
 void    Server::fancyPrint(const std::string& opt)

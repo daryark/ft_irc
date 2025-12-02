@@ -91,9 +91,7 @@ bool Command::checkPreconditions(Client *client, size_t min_args_size)
 }
 
 void Command::executePong(Client* client) {
-    // if (_args.size() == 1 && _args[0] == "server\r\n")
-    client->setLastActivityTime(time(NULL));
-    client->setPingSent(false);
+    client->updateActive();
 }
 
 void Command::executeQuit(Client *client)

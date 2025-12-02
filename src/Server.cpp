@@ -61,7 +61,8 @@ void Server::run()
     {
         if (poll(_pollfds.data(), static_cast<int>(_pollfds.size()), 1000) == -1) //*7
             break ;
-        // checkClientsTimeouts();
+
+        checkClientsTimeouts();
         
         for (int i = 0; i < static_cast<int>(_pollfds.size()); )
         {
@@ -148,6 +149,7 @@ void Server::processInMsg(int fd, char* buf, int len)
     if (!client)
         return ;
     
+    client->updateActive();
     std::string& all_buf = client->getIncompleteMsg().append(buf, static_cast<size_t>(len)); //non-const Ref& of _incomplete_msg on Client
     
     size_t pos = all_buf.find("\n");
@@ -176,8 +178,6 @@ void Server::sendMsg(pollfd& pollfd)
         ssize_t n = send(pollfd.fd, msg_queue.front().c_str(), msg_queue.front().size(), MSG_NOSIGNAL);
         if (n <= 0)
             break; // socket full, wait for next POLLOUT
-        if (msg_queue.front().find_first_of('P'))
-            std::cout << BG_BLUE << "PING MSG" << RE << std::endl; //###################
         msg_queue.pop_front();
     }
     pollfd.events &= ~POLLOUT; // stop monitoring POLLOUT until new msg

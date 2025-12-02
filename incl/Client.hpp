@@ -74,6 +74,7 @@ public:
 
 	bool isPingSent() const;
 	void setPingSent(bool status);
+	void updateActive();
 
 	void joinChannel(const std::string &channel);	//+
 	void removeFromChannel(const std::string &channel); //+

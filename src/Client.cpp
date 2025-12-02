@@ -57,6 +57,13 @@ bool Client::isPingSent() const { return _ping_sent; }
 
 void Client::setPingSent(bool status){ _ping_sent = status; }
 
+void Client::updateActive()
+{
+	_last_activity = time(NULL);
+    _ping_sent = false;
+	std::cout << BG_BLUE << "active. Time: " << _last_activity << RE << std::endl;
+}
+
 std::string& Client::getIncompleteMsg(){ return _incomplete_msg; }
 
 void Client::setIncompleteMsg(const std::string &incomplete_msg) { _incomplete_msg = incomplete_msg; }
