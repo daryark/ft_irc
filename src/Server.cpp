@@ -28,7 +28,7 @@ Server::~Server()
     fancyPrint(PR_CLOSE);
 }
 
-void    Server::init()
+void Server::init()
 {
     _head_socket = socket(AF_INET, SOCK_STREAM, 0); //*1
     if (_head_socket == -1)
@@ -53,34 +53,39 @@ void    Server::init()
 void Server::run()
 {
     pushPollfd(_head_socket, POLLIN, 0); //#6
+
     signal(SIGINT, sigHandler);
     signal(SIGTSTP, sigHandler);
-    bool client_disconnected = 0;
+
     while (g_runnning)
     {
-        if (poll(_pollfds.data(), (int)_pollfds.size(), 1000) == -1) //*7
+        if (poll(_pollfds.data(), static_cast<int>(_pollfds.size()), 1000) == -1) //*7
             break ;
-        for (int i = 0; i < (int)_pollfds.size(); )
+        for (int i = 0; i < static_cast<int>(_pollfds.size()); )
         {
-            if (_pollfds[i].revents & (POLLHUP | POLLERR | POLLNVAL))
-                client_disconnected = disconnectClient(_pollfds[i].fd);
-            else if (_pollfds[i].revents & POLLIN) //*6.1
-            {
-                if (_pollfds[i].fd == _head_socket)
-                   acceptClient();
-                else
-                    client_disconnected = readMsg(_pollfds[i].fd);
-            }
-            else if (_pollfds[i].revents & POLLOUT)
-               sendMsg(_pollfds[i]);
-
-            if (!client_disconnected)
+            if (actionOnFd(_pollfds[i]))
                 i++;
         }
     }
 }
 
-void    Server::acceptClient()
+bool Server::actionOnFd(pollfd& pollfd)
+{
+    if (pollfd.revents & (POLLHUP | POLLERR | POLLNVAL))
+        return !disconnectClient(pollfd.fd);
+    else if (pollfd.revents & POLLIN) //*6.1
+    {
+        if (pollfd.fd == _head_socket)
+            acceptClient();
+        else
+            return readMsg(pollfd.fd);
+    }
+    else if (pollfd.revents & POLLOUT)
+        sendMsg(pollfd);
+    return true;
+}
+
+void Server::acceptClient()
 {
     sockaddr_in client;
     std::memset(&client, 0, sizeof(client));
@@ -100,20 +105,19 @@ void    Server::acceptClient()
     getClient(client_sock)->queueMsg(PR_IN_MSG);
 }
 
-bool   Server::disconnectClient(int fd)
+bool Server::disconnectClient(int fd)
 {
-    std::map<int, Client*>::iterator client = _clients.find(fd);
-    if(client == _clients.end())
+    std::map<int, Client*>::iterator erase_it = _clients.find(fd);
+    if(erase_it == _clients.end())
         return false;
-    delete client->second;
-    _clients.erase(client); //map
+    delete erase_it->second;
+    _clients.erase(erase_it); //map
     close(fd);
-    
     for (std::vector<pollfd>::iterator it = _pollfds.begin(); it != _pollfds.end(); it++)
     {
-        if (it->fd == fd)
+        if (it->fd == fd) //#!vector std::find_if
         {
-            std::cout << "disconnected" << "; ";
+            std::cout << BG_RED << "Disconnected: " << fd << RE << std::endl;
             _pollfds.erase(it); //vector
             return true;
         }
@@ -121,48 +125,49 @@ bool   Server::disconnectClient(int fd)
     return false;
 }
 
-bool    Server::readMsg(int fd)
+bool Server::readMsg(int fd)
 {
-    char buf[MAX_MSG + 2] = {0};
+    char buf[MAX_MSG] = {0};
     std::cout << B_YELLOW << "fd: " << fd << RE << "; ";//##########
     int recv_bytes = recv(fd, buf, MAX_MSG, 0);
     std::cout << "recived bytes: " << recv_bytes << "; ";//#########
-    buf[recv_bytes] = '\r';//!!!
-    buf[recv_bytes + 1] = '\n';//!!!
     if (recv_bytes <= 0)
     {
         std::cerr << (recv_bytes == 0 
             ? "Client disconnected on socket fd: " 
             : "Connection problem on fd: ") << fd <<std::endl;
-            return disconnectClient(fd);
+        return !disconnectClient(fd);
     }
-    processInMsg(fd, buf, recv_bytes + 2);
-    return false;
+    processInMsg(fd, buf, recv_bytes);
+    return true;
 }
 
-void    Server::processInMsg(int fd, char* buf, int len)
+void Server::processInMsg(int fd, char* buf, int len)
 {
     Client* client = getClient(fd);
     if (!client)
-    return ;
+        return ;
     
-    std::string& all_buf = client->getIncompleteMsg().append(buf, static_cast<size_t>(len)); //non-const Ref& of _incomplete_msg
+    std::string& all_buf = client->getIncompleteMsg().append(buf, static_cast<size_t>(len)); //non-const Ref& of _incomplete_msg on Client
     
-    size_t pos = 0;
-    while((pos = all_buf.find("\r\n")) != std::string::npos)
+    size_t pos = all_buf.find("\n");
+    while(pos != std::string::npos)
     {
         std::string line = all_buf.substr(0, pos);
-        all_buf.erase(0, pos + 2);
-        if (line.empty())
-        continue ;
-        
-        std::cout << BG_I_YELLOW << "LINE: " << line << RE << std::endl;//############
-        Command command = CommandFactory::parse(this,line);
-        command.executeCommand(client);
+        if (!line.empty() && line[line.length() - 1] == '\r')
+            line.erase(line.length() - 1); //erase 1 char inplace
+        all_buf = all_buf.erase(0, pos + 1);
+        if (!line.empty())
+        {
+            std::cout << BG_I_YELLOW << "LINE: " << line << RE << std::endl;//############
+            Command command = CommandFactory::parse(this,line);
+            command.executeCommand(client);
+        }
+        pos = getClient(fd) ? all_buf.find("\n") : std::string::npos;
     }
 }
 
-void    Server::sendMsg(pollfd& pollfd)
+void Server::sendMsg(pollfd& pollfd)
 {
     Client* client = getClient(pollfd.fd);
     std::deque<std::string>& msg_queue = client->getMsgQueue();
@@ -176,18 +181,6 @@ void    Server::sendMsg(pollfd& pollfd)
     pollfd.events &= ~POLLOUT; // stop monitoring POLLOUT until new msg
 }
 
-//*------------------helpers--------------------
-void    Server::markPfdForPollout(int fd)
-{
-    for (std::vector<pollfd>::iterator it = _pollfds.begin(); it != _pollfds.end(); ++it)
-    {
-        if (it->fd == fd)
-        {
-            it->events |= POLLOUT;
-            break;
-        }
-    }
-}
 
 //*getters
 const std::string& Server::getPassword() const { return _password; }
@@ -211,7 +204,7 @@ Channel* Server::getChannelByName(const std::string& name) {
 
 Client* Server::getClientByNickname(const std::string& nickname) {
     for (std::map<int, Client*>::const_iterator it = _clients.begin(); it != _clients.end(); ++it) {
-        if (it->second->getNickname() == nickname) {
+        if (it->second->getNickname() == nickname) { //#!vector std::find_if
             return it->second;
         }
     }

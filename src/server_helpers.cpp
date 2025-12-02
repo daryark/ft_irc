@@ -17,6 +17,18 @@ void Server::fillSockaddrIn(struct sockaddr_in& addr, short int in_family, unsig
     addr.sin_addr.s_addr = htonl(s_addr);// inet_pton(AF_INET, "0.0.0.0", &_addr.sin_addr);
 }
 
+void Server::markPfdForPollout(int fd)
+{
+    for (std::vector<pollfd>::iterator it = _pollfds.begin(); it != _pollfds.end(); ++it)
+    {
+        if (it->fd == fd) //#!vector std::find_if
+        {
+            it->events |= POLLOUT;
+            break;
+        }
+    }
+}
+
 void Server::setSocketNonBlock(int fd)
 {
     if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1) //*3

@@ -95,11 +95,8 @@ bool Command::checkPreconditions(Client *client, size_t min_args_size)
 
 void Command::executeQuit(Client *client)
 {
-    if (!checkPreconditions(client, 0))
-        return ;
     leaveChannels(client, client->getJoinedChannels());
     _server->disconnectClient(client->getFd());
-    // _server->disconnectClient(1111);
 }
 
 void Command::executeInvite(Client *client)

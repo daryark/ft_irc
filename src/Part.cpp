@@ -26,7 +26,7 @@ void Command::leaveChannels(Client* client, const std::set<std::string>& channel
 
 void Command::leaveChannel(Client* client, Channel* channel)
 {
-    const std::string part_msg = (_args.size() > 1 ? joinVecIntoStr(_args.begin() + 1, _args.end()) : "Leaving");
+    const std::string part_msg = (!_args.empty() ? joinVecIntoStr(_args.begin() + 1, _args.end()) : "Leaving");
     const std::string name = channel->getName();
     if (channel->getSize() == 1)
     {

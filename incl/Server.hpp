@@ -44,6 +44,7 @@ private:
 
 	Server(const Server &){};
 	Server &operator=(const Server &){return *this;};
+	bool actionOnFd(pollfd& pollfd);
 	void acceptClient();
 	bool readMsg(int fd);
 	void sendMsg(pollfd& pollfd);
