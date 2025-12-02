@@ -110,7 +110,7 @@ bool Channel::isOperator(Client *client) const
 
 bool Channel::hasOperator() const { return !_operators.empty(); }
 
-bool Channel::isFull() const{ return (int)_members.size() == _max_clients; }
+bool Channel::isFull() const{ return (int)_members.size() >= _max_clients; }
 
 //need to improve send to all members
 void Channel::globalMessage(Client* sender, std::string message, bool send_to_sender) const

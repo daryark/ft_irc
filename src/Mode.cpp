@@ -94,11 +94,17 @@ void Command::executeMode(Client *client)
 					continue;
 				}
 				if (adding)
+				{
 					channel->addOperator(target);
+				}
 				else
 					channel->removeOperator(target);
 				modeChanges += (adding ? "+o " : "-o ") + nick;
 				// modes += " " + nick;
+
+				channel->globalMessage(target, RPL_NAMREPLY(target->getNickname(), channel->getName(), formChannelMembersList(channel)), true);
+				channel->globalMessage(target, RPL_ENDOFNAMES(client->getNickname(), channel->getName()), true);
+				// client->queueMsg(RPL_ENDOFNAMES(client->getNickname(), channel->getName()));
 			}
 			break;
 		case 'l':
@@ -122,13 +128,13 @@ void Command::executeMode(Client *client)
 			break;
 		}
 	}
-
 	if (!modeChanges.empty())
 	{
 		modeChanges.pop_back(); // remove trailing space
 		// channel->globalMessage(client, "MODE " + channelName + " " + modeChanges + modes + "\r\n", true);
 		channel->globalMessage(client,
 							   MSG(client->getNickname(), client->getUsername(), client->getHostname(),
-								   "MODE", channelName, modeChanges), true);
+								   "MODE ", channelName, modeChanges),
+							   true);
 	}
 }
