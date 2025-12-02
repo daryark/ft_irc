@@ -54,31 +54,36 @@ void Server::init()
 void Server::run()
 {
     pushPollfd(_head_socket, POLLIN, 0); //#6
+
     signal(SIGINT, sigHandler);
     signal(SIGTSTP, sigHandler);
-    bool client_disconnected = false;
+
     while (g_runnning)
     {
-        if (poll(_pollfds.data(), (int)_pollfds.size(), 1000) == -1) //*7
+        if (poll(_pollfds.data(), static_cast<int>(_pollfds.size()), 1000) == -1) //*7
             break ;
-        for (int i = 0; i < (int)_pollfds.size(); )
+        for (int i = 0; i < static_cast<int>(_pollfds.size()); )
         {
-            if (_pollfds[i].revents & (POLLHUP | POLLERR | POLLNVAL))
-                client_disconnected = disconnectClient(_pollfds[i].fd);
-            else if (_pollfds[i].revents & POLLIN) //*6.1
-            {
-                if (_pollfds[i].fd == _head_socket)
-                   acceptClient();
-                else
-                    client_disconnected = readMsg(_pollfds[i].fd);
-            }
-            else if (_pollfds[i].revents & POLLOUT)
-               sendMsg(_pollfds[i]);
-
-            if (!client_disconnected)
+            if (actionOnFd(_pollfds[i]))
                 i++;
         }
     }
+}
+
+bool Server::actionOnFd(pollfd& pollfd)
+{
+    if (pollfd.revents & (POLLHUP | POLLERR | POLLNVAL))
+        return !disconnectClient(pollfd.fd);
+    else if (pollfd.revents & POLLIN) //*6.1
+    {
+        if (pollfd.fd == _head_socket)
+            acceptClient();
+        else
+            return readMsg(pollfd.fd);
+    }
+    else if (pollfd.revents & POLLOUT)
+        sendMsg(pollfd);
+    return true;
 }
 
 void Server::acceptClient()
@@ -113,7 +118,7 @@ bool Server::disconnectClient(int fd)
     {
         if (it->fd == fd) //#!vector std::find_if
         {
-            std::cout << "disconnected" << "; ";
+            std::cout << BG_RED << "Disconnected: " << fd << RE << std::endl;
             _pollfds.erase(it); //vector
             return true;
         }
@@ -132,10 +137,10 @@ bool Server::readMsg(int fd)
         std::cerr << (recv_bytes == 0 
             ? "Client disconnected on socket fd: " 
             : "Connection problem on fd: ") << fd <<std::endl;
-        return disconnectClient(fd);
+        return !disconnectClient(fd);
     }
     processInMsg(fd, buf, recv_bytes);
-    return false;
+    return true;
 }
 
 void Server::processInMsg(int fd, char* buf, int len)
