@@ -24,9 +24,9 @@ private:
 
 	// new state
 	int _max_clients;
-	bool _hasLimit;//#into snake case
+	bool _hasLimit; // #into snake case
 
-	bool _isTopicSetByOperator;//#into snake case
+	bool _isTopicSetByOperator; // #into snake case
 	bool _is_invite_only;
 
 public:
@@ -40,7 +40,7 @@ public:
 	void setTopic(const std::string &topic); //+
 	const std::string &getTopic() const;	 //+
 
-	void setPassword(const std::string &password);				   //+
+	void setPassword(const std::string &password); //+
 	bool checkPasswordEquality(const std::string &password) const; //+
 
 	bool hasPassword() const; //+
@@ -54,17 +54,17 @@ public:
 	void addClient(Client *client);		 //+
 	void removeClient(Client *client);	 //+
 	bool isMember(Client *client) const; //+
-	
+
 	void addOperator(Client *client);	   //+
 	void removeOperator(Client *client);   //+
 	bool isOperator(Client *client) const; //+
 	bool hasOperator() const;			   //+
-	bool isFull() const; //+
-	
+	bool isFull() const;				   //+
+
 	void globalMessage(Client *sender, std::string message, bool send_to_sender) const; //+
-	
-	int getSize() const; //+
-	std::set<Client *> getClients();	 //+
+
+	int getSize() const;			 //+
+	std::set<Client *> getClients(); //+
 	std::set<Client *> getOperators();
 	std::set<Client *> getInvitedClients();
 
@@ -74,4 +74,8 @@ public:
 
 	bool hasLimit() const;				 //+
 	void setMaxClients(int max_clients); //+
+
+	const std::string &getPassword() const;
+	void deletePassword();
+	void deleteLimits();
 };

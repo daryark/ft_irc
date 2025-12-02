@@ -37,3 +37,18 @@ const std::string joinSetIntoStr(std::set<std::string>::const_iterator start,
         result += (*it + " ");
     return result;
 }
+
+void trim(std::string &s)
+{
+    size_t start = s.find_first_not_of(" \t");
+    size_t end   = s.find_last_not_of(" \t");
+
+    if (start == std::string::npos)
+    {
+        s.clear();
+        return;
+    }
+
+    s.erase(end + 1);
+    s.erase(0, start);
+}

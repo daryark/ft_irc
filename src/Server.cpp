@@ -60,7 +60,7 @@ void Server::run()
     {
         if (poll(_pollfds.data(), (int)_pollfds.size(), 1000) == -1) //*7
             break ;
-        for (int i = 0; i < (int)_pollfds.size(); i++)
+        for (int i = 0; i < (int)_pollfds.size(); )
         {
             if (_pollfds[i].revents & (POLLHUP | POLLERR | POLLNVAL))
                 client_disconnected = disconnectClient(_pollfds[i].fd);
@@ -74,8 +74,8 @@ void Server::run()
             else if (_pollfds[i].revents & POLLOUT)
                sendMsg(_pollfds[i]);
 
-            if (client_disconnected)
-                --i;
+            if (!client_disconnected)
+                i++;
         }
     }
 }

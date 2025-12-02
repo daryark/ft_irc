@@ -33,99 +33,102 @@ void Command::executeMode(Client *client)
 	bool adding = true;
 
 	size_t argIndex = 2;
+
 	std::string modeChanges;
-	std::string modes;
+	std::string modes = _args[1];
 
-	for (size_t i = 0; i < _args.size(); i++)
+	for (size_t i = 0; i < modes.size(); i++)
 	{
-		const std::string &modeStr = _args[i];
-		for (size_t j = 0; j < modeStr.size(); j++)
+		char mode = modes[i];
+		if (mode == '+')
 		{
-			char mode = modeStr[j];
-			if (mode == '+')
-				adding = true;
-			else if (mode == '-')
-				adding = false;
+			adding = true;
+			continue;
+		}
+		else if (mode == '-')
+		{
+			adding = false;
+			continue;
+		}
 
-			switch (mode)
+		switch (mode)
+		{
+		case 'i':
+			channel->setInviteOnly(adding);
+			modeChanges += (adding ? "+i " : "-i ");
+			break;
+		case 't':
+			channel->setTopicSetByOperator(adding);
+			modeChanges += (adding ? "+t " : "-t ");
+			break;
+		case 'k':
+			if (adding)
 			{
-			case 'i':
-				channel->setInviteOnly(adding);
-				modeChanges += (adding ? "+i " : "-i ");
-				break;
-			case 't':
-				channel->setTopicSetByOperator(adding);
-				modeChanges += (adding ? "+t " : "-t ");
-				break;
-			case 'k':
-				if (adding)
-				{
-					if (argIndex >= _args.size())
-						return client->queueMsg(ERR_NEEDMOREPARAMS(client->getNickname(), "MODE +k"));
-					const std::string &newPass = _args[argIndex++];
-					channel->setPassword(newPass);
-					modeChanges += "+k ";
-					modes += " " + newPass;
-				}
-				else
-				{
-					channel->setPassword("");
-					modeChanges += "-k ";
-				}
-				break;
-			case 'o':
 				if (argIndex >= _args.size())
-					return client->queueMsg(ERR_NEEDMOREPARAMS(client->getNickname(), "MODE +0"));
-				{
-					std::string nick = _args[argIndex++];
-					Client *target = _server->getClientByNickname(nick);
-					if (!target)
-					{
-						client->queueMsg(ERR_NOSUCHNICK(nick));
-						continue;
-					}
-					if (!channel->isMember(target))
-					{
-						client->queueMsg(ERR_USERNOTINCHANNEL(nick, channelName));
-						continue;
-					}
-					if (adding)
-						channel->addOperator(target);
-					else
-						channel->removeOperator(target);
-					modeChanges += (adding ? "+o" : "-o");
-					modes += " " + nick;
-				}
-				break;
-			case 'l':
-				if (adding)
-				{
-					if (argIndex >= _args.size())
-						return client->queueMsg(ERR_NEEDMOREPARAMS(client->getNickname(), "MODE +l"));
-					int maxClients = std::stoi(_args[argIndex++]);
-					channel->setMaxClients(maxClients);
-					modeChanges += "+l ";
-					modes += " " + std::to_string(maxClients);
-				}
-				else
-				{
-					channel->setMaxClients(0);
-					modeChanges += "-l ";
-				}
-				break;
-			default:
-				client->queueMsg(ERR_UNKNOWNMODE(client->getNickname(), mode));
-				break;
+					return client->queueMsg(ERR_NEEDMOREPARAMS(client->getNickname(), "MODE +k"));
+				const std::string &newPass = _args[argIndex++];
+				channel->setPassword(newPass);
+				modeChanges += "+k " + newPass;
+				// modes += " " + newPass;
 			}
+			else
+			{
+				channel->deletePassword();
+				modeChanges += "-k ";
+			}
+			break;
+		case 'o':
+			if (argIndex >= _args.size())
+				return client->queueMsg(ERR_NEEDMOREPARAMS(client->getNickname(), "MODE +o"));
+			{
+				std::string nick = _args[argIndex++];
+				Client *target = _server->getClientByNickname(nick);
+				if (!target)
+				{
+					client->queueMsg(ERR_NOSUCHNICK(nick));
+					continue;
+				}
+				if (!channel->isMember(target))
+				{
+					client->queueMsg(ERR_USERNOTINCHANNEL(nick, channelName));
+					continue;
+				}
+				if (adding)
+					channel->addOperator(target);
+				else
+					channel->removeOperator(target);
+				modeChanges += (adding ? "+o " : "-o ") + nick;
+				// modes += " " + nick;
+			}
+			break;
+		case 'l':
+			if (adding)
+			{
+				if (argIndex >= _args.size())
+					return client->queueMsg(ERR_NEEDMOREPARAMS(client->getNickname(), "MODE +l"));
+				int maxClients = std::stoi(_args[argIndex++]);
+				channel->setMaxClients(maxClients);
+				modeChanges += "+l " + std::to_string(maxClients);
+				// modes += " " + std::to_string(maxClients);
+			}
+			else
+			{
+				channel->deleteLimits();
+				modeChanges += "-l ";
+			}
+			break;
+		default:
+			client->queueMsg(ERR_UNKNOWNMODE(client->getNickname(), mode));
+			break;
 		}
+	}
 
-		if (!modeChanges.empty())
-		{
-			modeChanges.pop_back(); // remove trailing space
-			// channel->globalMessage(client, "MODE " + channelName + " " + modeChanges + modes + "\r\n", true);
-			channel->globalMessage(client,
-			MSG(client->getNickname(),client->getUsername(), client->getHostname(),
-        	"MODE", channelName, modeChanges + "  " + modes), true);
-		}
+	if (!modeChanges.empty())
+	{
+		modeChanges.pop_back(); // remove trailing space
+		// channel->globalMessage(client, "MODE " + channelName + " " + modeChanges + modes + "\r\n", true);
+		channel->globalMessage(client,
+							   MSG(client->getNickname(), client->getUsername(), client->getHostname(),
+								   "MODE", channelName, modeChanges), true);
 	}
 }

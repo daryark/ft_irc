@@ -25,7 +25,11 @@ void Channel::setTopic(const std::string &topic) { _topic = topic; }
 
 const std::string &Channel::getTopic() const { return _topic; }
 
-void Channel::setPassword(const std::string &password) { _password = password; }
+void Channel::setPassword(const std::string &password) 
+{ 
+  _password = password;
+  _hasPassword = true;
+}
 
 bool Channel::checkPasswordEquality(const std::string &password) const 
 { 
@@ -131,9 +135,27 @@ bool Channel::isTopicSetByOperator() const { return _isTopicSetByOperator; }
 void Channel::setTopicSetByOperator(bool state) { _isTopicSetByOperator = state; }
 
 bool Channel::hasLimit() const { return _hasLimit; }
-void Channel::setMaxClients(int max_clients){_max_clients = max_clients; }
+void Channel::setMaxClients(int max_clients)
+{
+  _max_clients = max_clients;
+  _hasLimit = true;
+}
 
 
 void Channel::addInvitedClient(Client *client){_invitedClient.insert(client);}
 void Channel::removeInvitedClient(Client *client) {_invitedClient.erase(client);}
+
+const std::string &Channel::getPassword() const{return _password;}
+
+void Channel::deletePassword() 
+{ 
+  _password = "";
+  _hasPassword = false;
+}
+
+void Channel::deleteLimits() 
+{ 
+  _max_clients = -1;
+  _hasLimit = false;
+}
   
