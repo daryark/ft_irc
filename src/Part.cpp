@@ -28,19 +28,23 @@ void Command::leaveChannel(Client* client, Channel* channel)
 {
     const std::string part_msg = (!_args.empty() ? joinVecIntoStr(_args.begin() + 1, _args.end()) : "Leaving");
     const std::string name = channel->getName();
-    if (channel->getSize() == 1)
-    {
-        _server->deleteChannel(name);
-        client->removeFromChannel(name);
-        return ;
-    }
+    //need to send first + yourself
+    channel->globalMessage(client,
+    MSG(client->getNickname(), client->getUsername(), client->getHostname(),
+    _command, name, part_msg), true);
+    
+
     if (channel->isOperator(client))
         channel->removeOperator(client);
     channel->removeClient(client);
-    client->removeFromChannel(channel->getName());
-    channel->globalMessage(client,
-    MSG(client->getNickname(), client->getUsername(), client->getHostname(),
-    _command, name, part_msg), false);
+    client->removeFromChannel(name);
+    // client->removeFromChannel(channel->getName());
+
+    if (channel->getSize() == 0)
+    {
+        _server->deleteChannel(name);
+        return ;
+    }
 
     if (!channel->hasOperator())
     {
@@ -50,4 +54,8 @@ void Command::leaveChannel(Client* client, Channel* channel)
         MSG(SERVER_NAME, SERVER_NAME, SERVER_NAME, "MODE", new_operator->getNickname(),
         "is an operator now"), false);
     }
+
+    //show correct members and operators //######
+    channel->globalMessage(client, RPL_NAMREPLY(client->getNickname(), channel->getName(), formChannelMembersList(channel)), true);
+	channel->globalMessage(client, RPL_ENDOFNAMES(client->getNickname(), channel->getName()), true);
 }
