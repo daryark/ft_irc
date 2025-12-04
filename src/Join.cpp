@@ -47,15 +47,18 @@ void Command::sendJoinInfo(Client *client, Channel *channel)
 //JOIN <channel> [, <channel>...] <key> [, <key>...] |or "0"
 void Command::executeJoin(Client *client)
 {
+    std::cout << BG_CYAN << "join 1, " << RE;
     if (!checkPreconditions(client, 1))
         return;
+    std::cout << BG_CYAN << "join 2, " << RE;
     if (_args.size() == 1 && _args[0] == "0")
         return leaveChannels(client, client->getJoinedChannels());
-
+    std::cout << BG_CYAN << "join 3, " << RE;
     const std::vector<std::string> channel_names = splitVec(_args[0], ',');
     std::vector<std::string> channels_passwords;
     if (_args.size() == 2)
         channels_passwords = splitVec(_args[1], ',');
+    std::cout << BG_CYAN << "join 4, " << RE;
     size_t p = 0;
     for (size_t i = 0; i < channel_names.size(); i++)
     {

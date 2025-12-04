@@ -39,8 +39,12 @@ void Command::leaveChannel(Client* client, Channel* channel)
     channel->removeClient(client);
     client->removeFromChannel(channel->getName());
     channel->globalMessage(client,
-    MSG(client->getNickname(), client->getUsername(), client->getHostname(),
-    _command, name, part_msg), false);
+        MSG(client->getNickname(), client->getUsername(), client->getHostname(), _command, name, part_msg), false);
+    channel->globalMessage(client,
+        RPL_NAMREPLY(client->getNickname(), channel->getName(), formChannelMembersList(channel)), true);
+	channel->globalMessage(client,
+        RPL_ENDOFNAMES(client->getNickname(), channel->getName()), true);
+    
 
     if (!channel->hasOperator())
     {
