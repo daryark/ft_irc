@@ -112,9 +112,13 @@ void Command::executeMode(Client *client)
 			{
 				if (argIndex >= _args.size())
 					return client->queueMsg(ERR_NEEDMOREPARAMS(client->getNickname(), "MODE +l"));
-				int maxClients = std::stoi(_args[argIndex++]);
+				int maxClients = std::atoi(_args[argIndex++].c_str()); //c++11 int maxClients = std::atoi(_args[argIndex++].c_str());
 				channel->setMaxClients(maxClients);
-				modeChanges += "+l " + std::to_string(maxClients);
+				std::ostringstream oss;
+				oss << maxClients;
+				modeChanges += "+l " + oss.str();
+
+				// modeChanges += "+l " + std::to_string(maxClients);//c++11
 				// modes += " " + std::to_string(maxClients);
 			}
 			else

@@ -52,6 +52,7 @@ void Command::executeCommand(Client *client)
 
 void Command::executeAllInfo(Client *client)
 {
+    (void)client;
     client->printInfo();
 }
 
