@@ -61,6 +61,9 @@ void Server::run()
     {
         if (poll(_pollfds.data(), static_cast<int>(_pollfds.size()), 1000) == -1) //*7
             break ;
+
+        checkClientsTimeouts();
+        
         for (int i = 0; i < static_cast<int>(_pollfds.size()); )
         {
             if (actionOnFd(_pollfds[i]))
@@ -90,7 +93,7 @@ void Server::acceptClient()
     sockaddr_in client;
     std::memset(&client, 0, sizeof(client));
     socklen_t   clSize = sizeof(client);
-    int client_sock = accept(_head_socket, (sockaddr*)&client, &clSize);
+    int client_sock = accept(_head_socket, reinterpret_cast<sockaddr *>(&client), &clSize);
     if (client_sock == -1)
     {
         std::cerr << RED << PR_CL_NOT_CONNECT << RE << std::endl;
@@ -128,9 +131,7 @@ bool Server::disconnectClient(int fd)
 bool Server::readMsg(int fd)
 {
     char buf[MAX_MSG] = {0};
-    std::cout << B_YELLOW << "fd: " << fd << RE << "; ";//##########
     int recv_bytes = recv(fd, buf, MAX_MSG, 0);
-    std::cout << "recived bytes: " << recv_bytes << "; ";//#########
     if (recv_bytes <= 0)
     {
         std::cerr << (recv_bytes == 0 
@@ -148,6 +149,7 @@ void Server::processInMsg(int fd, char* buf, int len)
     if (!client)
         return ;
     
+    client->updateActive();
     std::string& all_buf = client->getIncompleteMsg().append(buf, static_cast<size_t>(len)); //non-const Ref& of _incomplete_msg on Client
     
     size_t pos = all_buf.find("\n");

@@ -35,6 +35,33 @@ void Server::setSocketNonBlock(int fd)
         throw std::runtime_error("fcntl");
 }
 
+void Server::checkClientsTimeouts()
+{
+    time_t now = time(NULL);
+    std::vector<int> clients_to_disconnect;
+
+    for (std::map<int, Client*>::iterator it = _clients.begin();
+        it != _clients.end(); it++)
+    {
+        Client* client = it->second;
+        bool is_ping_sent = client->isPingSent();
+        time_t last_activity = client->getLastActivityTime();
+
+        if (!is_ping_sent && (now - last_activity >= PING_INTERVAL))
+        {
+            std::cout << "PING" << std::endl;
+            client->queueMsg("PING :" + static_cast<std::string>(SERVER_NAME) + "\r\n");
+            client->setPingSent(true);
+            client->setLastActivityTime(now);
+        }
+        else if (is_ping_sent && (now - last_activity >= PONG_TIMEOUT))
+            clients_to_disconnect.push_back(client->getFd());
+    }
+
+    for( size_t i = 0; i < clients_to_disconnect.size(); i++)
+        disconnectClient(clients_to_disconnect[i]);
+}
+
 void    Server::fancyPrint(const std::string& opt)
 {
     std::cout << std::endl << B_BLUE << opt;

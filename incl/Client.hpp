@@ -2,11 +2,12 @@
 
 #include <iostream>
 #include <vector>
+#include <deque>
+#include <set>
 #include <string>
 #include <algorithm>
 #include <netinet/in.h>
-#include <deque>
-#include <set>
+#include <ctime>
 
 #include "../incl/Server.hpp"
 #include "../incl/Command.hpp"
@@ -18,14 +19,17 @@ private:
 	const int _fd;
 	const std::string _hostname;
 	Server*	_server;
-
+	
 	std::string _nickname;
 	std::string _username;
 	std::string _servername;
 	std::string _realname;
-
+	
 	bool _authenticated; //pass
 	bool _registered;
+	
+	time_t _last_activity;
+	bool _ping_sent;
 
 	std::string _incomplete_msg;
 	std::deque<std::string> _msg_queue;
@@ -37,14 +41,11 @@ public:
 
 	Client(const Client &obj);
 
-	// methods
-	// void sendMessage(const std::string &message) const;
-
 	const int& getFd() const; //+
 	std::deque<std::string>& getMsgQueue();
 	void queueMsg(const std::string &message);
-	void setIncompleteMsg(const std::string &incomplete_msg); //+
 	std::string& getIncompleteMsg();		   //+
+	void setIncompleteMsg(const std::string &incomplete_msg); //+
 
 	void setUser(const std::string& username, const std::string& realname);
 
@@ -68,6 +69,12 @@ public:
 	void setRegistered(bool state); //+
 	bool isRegistered() const;  //+
 
+	time_t getLastActivityTime() const;
+	void setLastActivityTime(time_t time);
+
+	bool isPingSent() const;
+	void setPingSent(bool status);
+	void updateActive();
 
 	void joinChannel(const std::string &channel);	//+
 	void removeFromChannel(const std::string &channel); //+

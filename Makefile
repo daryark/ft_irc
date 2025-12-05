@@ -15,7 +15,7 @@ VPATH = $(SRC_F)
 OBJ = $(addprefix $(OBJ_F), $(SRC:%.cpp=%.o))
 
 CXX = c++
-CXX_FLAGS = -std=c++11 -Wall -Wextra -Werror -O9 -g -MMD -MP
+CXX_FLAGS = -std=c++98 -Wall -Wextra -Werror -O3 -g -MMD -MP
 NAME=ircserv
 
 all:$(NAME)

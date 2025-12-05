@@ -8,6 +8,7 @@
 #include <csignal> //*9
 #include <cerrno>
 #include <cstdlib>		//exit
+#include <ctime>
 #include <sys/socket.h> // socket, bind, listen, accept
 #include <netinet/in.h> // sockaddr_in
 #include <arpa/inet.h>	// htons
@@ -26,6 +27,8 @@ class Client;
 
 #define SERVER_NAME "ircserv"
 #define MAX_MSG	512
+#define PING_INTERVAL 60 //60
+#define PONG_TIMEOUT 30 //30
 
 extern volatile sig_atomic_t g_runnning;//*9
 
@@ -50,6 +53,7 @@ private:
 	void sendMsg(pollfd& pollfd);
 	void processInMsg(int fd, char* buf, int len);
 	
+	void checkClientsTimeouts();
 	void fillSockaddrIn(struct sockaddr_in& addr, short int in_family, unsigned short int in_port ,uint32_t s_addr);
 	void pushPollfd(int, short, short);
 	void setSocketNonBlock(int fd);
