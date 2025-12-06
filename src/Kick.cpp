@@ -46,9 +46,11 @@ void Command::executeKickOne(Client* client, const std::string& channel_name, co
         return client->queueMsg(ERR_NOSUCHNICK(target_nick));
     else if(!channel->isMember(target_client))
         return client->queueMsg(ERR_USERNOTINCHANNEL(target_nick, channel_name));
+    if(client->getNickname() == target_nick)
+        return client->queueMsg(MSG(channel_name));
     
     channel->globalMessage(client, 
-    MSG(client->getNickname(), client->getUsername(), client->getHostname(), _command, channel_name, comment), true);
+    MSG_KICK(client->getNickname(), client->getUsername(), client->getHostname(), channel_name, target_nick, comment), true);
 
     channel->removeClient(target_client);
     target_client->removeFromChannel(channel_name);

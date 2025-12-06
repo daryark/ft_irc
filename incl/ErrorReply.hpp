@@ -66,4 +66,6 @@
 
 #define RPL_INVITING(nick, target, channel)(PREFIX("341") + nick + " " + target + " " + channel + "\r\n")
 #define MSG_MODE(nick, user, ip, channel, changes)":" + nick + "!" + user + "@" + ip + " MODE " + channel + " " + changes + "\r\n"
+#define MSG_KICK(nick, user, ip, channel, target, comment)(":" + nick + "!" + user + "@" + ip + " KICK " + channel + " " + target + " :" + comment + "\r\n")
+
 
