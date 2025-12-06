@@ -75,7 +75,7 @@ void Server::run()
 bool Server::actionOnFd(pollfd& pollfd)
 {
     if (pollfd.revents & (POLLHUP | POLLERR | POLLNVAL))
-        return !disconnectClient(pollfd.fd);
+        return !cleanClient(pollfd.fd);
     else if (pollfd.revents & POLLIN) //*6.1
     {
         if (pollfd.fd == _head_socket)
@@ -150,7 +150,7 @@ bool Server::readMsg(int fd)
         std::cerr << (recv_bytes == 0 
             ? "Client disconnected on socket fd: " 
             : "Connection problem on fd: ") << fd <<std::endl;
-        return !disconnectClient(fd);
+        return !cleanClient(fd);
     }
     processInMsg(fd, buf, recv_bytes);
     return true;

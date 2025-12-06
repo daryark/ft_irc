@@ -51,9 +51,10 @@ void Command::executeKickOne(Client* client, const std::string& channel_name, co
     if (channel->getSize() == 0){
         // _server->deleteChannel(target_nick); //????
         _server->deleteChannel(channel_name);
+        return ;
     }
 
-    channel->globalMessage(client, RPL_NAMREPLY(client->getNickname(), channel->getName(), formChannelMembersList(channel)), true);
+    channel->globalMessage(client, RPL_NAMREPLY(client->getNickname(), channel->getName(), channel->formChannelMembersList()), true);
 	channel->globalMessage(client, RPL_ENDOFNAMES(client->getNickname(), channel->getName()), true);
 }
 

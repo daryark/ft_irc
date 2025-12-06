@@ -52,6 +52,7 @@ private:
 	bool readMsg(int fd);
 	void sendMsg(pollfd& pollfd);
 	void processInMsg(int fd, char* buf, int len);
+	bool cleanClient(int fd);
 	
 	void checkClientsTimeouts();
 	void fillSockaddrIn(struct sockaddr_in& addr, short int in_family, unsigned short int in_port ,uint32_t s_addr);

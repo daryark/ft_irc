@@ -34,11 +34,10 @@ void Command::leaveChannel(Client* client, Channel* channel)
     _command, name, part_msg), true);
     
 
-    if (channel->isOperator(client))
-        channel->removeOperator(client);
+    // if (channel->isOperator(client))
+    //     channel->removeOperator(client);
     channel->removeClient(client);
     client->removeFromChannel(name);
-    // client->removeFromChannel(channel->getName());
 
     if (channel->getSize() == 0)
     {
@@ -56,6 +55,6 @@ void Command::leaveChannel(Client* client, Channel* channel)
     }
 
     //show correct members and operators //######
-    channel->globalMessage(client, RPL_NAMREPLY(client->getNickname(), channel->getName(), formChannelMembersList(channel)), true);
+    channel->globalMessage(client, RPL_NAMREPLY(client->getNickname(), channel->getName(), channel->formChannelMembersList()), true);
 	channel->globalMessage(client, RPL_ENDOFNAMES(client->getNickname(), channel->getName()), true);
 }

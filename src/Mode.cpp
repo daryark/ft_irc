@@ -102,7 +102,7 @@ void Command::executeMode(Client *client)
 				modeChanges += (adding ? "+o " : "-o ") + nick;
 				// modes += " " + nick;
 
-				channel->globalMessage(target, RPL_NAMREPLY(target->getNickname(), channel->getName(), formChannelMembersList(channel)), true);
+				channel->globalMessage(target, RPL_NAMREPLY(target->getNickname(), channel->getName(), channel->formChannelMembersList()), true);
 				channel->globalMessage(target, RPL_ENDOFNAMES(client->getNickname(), channel->getName()), true);
 				// client->queueMsg(RPL_ENDOFNAMES(client->getNickname(), channel->getName()));
 			}

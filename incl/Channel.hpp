@@ -78,4 +78,6 @@ public:
 	const std::string &getPassword() const;
 	void deletePassword();
 	void deleteLimits();
+
+	const std::string formChannelMembersList();
 };

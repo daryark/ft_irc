@@ -27,8 +27,10 @@
 #define PREFIX(rpl_code)(std::string(":") + SERVER_NAME + " " + rpl_code + " ")
 #define RPL_WELCOME(nick, user, ip)(PREFIX("001") + nick + " :Welcome to the Internet Relay Network " + nick + "!" + user + "@" + ip + "\r\n")
 
+#define RPL_CHANNELMODEIS(nick, channel, modes)(PREFIX("324") + nick + " " + channel + " " + modes + "\r\n")
 #define RPL_NOTOPIC(channel)(PREFIX("331") + channel + " :No topic is set\r\n")
 #define RPL_TOPIC(channel, topic)(PREFIX("332") + channel + " : " + topic + "\r\n")
+#define RPL_INVITING(nick, target, channel)(PREFIX("341") + nick + " " + target + " " + channel + "\r\n")
 #define RPL_NAMREPLY(nick, channel, names_list)(PREFIX("353") +  nick + " = " + channel + " : " + names_list + "\r\n")
 #define RPL_ENDOFNAMES(nick, channel)(PREFIX("366") + nick + " " + channel + " :End of /NAMES list.\r\n")
 
@@ -54,20 +56,14 @@
 #define ERR_PASSWDMISMATCH(name)(PREFIX("464") + name + " :Password incorrect\r\n") //name - nick/channel (server or channel pass mismatch)
 
 #define ERR_CHANNELISFULL(channel)(PREFIX("471") + channel + " :Cannot join channel (+l)\r\n")
+#define ERR_UNKNOWNMODE(nick, mode)(PREFIX("472") + nick + " " + mode + " :is unknown mode\r\n")
 #define ERR_INVITEONLYCHAN(channel)(PREFIX("473") + channel + " :Cannot join channel (+i)\r\n")
 #define ERR_BADCHANNELKEY(channel)(PREFIX("475") + channel + " :Cannot join channel (+k)\r\n")
 #define ERR_BADCHANNAME(channel)(PREFIX("479") + channel + ": Bad channel name\r\n")
 #define ERR_CHANOPRIVSNEEDED(channel)(PREFIX("482") + channel + " :You're not channel operator\r\n")
-
-#define RPL_CHANNELMODEIS(nick, channel, modes)(PREFIX("324") + nick + " " + channel + " " + modes + "\r\n")
-
-#define ERR_UNKNOWNMODE(nick, mode)(PREFIX("472") + nick + " " + mode + " :is unknown mode\r\n")
-
-
-#define RPL_INVITING(nick, target, channel)(PREFIX("341") + nick + " " + target + " " + channel + "\r\n")
-#define MSG_MODE(nick, user, ip, channel, changes)":" + nick + "!" + user + "@" + ip + " MODE " + channel + " " + changes + "\r\n"
-#define MSG_KICK(nick, user, ip, channel, target, comment)(":" + nick + "!" + user + "@" + ip + " KICK " + channel + " " + target + " :" + comment + "\r\n")
 #define ERR_CANNOTKICKSELF(channel)(PREFIX("482") + channel + " :You cannot kick yourself\r\n")
+
+#define MSG_KICK(nick, user, ip, channel, target, comment)(MSG_PREFIX(nick, user, ip, "KICK") + channel + " " + target + " :" + comment + "\r\n")
 
 
 
