@@ -1,4 +1,6 @@
-#pragma once
+// #pragma once
+#ifndef COLORS_HPP
+#define COLORS_HPP
 
 #define RE		"\033[0m"
 /* Regular */
@@ -64,3 +66,5 @@
 #define BG_I_MAGENTA	"\033[10;95m"
 #define BG_I_CYAN	"\033[0;106m"
 #define BG_I_WHITE	"\033[0;107m"
+
+#endif

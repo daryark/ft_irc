@@ -3,7 +3,8 @@ RE = \033[0m
 
 SRC =	main.cpp Server.cpp Client.cpp Command.cpp Channel.cpp \
 		Join.cpp Privmsg.cpp Registration.cpp Kick.cpp Part.cpp Mode.cpp\
-		server_helpers.cpp helpers.cpp debug_file.cpp
+		server_helpers.cpp helpers.cpp
+# 		debug_file.cpp
 HDR = Server.hpp Client.hpp CommandFactory.hpp Command.hpp Channel.hpp ErrorReply.hpp
 
 SRC_F = src/
@@ -15,7 +16,7 @@ VPATH = $(SRC_F)
 OBJ = $(addprefix $(OBJ_F), $(SRC:%.cpp=%.o))
 
 CXX = c++
-CXX_FLAGS = -std=c++11 -Wall -Wextra -Werror -O3 -g -MMD -MP
+CXX_FLAGS = -std=c++98 -Wall -Wextra -Werror -O3 -g -MMD -MP
 NAME=ircserv
 
 all:$(NAME)

@@ -26,10 +26,10 @@ void Command::initCommandMap()
     _commandMap["INVITE"] = &Command::executeInvite;
     _commandMap["PONG"] = &Command::executePong;
 
-    _commandMap["allClients"] = &Command::executeAllClients;
-    _commandMap["allChannel"] = &Command::executeAllChannel;
-    _commandMap["allMC"] = &Command::executeAllMembersInChannel;
-    _commandMap["info"] = &Command::executeAllInfo;
+    // _commandMap["allClients"] = &Command::executeAllClients;
+    // _commandMap["allChannel"] = &Command::executeAllChannel;
+    // _commandMap["allMC"] = &Command::executeAllMembersInChannel;
+    // _commandMap["info"] = &Command::executeAllInfo;
 }
 
 Command::~Command()
@@ -48,32 +48,6 @@ void Command::executeCommand(Client *client)
     }
     else
         client->queueMsg(ERR_UNKNOWNCOMMAND(_command));
-}
-
-void Command::executeAllInfo(Client *client)
-{
-    (void)client;
-    client->printInfo();
-}
-
-void Command::executeAllClients(Client *client)
-{
-    (void)client;
-    PrintAllClients(*_server);
-}
-
-void Command::executeAllChannel(Client *client)
-{
-    (void)client;
-    PrintAllChannels(*_server);
-}
-
-void Command::executeAllMembersInChannel(Client *client)
-{
-    (void)client;
-    if (_args.empty())
-        return client->queueMsg("461 allMC :Not enough parameters");
-    PrintMembersInChannel(*_server, _args[0]);
 }
 
 bool Command::checkPreconditions(Client *client, size_t min_args_size)

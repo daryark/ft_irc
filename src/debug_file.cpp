@@ -2,6 +2,28 @@
 #include "../incl/Server.hpp"
 #include "../incl/Command.hpp"
 
+void Command::executeAllInfo(Client *client)
+{
+    client->printInfo();
+}
+
+void Command::executeAllClients(Client *client)
+{
+    PrintAllClients(*_server);
+}
+
+void Command::executeAllChannel(Client *client)
+{
+    PrintAllChannels(*_server);
+}
+
+void Command::executeAllMembersInChannel(Client *client)
+{
+    if (_args.empty())
+        return client->queueMsg("461 allMC :Not enough parameters");
+    PrintMembersInChannel(*_server, _args[0]);
+}
+
 void Command::PrintAllClients(Server &server)
 {
     const std::map<int, Client *> &clients = server.getClients();
