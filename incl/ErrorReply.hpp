@@ -4,16 +4,18 @@
 #include "Command.hpp"
 
 #define	PR_IN_MSG	"Register to join the server. Execute PASS, NICK, USER commands\r\n"
-#define PR_USAGE	"Usage:\n"\
-	"· KICK - Eject a client from the channel\n"\
-	"· INVITE - Invite a client to a channel\n"\
-	"· TOPIC - Change or view the channel topic\n"\
-	"· MODE - Change the channel’s mode:\n"\
-	"· 	i: Set/remove Invite-only channel\n"\
-	"· 	t: Set/remove the restrictions of the TOPIC command to channel operators\n"\
-	"· 	k: Set/remove the channel key (password)\n"\
-	"· 	o: Give/take channel operator privilege\n"\
-	"· 	l: Set/remove the user limit to channel\n"
+#define PR_USAGE(nick)(std::string(":") + SERVER_NAME + " NOTICE " + nick + " :Usage:\r\n" \
+    ":" + SERVER_NAME + " NOTICE " + nick + " :· KICK - Eject a client from the channel\r\n" \
+    ":" + SERVER_NAME + " NOTICE " + nick + " :· INVITE - Invite a client to a channel\r\n" \
+    ":" + SERVER_NAME + " NOTICE " + nick + " :· TOPIC - Change or view the channel topic\r\n" \
+    ":" + SERVER_NAME + " NOTICE " + nick + " :· MODE - Change the channel’s mode:\r\n" \
+    ":" + SERVER_NAME + " NOTICE " + nick + " :·   i: Set/remove Invite-only channel\r\n" \
+    ":" + SERVER_NAME + " NOTICE " + nick + " :·   t: Set/remove the restrictions of the TOPIC command to channel operators\r\n" \
+    ":" + SERVER_NAME + " NOTICE " + nick + " :·   k: Set/remove the channel key (password)\r\n" \
+    ":" + SERVER_NAME + " NOTICE " + nick + " :·   o: Give/take channel operator privilege\r\n" \
+    ":" + SERVER_NAME + " NOTICE " + nick + " :·   l: Set/remove the user limit to channel\r\n")
+
+
 
 #define PR_RUN		"Server is running on port"
 #define PR_CLOSE	"Server closed"

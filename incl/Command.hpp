@@ -38,6 +38,7 @@ private:
 	void executeMode(Client *client);
 	void executePong(Client *client);
 	void executeQuit(Client *client);
+	void executeCap(Client *client);
 
 	bool isValidNickname()	const;
 	void welcomeIfRegister(Client *client);
@@ -46,8 +47,8 @@ private:
 	void executePrivmsgToClient(Client *client, const std::string& target);
 	bool canKickFromChannel(Client* client, const std::string& channel_name);
 	void executeKickOne(Client* client, const std::string& channel_name, const std::string& target_nick, const std::string& comment);
-	void leaveChannels(Client* client, const std::set<std::string>& channels);
-	void leaveChannel(Client* client, Channel* channel);
+	void leaveChannels(Client* client, const std::set<std::string>& channels, const std::string msg);
+	void leaveChannel(Client* client, Channel* channel, const std::string msg);
 
 	//debug methods
 	void executeAllClients(Client *client);
@@ -66,11 +67,6 @@ public:
 	// methods
 
 	void executeCommand(Client *client);
-	
-	//debug metchods
-	void PrintAllClients( Server& server);
-	void PrintAllChannels( Server& server);
-	void PrintMembersInChannel( Server& server, const std::string& channelName);
 };
 
 std::vector<std::string> splitVec(const std::string& input, char delimiter);

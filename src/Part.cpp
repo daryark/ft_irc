@@ -6,10 +6,11 @@ void Command::executePart(Client *client)
     if (!checkPreconditions(client, 1))
         return ;
     const std::set<std::string> channels = splitSet(_args[0], ',');
-    leaveChannels(client, channels);
+    const std::string msg = (_args.size() < 3) ? "Part" : _args[2];
+    leaveChannels(client, channels, msg);
 }
 
-void Command::leaveChannels(Client* client, const std::set<std::string>& channels)
+void Command::leaveChannels(Client* client, const std::set<std::string>& channels, const std::string msg)
 {
     std::set<std::string> copy = channels;
     for (std::set<std::string>::iterator it = copy.begin(); it != copy.end(); it++)
@@ -20,22 +21,18 @@ void Command::leaveChannels(Client* client, const std::set<std::string>& channel
         else if (!channel->isMember(client))
             client->queueMsg(ERR_NOTONCHANNEL(*it));
         else
-            leaveChannel(client, channel);
+            leaveChannel(client, channel, msg);
     }
 }
 
-void Command::leaveChannel(Client* client, Channel* channel)
+void Command::leaveChannel(Client* client, Channel* channel, const std::string msg)
 {
-    const std::string part_msg = (!_args.empty() ? joinVecIntoStr(_args.begin() + 1, _args.end()) : "Leaving");
     const std::string name = channel->getName();
     //need to send first + yourself
     channel->globalMessage(client,
     MSG(client->getNickname(), client->getUsername(), client->getHostname(),
-    _command, name, part_msg), true);
-    
+    _command, name, msg), true);
 
-    // if (channel->isOperator(client))
-    //     channel->removeOperator(client);
     channel->removeClient(client);
     client->removeFromChannel(name);
 

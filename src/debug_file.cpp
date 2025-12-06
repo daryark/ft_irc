@@ -4,35 +4,13 @@
 
 void Command::executeAllInfo(Client *client)
 {
-    (void)client;
     client->printInfo();
 }
 
 void Command::executeAllClients(Client *client)
 {
     (void)client;
-    PrintAllClients(*_server);
-}
-
-void Command::executeAllChannel(Client *client)
-{
-    (void)client;
-    PrintAllChannels(*_server);
-}
-
-void Command::executeAllMembersInChannel(Client *client)
-{
-    if (_args.empty())
-    {
-        client->queueMsg("461 allMC :Not enough parameters");
-        return;
-    }
-    PrintMembersInChannel(*_server, _args[0]);
-}
-
-void Command::PrintAllClients(Server &server)
-{
-    const std::map<int, Client*>& clients = server.getClients();
+    const std::map<int, Client*>& clients = _server->getClients();
     std::cout << "----- Clients List -----" << std::endl;
 
     std::map<int, Client*>::const_iterator it = clients.begin();
@@ -49,9 +27,10 @@ void Command::PrintAllClients(Server &server)
     std::cout << "------------------------" << std::endl;
 }
 
-void Command::PrintAllChannels(Server &server)
+void Command::executeAllChannel(Client *client)
 {
-    const std::map<std::string, Channel*>& channels = server.getChannel();
+    (void)client;
+    const std::map<std::string, Channel*>& channels = _server->getChannel();
 
     std::cout << "Size of channels map: " << channels.size() << std::endl;
     std::cout << "----- Channels List -----" << std::endl;
@@ -67,21 +46,29 @@ void Command::PrintAllChannels(Server &server)
     }
 
     std::cout << "-------------------------" << std::endl;
+
 }
 
-void Command::PrintMembersInChannel(Server &server, const std::string &channelName)
+void Command::executeAllMembersInChannel(Client *client)
 {
+    (void)client;
+    if (_args.empty())
+    {
+        client->queueMsg("461 allMC :Not enough parameters");
+        return;
+    }
     std::cout << "-----------------ALL------------------" << std::endl;
 
-    Channel *channel = server.getChannelByName(channelName);
+    const std::string channel_name = _args[0];
+    Channel *channel = _server->getChannelByName(channel_name);
     if (!channel)
     {
-        std::cout << "Channel " << channelName << " does not exist." << std::endl;
+        std::cout << "Channel " << channel_name << " does not exist." << std::endl;
         return;
     }
 
     // Print members
-    const std::map<int, Client*>& clients = server.getClients();
+    const std::map<int, Client*>& clients = _server->getClients();
     std::map<int, Client*>::const_iterator it = clients.begin();
     for (; it != clients.end(); ++it)
     {

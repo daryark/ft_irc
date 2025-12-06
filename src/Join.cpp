@@ -35,7 +35,10 @@ void Command::executeJoin(Client *client)
     if (!checkPreconditions(client, 1))
         return;
     if (_args.size() == 1 && _args[0] == "0")
-        return leaveChannels(client, client->getJoinedChannels());
+    {
+        _command = "PART";
+        return leaveChannels(client, client->getJoinedChannels(), "Leave all channels");
+    }
     const std::vector<std::string> channel_names = splitVec(_args[0], ',');
     std::vector<std::string> channels_passwords;
     if (_args.size() == 2)

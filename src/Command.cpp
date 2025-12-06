@@ -25,6 +25,7 @@ void Command::initCommandMap()
     _commandMap["QUIT"] = &Command::executeQuit;
     _commandMap["INVITE"] = &Command::executeInvite;
     _commandMap["PONG"] = &Command::executePong;
+    _commandMap["CAP"] = &Command::executeCap;
 
     _commandMap["allClients"] = &Command::executeAllClients;
     _commandMap["allChannel"] = &Command::executeAllChannel;
@@ -32,9 +33,7 @@ void Command::initCommandMap()
     _commandMap["info"] = &Command::executeAllInfo;
 }
 
-Command::~Command()
-{
-}
+Command::~Command(){}
 
 void Command::executeCommand(Client *client)
 {
@@ -69,9 +68,15 @@ void Command::executePong(Client* client) {
     client->updateActive();
 }
 
+void Command::executeCap(Client* client)
+{
+    client->queueMsg("CAP * LS :\r\n");
+}
+
 void Command::executeQuit(Client *client)
 {
-    leaveChannels(client, client->getJoinedChannels());
+    const std::string msg = _args.empty() ? "Quit" : _args[1];
+    leaveChannels(client, client->getJoinedChannels(), msg);
     _server->disconnectClient(client->getFd());
 }
 
