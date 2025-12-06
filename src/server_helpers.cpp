@@ -59,7 +59,45 @@ void Server::checkClientsTimeouts()
     }
 
     for( size_t i = 0; i < clients_to_disconnect.size(); i++)
+    {
+        //-------------------leaving all channels
         disconnectClient(clients_to_disconnect[i]);
+    }
+}
+
+bool Server::cleanClient(int fd)
+{
+    //leave all channels he is member in
+    //broadcast msg to all the member of the channels he is in
+    Client* client = getClient(fd);
+    const std::set<std::string>& joinedChannels = client->getJoinedChannels();
+    std::set<std::string>::const_iterator it = joinedChannels.begin();
+    for (; it != joinedChannels.end(); ++it)
+    {
+        Channel* channel = getChannelByName(*it);
+        channel->globalMessage(client,
+            MSG(client->getNickname(), client->getUsername(), client->getHostname(),
+            "QUIT", *it, "Signal leaving"), true);
+        channel->removeClient(client);
+       if (channel->getSize() == 0)
+        deleteChannel(*it);
+        else
+        {
+            if (!channel->hasOperator())
+            {
+                Client* new_operator = *(channel->getClients().begin());
+                channel->addOperator(new_operator);
+                channel->globalMessage(client,
+                MSG(SERVER_NAME, SERVER_NAME, SERVER_NAME, "MODE", new_operator->getNickname(),
+                "is an operator now"), false);
+            }
+
+            //show correct members and operators //######
+            channel->globalMessage(client, RPL_NAMREPLY(client->getNickname(), channel->getName(), channel->formChannelMembersList()), true);
+            channel->globalMessage(client, RPL_ENDOFNAMES(client->getNickname(), channel->getName()), true);
+        }
+    }
+    return disconnectClient(fd);
 }
 
 void    Server::fancyPrint(const std::string& opt)

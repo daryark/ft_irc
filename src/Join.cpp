@@ -13,21 +13,6 @@ inline bool isValidChannelName(const std::string &channel_name)
     return true;
 }
 
-const std::string Command::formChannelMembersList(Channel *channel)
-{
-    std::string names_list;
-    const std::set<Client *> &clients = channel->getClients();
-
-    for (std::set<Client *>::const_iterator it = clients.begin(); it != clients.end(); ++it)
-    {
-        Client *member = *it;
-        if (channel->isOperator(member))
-            names_list += "@";
-        names_list += member->getNickname() + " ";
-    }
-    return names_list;
-}
-
 void Command::sendJoinInfo(Client *client, Channel *channel)
 {
     // JOIN message (sent to everyone in the channel)
@@ -40,25 +25,21 @@ void Command::sendJoinInfo(Client *client, Channel *channel)
     else
         client->queueMsg(RPL_NOTOPIC(channel->getName()));
 
-    client->queueMsg(RPL_NAMREPLY(client->getNickname(), channel->getName(), formChannelMembersList(channel)));
+    client->queueMsg(RPL_NAMREPLY(client->getNickname(), channel->getName(), channel->formChannelMembersList()));
     client->queueMsg(RPL_ENDOFNAMES(client->getNickname(), channel->getName()));
 }
 
 //JOIN <channel> [, <channel>...] <key> [, <key>...] |or "0"
 void Command::executeJoin(Client *client)
 {
-    std::cout << BG_CYAN << "join 1, " << RE;
     if (!checkPreconditions(client, 1))
         return;
-    std::cout << BG_CYAN << "join 2, " << RE;
     if (_args.size() == 1 && _args[0] == "0")
         return leaveChannels(client, client->getJoinedChannels());
-    std::cout << BG_CYAN << "join 3, " << RE;
     const std::vector<std::string> channel_names = splitVec(_args[0], ',');
     std::vector<std::string> channels_passwords;
     if (_args.size() == 2)
         channels_passwords = splitVec(_args[1], ',');
-    std::cout << BG_CYAN << "join 4, " << RE;
     size_t p = 0;
     for (size_t i = 0; i < channel_names.size(); i++)
     {
@@ -67,7 +48,6 @@ void Command::executeJoin(Client *client)
         std::string pass = (!channel || (channel && channel->hasPassword())) && p < channels_passwords.size()
                                ? channels_passwords[p++]
                                : "";
-        std::cout << BG_GREEN << "channel: " << channel_names[i] << ", password: '" << pass << "'" << RE << std::endl; // #########
         if (!channel)
         {
             if (isValidChannelName(channel_names[i]))

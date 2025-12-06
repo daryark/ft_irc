@@ -48,30 +48,21 @@ void Channel::setInviteOnly(bool state)
 
 bool Channel::isInviteOnly() const { return _is_invite_only; }
 
-bool Channel::isInvitedClient(Client *client) const {
+bool Channel::isInvitedClient(Client *client) const { return _invitedClient.find(client) != _invitedClient.end(); }
 
-  return _invitedClient.find(client) != _invitedClient.end();
-  //vector
-  //  return std::find(_invitedClient.begin(), _invitedClient.end(), client) != _invitedClient.end();
-}
-
-void Channel::addClient(Client *client)
-{
-  //set
-  _members.insert(client);
-  //vector
-//	_members.push_back(client);
-}
+void Channel::addClient(Client *client) { _members.insert(client); }
 
 void Channel::removeClient(Client *client)
 {
   if (_members.find(client) != _members.end()){
     _members.erase(client);
+  }
+  if (_operators.find(client) != _operators.end()){
     _operators.erase(client);
   }
-    //vector
-//	_members.erase(std::remove(_members.begin(), _members.end(), client), _members.end());
-//	_operators.erase(std::remove(_operators.begin(), _operators.end(), client), _operators.end());
+  if (_invitedClient.find(client) != _invitedClient.end()){
+    _invitedClient.erase(client);
+  }
 }
 
 bool Channel::isMember(Client *client) const
@@ -81,32 +72,16 @@ bool Channel::isMember(Client *client) const
 
 void Channel::addOperator(Client *client)
 {
-  //
   _operators.insert(client);
   _members.insert(client);
-
-  //vector
-//	if (std::find(_operators.begin(), _operators.end(), client) == _operators.end())
-//	{
-//		_operators.push_back(client);
-//	}
 }
 
 void Channel::removeOperator(Client *client)
 {
-  //set
-  _operators.erase(client);
-  //vector
-  // _operators.erase(std::remove(_operators.begin(), _operators.end(), client), _operators.end());
+  _operators.erase(client); //set
 }
 
-bool Channel::isOperator(Client *client) const
-{
-  //set
-	return _operators.find(client) != _operators.end();
-  //vector
-  //return std::find(_operators.begin(), _operators.end(), client) != _operators.end();
-}
+bool Channel::isOperator(Client *client) const { return _operators.find(client) != _operators.end(); }
 
 bool Channel::hasOperator() const { return !_operators.empty(); }
 
@@ -158,4 +133,16 @@ void Channel::deleteLimits()
   _max_clients = -1;
   _hasLimit = false;
 }
-  
+
+const std::string Channel::formChannelMembersList()
+{
+    std::string names_list;
+    for (std::set<Client *>::const_iterator it = _members.begin(); it != _members.end(); ++it)
+    {
+        Client *member = *it;
+        if (isOperator(member))
+            names_list += "@";
+        names_list += member->getNickname() + " ";
+    }
+    return names_list;
+}

@@ -53,19 +53,19 @@ void Command::executeCommand(Client *client)
 void Command::executeAllInfo(Client *client)
 {
     (void)client;
-    client->printInfo();
+    // client->printInfo();
 }
 
 void Command::executeAllClients(Client *client)
 {
     (void)client;
-    PrintAllClients(*_server);
+    // PrintAllClients(*_server);
 }
 
 void Command::executeAllChannel(Client *client)
 {
     (void)client;
-    PrintAllChannels(*_server);
+    // PrintAllChannels(*_server);
 }
 
 void Command::executeAllMembersInChannel(Client *client)
@@ -73,7 +73,7 @@ void Command::executeAllMembersInChannel(Client *client)
     (void)client;
     if (_args.empty())
         return client->queueMsg("461 allMC :Not enough parameters");
-    PrintMembersInChannel(*_server, _args[0]);
+    // PrintMembersInChannel(*_server, _args[0]);
 }
 
 bool Command::checkPreconditions(Client *client, size_t min_args_size)
