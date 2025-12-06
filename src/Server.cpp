@@ -113,6 +113,18 @@ bool Server::disconnectClient(int fd)
     std::map<int, Client*>::iterator erase_it = _clients.find(fd);
     if(erase_it == _clients.end())
         return false;
+
+    Client* client = erase_it->second;
+    
+    std::map<std::string, Channel*>::iterator it_chan = _channels.begin();
+    for (; it_chan != _channels.end(); ++it_chan)
+    {
+        Channel* chan = it_chan->second;
+        if (chan->isMember(client))
+            chan->removeClient(client);
+    }
+
+
     delete erase_it->second;
     _clients.erase(erase_it); //map
     close(fd);
@@ -126,6 +138,7 @@ bool Server::disconnectClient(int fd)
         }
     }
     return false;
+
 }
 
 bool Server::readMsg(int fd)

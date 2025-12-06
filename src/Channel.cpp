@@ -67,7 +67,12 @@ void Channel::removeClient(Client *client)
 {
   if (_members.find(client) != _members.end()){
     _members.erase(client);
+  }
+  if (_operators.find(client) != _operators.end()){
     _operators.erase(client);
+  }
+  if (_invitedClient.find(client) != _invitedClient.end()){
+    _invitedClient.erase(client);
   }
     //vector
 //	_members.erase(std::remove(_members.begin(), _members.end(), client), _members.end());
@@ -83,7 +88,7 @@ void Channel::addOperator(Client *client)
 {
   //
   _operators.insert(client);
-  _members.insert(client);
+  // _members.insert(client);
 
   //vector
 //	if (std::find(_operators.begin(), _operators.end(), client) == _operators.end())

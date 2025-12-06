@@ -50,10 +50,10 @@ private:
 	void leaveChannel(Client* client, Channel* channel);
 
 	//debug methods
-	// void executeAllClients(Client *client);
-	// void executeAllChannel(Client *client);
-	// void executeAllMembersInChannel(Client *client);
-	// void executeAllInfo(Client* client);
+	void executeAllClients(Client *client);
+	void executeAllChannel(Client *client);
+	void executeAllMembersInChannel(Client *client);
+	void executeAllInfo(Client* client);
 
 	void sendJoinInfo(Client *client, Channel *channel);
 	const std::string formChannelMembersList(Channel *channel);
@@ -68,9 +68,9 @@ public:
 	void executeCommand(Client *client);
 	
 	//debug metchods
-	// void PrintAllClients( Server& server);
-	// void PrintAllChannels( Server& server);
-	// void PrintMembersInChannel( Server& server, const std::string& channelName);
+	void PrintAllClients( Server& server);
+	void PrintAllChannels( Server& server);
+	void PrintMembersInChannel( Server& server, const std::string& channelName);
 };
 
 std::vector<std::string> splitVec(const std::string& input, char delimiter);

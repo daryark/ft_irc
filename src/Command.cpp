@@ -26,10 +26,10 @@ void Command::initCommandMap()
     _commandMap["INVITE"] = &Command::executeInvite;
     _commandMap["PONG"] = &Command::executePong;
 
-    // _commandMap["allClients"] = &Command::executeAllClients;
-    // _commandMap["allChannel"] = &Command::executeAllChannel;
-    // _commandMap["allMC"] = &Command::executeAllMembersInChannel;
-    // _commandMap["info"] = &Command::executeAllInfo;
+    _commandMap["allClients"] = &Command::executeAllClients;
+    _commandMap["allChannel"] = &Command::executeAllChannel;
+    _commandMap["allMC"] = &Command::executeAllMembersInChannel;
+    _commandMap["info"] = &Command::executeAllInfo;
 }
 
 Command::~Command()
