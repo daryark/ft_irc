@@ -82,12 +82,8 @@ void Command::executeQuit(Client *client)
 
 void Command::executeInvite(Client *client)
 {
-    if (!client->isRegistered())
-        return client->queueMsg(ERR_NOTREGISTERED(client->getSafeNickname(), "INVITE"));
-    // Реализация метода executeInvite
-
-    if (_args.size() < 2)
-        return client->queueMsg(ERR_NEEDMOREPARAMS(client->getNickname(), "INVITE"));
+    if (!checkPreconditions(client, 2))
+        return ;
 
     const std::string &targetNick = _args[0];
     const std::string &channelName = _args[1];
@@ -145,6 +141,6 @@ void Command::executeTopic(Client *client)
         channel->setTopic(newTopic);
         channel->globalMessage(client,
         MSG(client->getNickname(),client->getUsername(), client->getHostname(),
-        "TOPIC", channelName, newTopic), true);
+        _command, channelName, newTopic), true);
     }
 }
