@@ -15,9 +15,8 @@ inline bool isValidChannelName(const std::string &channel_name)
 
 void Command::sendJoinInfo(Client *client, Channel *channel)
 {
-    // JOIN message (sent to everyone in the channel)
     std::string join_msg = MSG_PREFIX(client->getNickname(), client->getUsername(),
-        client->getHostname(), "JOIN") + ":" + channel->getName() + "\r\n";
+        client->getHostname(), _command) + ":" + channel->getName() + "\r\n";
     channel->globalMessage(client, join_msg, true);
 
     if (!channel->getTopic().empty())
@@ -39,10 +38,10 @@ void Command::executeJoin(Client *client)
         _command = "PART";
         return leaveChannels(client, client->getJoinedChannels(), "Leave all channels");
     }
-    const std::vector<std::string> channel_names = splitVec(_args[0], ',');
+    const std::vector<std::string> channel_names = split<std::vector<std::string> >(_args[0], ',');
     std::vector<std::string> channels_passwords;
     if (_args.size() == 2)
-        channels_passwords = splitVec(_args[1], ',');
+        channels_passwords = split<std::vector<std::string> >(_args[1], ',');
     size_t p = 0;
     for (size_t i = 0; i < channel_names.size(); i++)
     {
@@ -89,9 +88,5 @@ void Command::joinExistingChannel(Client *client, Channel *channel, const std::s
 
     channel->addClient(client);
     client->joinChannel(channel->getName());
-    // const std::string& message = client->getNickname() + ":" + _args.back() + "\r\n";
-
     sendJoinInfo(client, channel);
-
-    // channel->globalMessage(client, ":" + client->getNickname() + " JOIN " + channel_names[i] + "\r\n");
 }

@@ -128,14 +128,12 @@ bool Server::disconnectClient(int fd)
     delete erase_it->second;
     _clients.erase(erase_it); //map
     close(fd);
-    for (std::vector<pollfd>::iterator it = _pollfds.begin(); it != _pollfds.end(); it++)
+    std::vector<pollfd>::iterator it = std::find_if(_pollfds.begin(), _pollfds.end(), FindByFd(fd));
+    if (it != _pollfds.end())
     {
-        if (it->fd == fd) //#!vector std::find_if
-        {
-            std::cout << BG_RED << "Disconnected: " << fd << RE << std::endl;
+        std::cout << BG_RED << "Disconnected: " << fd << RE << std::endl;
             _pollfds.erase(it); //vector
-            return true;
-        }
+            return true ;
     }
     return false;
 
@@ -218,15 +216,16 @@ Channel* Server::getChannelByName(const std::string& name) {
 }
 
 Client* Server::getClientByNickname(const std::string& nickname) {
+
     for (std::map<int, Client*>::const_iterator it = _clients.begin(); it != _clients.end(); ++it) {
-        if (it->second->getNickname() == nickname) { //#!vector std::find_if
+        if (it->second->getNickname() == nickname) {
             return it->second;
         }
     }
     return NULL;
-    // return std::find(_clients.begin(), _clients.end(), nickname);
 }
 
+//modifiers
 Channel* Server::createChannel(const std::string& channel_name, const std::string& channel_password) {
     Channel *channel = new Channel(channel_name, channel_password);
     _channels[channel_name] = channel;
@@ -244,4 +243,3 @@ void Server::deleteChannel(const std::string& channel_name)
     }
 }
 
-// void Server::delete

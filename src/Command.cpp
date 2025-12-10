@@ -118,10 +118,8 @@ void Command::executeInvite(Client *client)
 //*TOPIC <channel> [: [<topic>]]
 void Command::executeTopic(Client *client)
 {
-    if (!client->isRegistered())
-        return client->queueMsg(ERR_NOTREGISTERED(client->getSafeNickname(), "TOPIC"));
-    if (_args.empty())
-        return client->queueMsg(ERR_NEEDMOREPARAMS(client->getNickname(), "TOPIC"));
+    if (!checkPreconditions(client, 1))
+        return ;
 
     const std::string &channelName = _args[0];
     Channel *channel = _server->getChannelByName(channelName);
@@ -139,11 +137,11 @@ void Command::executeTopic(Client *client)
     else
     {
         if (_args[1] != ":")
-            return client->queueMsg(ERR_NEEDMOREPARAMS(client->getNickname(), "TOPIC"));
+            return client->queueMsg(ERR_NEEDMOREPARAMS(client->getNickname(), _command));
         //! if -t (flag) - then only operator can change the topic
         if (!channel->isOperator(client) && channel->isTopicSetByOperator())
             return client->queueMsg(ERR_CHANOPRIVSNEEDED(channelName));
-        const std::string &newTopic = _args.size() == 2 ? "" : _args[2];
+        const std::string &newTopic = _args.size() == 2 ? "not set up" : _args[2];
         channel->setTopic(newTopic);
         channel->globalMessage(client,
         MSG(client->getNickname(),client->getUsername(), client->getHostname(),

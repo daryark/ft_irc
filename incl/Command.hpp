@@ -69,8 +69,15 @@ public:
 	void executeCommand(Client *client);
 };
 
-std::vector<std::string> splitVec(const std::string& input, char delimiter);
-std::set<std::string> splitSet(const std::string& input, char delimiter);
-const std::string joinVecIntoStr(std::vector<std::string>::const_iterator start, std::vector<std::string>::const_iterator end);
-const std::string joinSetIntoStr(std::set<std::string>::const_iterator start, std::set<std::string>::const_iterator end);
 void trim(std::string &s);
+
+
+template <typename C>
+C split(const std::string& input, char delimiter) {
+    C tokens;
+    std::istringstream iss(input);
+    std::string token;
+    while (std::getline(iss, token, delimiter))
+        tokens.insert(tokens.end(), token);
+    return tokens;
+}

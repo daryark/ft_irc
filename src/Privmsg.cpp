@@ -4,14 +4,11 @@ void Command::executePrivmsg(Client *client)
 {
     if(!checkPreconditions(client, 3))
         return ;
-    const std::set<std::string> targets = splitSet(_args[0], ',');
+    const std::set<std::string> targets = split<std::set<std::string> >(_args[0], ',');
     for (std::set<std::string>::iterator it = targets.begin(); it != targets.end(); it++)
-    {
-        if((*it)[0] == '#' || (*it)[0] == '&')
-            executePrivmsgToChannel(client, *it);
-        else
-            executePrivmsgToClient(client, *it);
-    }
+        ((*it)[0] == '#' || (*it)[0] == '&')
+        ? executePrivmsgToChannel(client, *it)
+        : executePrivmsgToClient(client, *it);
 }
 
 void Command::executePrivmsgToClient(Client* client, const std::string& target)
@@ -21,8 +18,8 @@ void Command::executePrivmsgToClient(Client* client, const std::string& target)
     Client* targetClient = _server->getClientByNickname(target);
     if(!targetClient)
         return client->queueMsg(ERR_NOSUCHNICK(target));
-    targetClient->queueMsg(
-        MSG(client->getNickname(), client->getUsername(), client->getHostname(), "PRIVMSG", target, _args.back()));
+    targetClient->queueMsg(MSG(client->getNickname(), client->getUsername(), client->getHostname(),
+    _command, target, _args.back()));
 }
 
 void Command::executePrivmsgToChannel(Client* client, const std::string& target)
@@ -32,7 +29,7 @@ void Command::executePrivmsgToChannel(Client* client, const std::string& target)
         return client->queueMsg(ERR_NOSUCHCHANNEL(target));
     if(!channel->isMember(client))
         return client->queueMsg(ERR_CANNOTSENDTOCHAN(target));
-    channel->globalMessage(client,
-        MSG(client->getNickname(), client->getUsername(), client->getHostname(), "PRIVMSG", target, _args.back()), false);
+    channel->globalMessage(client, MSG(client->getNickname(), client->getUsername(), client->getHostname(),
+    _command, target, _args.back()), false);
 
 }

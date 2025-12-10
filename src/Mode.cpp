@@ -69,7 +69,6 @@ void Command::executeMode(Client *client)
 				const std::string &newPass = _args[argIndex++];
 				channel->setPassword(newPass);
 				modeChanges += "+k " + newPass;
-				// modes += " " + newPass;
 			}
 			else
 			{
@@ -100,11 +99,8 @@ void Command::executeMode(Client *client)
 				else
 					channel->removeOperator(target);
 				modeChanges += (adding ? "+o " : "-o ") + nick;
-				// modes += " " + nick;
 
-				channel->globalMessage(target, RPL_NAMREPLY(target->getNickname(), channel->getName(), channel->formChannelMembersList()), true);
-				channel->globalMessage(target, RPL_ENDOFNAMES(client->getNickname(), channel->getName()), true);
-				// client->queueMsg(RPL_ENDOFNAMES(client->getNickname(), channel->getName()));
+				channel->nameReplyMsg(client);
 			}
 			break;
 		case 'l':
@@ -112,14 +108,11 @@ void Command::executeMode(Client *client)
 			{
 				if (argIndex >= _args.size())
 					return client->queueMsg(ERR_NEEDMOREPARAMS(client->getNickname(), "MODE +l"));
-				int maxClients = std::atoi(_args[argIndex++].c_str()); //c++11 int maxClients = std::atoi(_args[argIndex++].c_str());
+				int maxClients = std::atoi(_args[argIndex++].c_str());
 				channel->setMaxClients(maxClients);
 				std::ostringstream oss;
 				oss << maxClients;
 				modeChanges += "+l " + oss.str();
-
-				// modeChanges += "+l " + std::to_string(maxClients);//c++11
-				// modes += " " + std::to_string(maxClients);
 			}
 			else
 			{
@@ -133,12 +126,6 @@ void Command::executeMode(Client *client)
 		}
 	}
 	if (!modeChanges.empty())
-	{
-		// modeChanges.pop_back(); // remove trailing space
-		// channel->globalMessage(client, "MODE " + channelName + " " + modeChanges + modes + "\r\n", true);
-		channel->globalMessage(client,
-							   MSG(client->getNickname(), client->getUsername(), client->getHostname(),
-								   "MODE ", channelName, modeChanges),
-							   true);
-	}
+		channel->globalMessage(client, MSG(client->getNickname(), client->getUsername(), client->getHostname(),
+		_command, channelName, modeChanges), true);
 }

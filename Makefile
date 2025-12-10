@@ -3,8 +3,7 @@ RE = \033[0m
 
 SRC =	main.cpp Server.cpp Client.cpp Command.cpp Channel.cpp \
 		Join.cpp Privmsg.cpp Registration.cpp Kick.cpp Part.cpp Mode.cpp\
-		server_helpers.cpp helpers.cpp\
- 		debug_file.cpp
+		server_helpers.cpp debug_file.cpp
 HDR = Server.hpp Client.hpp CommandFactory.hpp Command.hpp Channel.hpp ErrorReply.hpp
 
 SRC_F = src/

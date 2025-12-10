@@ -19,14 +19,9 @@ void Server::fillSockaddrIn(struct sockaddr_in& addr, short int in_family, unsig
 
 void Server::markPfdForPollout(int fd)
 {
-    for (std::vector<pollfd>::iterator it = _pollfds.begin(); it != _pollfds.end(); ++it)
-    {
-        if (it->fd == fd) //#!vector std::find_if
-        {
-            it->events |= POLLOUT;
-            break;
-        }
-    }
+    std::vector<pollfd>::iterator it = std::find_if(_pollfds.begin(), _pollfds.end(), FindByFd(fd));
+    if (it != _pollfds.end())
+        it->events |= POLLOUT;
 }
 
 void Server::setSocketNonBlock(int fd)
@@ -59,16 +54,11 @@ void Server::checkClientsTimeouts()
     }
 
     for( size_t i = 0; i < clients_to_disconnect.size(); i++)
-    {
-        //-------------------leaving all channels
-        disconnectClient(clients_to_disconnect[i]);
-    }
+        cleanClient(clients_to_disconnect[i]);
 }
 
 bool Server::cleanClient(int fd)
 {
-    //leave all channels he is member in
-    //broadcast msg to all the member of the channels he is in
     Client* client = getClient(fd);
     const std::set<std::string>& joinedChannels = client->getJoinedChannels();
     std::set<std::string>::const_iterator it = joinedChannels.begin();
@@ -92,9 +82,7 @@ bool Server::cleanClient(int fd)
                 "is an operator now"), false);
             }
 
-            //show correct members and operators //######
-            channel->globalMessage(client, RPL_NAMREPLY(client->getNickname(), channel->getName(), channel->formChannelMembersList()), true);
-            channel->globalMessage(client, RPL_ENDOFNAMES(client->getNickname(), channel->getName()), true);
+           channel->nameReplyMsg(client);
         }
     }
     return disconnectClient(fd);

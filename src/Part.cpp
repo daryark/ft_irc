@@ -5,7 +5,7 @@ void Command::executePart(Client *client)
 {
     if (!checkPreconditions(client, 1))
         return ;
-    const std::set<std::string> channels = splitSet(_args[0], ',');
+    const std::set<std::string> channels = split<std::set<std::string> >(_args[0], ',');
     const std::string msg = (_args.size() < 3) ? "Part" : _args[2];
     leaveChannels(client, channels, msg);
 }
@@ -51,7 +51,5 @@ void Command::leaveChannel(Client* client, Channel* channel, const std::string m
         "is an operator now"), false);
     }
 
-    //show correct members and operators //######
-    channel->globalMessage(client, RPL_NAMREPLY(client->getNickname(), channel->getName(), channel->formChannelMembersList()), true);
-	channel->globalMessage(client, RPL_ENDOFNAMES(client->getNickname(), channel->getName()), true);
+    channel->nameReplyMsg(client);
 }

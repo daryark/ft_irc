@@ -42,30 +42,31 @@ private:
 	struct sockaddr_in _addr;
 	std::vector<pollfd> _pollfds;
 
-	std::map<int, Client*> _clients; // int - fd_client and ptr to Client
-	std::map<std::string, Channel*> _channels; // name_channel and ptr to Channel
+	std::map<int, Client*> _clients; // int - clients fd
+	std::map<std::string, Channel*> _channels; // str - channel_name
 
+	
 	Server(const Server &){};
-	Server &operator=(const Server &){return *this;};
+	Server &operator=(const Server &){return *this; };
+
 	bool actionOnFd(pollfd& pollfd);
 	void acceptClient();
 	bool readMsg(int fd);
 	void sendMsg(pollfd& pollfd);
 	void processInMsg(int fd, char* buf, int len);
 	bool cleanClient(int fd);
-	
-	void checkClientsTimeouts();
+	//helpers
 	void fillSockaddrIn(struct sockaddr_in& addr, short int in_family, unsigned short int in_port ,uint32_t s_addr);
 	void pushPollfd(int, short, short);
 	void setSocketNonBlock(int fd);
+	void checkClientsTimeouts();
 	void fancyPrint(const std::string& opt);
 	
 public:
 	Server();
 	Server(int port, std::string password);
 	~Server();
-	
-	// methods
+
 	void init();
 	void run();
 	
@@ -75,14 +76,17 @@ public:
 	const std::string &getPassword() const; //+
 	const std::map<int, Client*> &getClients() const; //+
 	const std::map<std::string, Channel*> &getChannel() const;//+
-	
 	Client*	getClient(int fd)	const;
-	
+	Client* getClientByNickname(const std::string& nickname); //+
 	Channel* getChannelByName(const std::string& name);//+
+
 	Channel* createChannel(const std::string& channel_name, const std::string& channel_password); //+
 	void deleteChannel(const std::string& channel_name);
+};
 
-	Client* getClientByNickname(const std::string& nickname); //-
+struct FindByFd { //functor -> makes obj behave like a function
+	int fd;
 
-	// void handleInput(Client* client, const std::string& input) //*parser input + masha check CommandFactory.hpp
+	FindByFd(int to_find) : fd(to_find) {} //constructor
+	bool operator()(const pollfd& pfd) const { return pfd.fd == fd; }
 };

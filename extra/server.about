@@ -114,3 +114,10 @@ _clients.emplace(client_sock, Client(client_sock));
 //or directly make pair: syntax: _clients.insert(std::pair<int, Client>(client_sock, Client(client_sock)));
 insert work with the whole pair (key, value), so we need to std::make_pair().
 //? direct operator{} syntax since C++11: _clients.insert({client_sock, Client(client_sock, client)});
+
+//->SOURCE LITERATURE
+https://beej.us/guide/bgnet/translations/bgnet_A4_rus.pdf
+https://www.russianblogs.com/article/8587603498/
+https://www.youtube.com/watch?v=I9o-oTdsMgI&list=PLUJCSGGiox1Q-QvHfMMydtoyEa1IEzeLe
+https://www.youtube.com/watch?v=pglRilAxqtI
+https://www.rfc-editor.org/rfc/rfc1459.html#section-4.2.1

@@ -145,3 +145,9 @@ const std::string Channel::formChannelMembersList()
     }
     return names_list;
 }
+
+void Channel::nameReplyMsg(Client* sender)
+{
+  globalMessage(sender, RPL_NAMREPLY(sender->getNickname(), _name, formChannelMembersList()), true);
+  globalMessage(sender, RPL_ENDOFNAMES(sender->getNickname(), _name), true);
+}

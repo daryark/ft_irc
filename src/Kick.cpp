@@ -1,16 +1,12 @@
 #include "../incl/Command.hpp"
 
-
-    //_args[0]- it depends of place where sen the command 
-    // _args[0] = my_irc - name of the server
-    // _args[0] = #target_channel_name 
 void Command::executeKick(Client *client)
 {
     if (!checkPreconditions(client, 2))
         return ;
-    const std::vector<std::string> channels = splitVec(_args[0], ',');
-    const std::vector<std::string> nicks = splitVec(_args[1], ',');
-    const std::string comment = _args.size() > 3 ? joinVecIntoStr(_args.begin() + 3, _args.end()) : "is kicked";
+    const std::vector<std::string> channels = split<std::vector<std::string> >(_args[0], ',');
+    const std::vector<std::string> nicks = split<std::vector<std::string> >(_args[1], ',');
+    const std::string comment = _args.size() > 3 ? *(_args.begin() + 3) : "is kicked";
 
     if (channels.size() == 1)
     {
@@ -49,13 +45,11 @@ void Command::executeKickOne(Client* client, const std::string& channel_name, co
     target_client->removeFromChannel(channel_name);
 
     if (channel->getSize() == 0){
-        // _server->deleteChannel(target_nick); //????
         _server->deleteChannel(channel_name);
         return ;
     }
 
-    channel->globalMessage(client, RPL_NAMREPLY(client->getNickname(), channel->getName(), channel->formChannelMembersList()), true);
-	channel->globalMessage(client, RPL_ENDOFNAMES(client->getNickname(), channel->getName()), true);
+    channel->nameReplyMsg(client);
 }
 
 bool Command::canKickFromChannel(Client* client, const std::string& channel_name)

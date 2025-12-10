@@ -62,6 +62,7 @@ public:
 	bool isFull() const;				   //+
 
 	void globalMessage(Client *sender, std::string message, bool send_to_sender) const; //+
+	void nameReplyMsg(Client* sender);
 
 	int getSize() const;			 //+
 	std::set<Client *> getClients(); //+
