@@ -49,9 +49,9 @@ make
 
 9. **All numeric replies and errors implemented (RPL_XXX / ERR_XXX)**
 
-10. **🔄 Connection & Keep-Alive Handling**
-   - Full `PING` / `PONG` support
-   - Inactivity timeout & automatic cleanup
-   - Handles suspended (`Ctrl+Z`) and frozen clients
-   - Safe handling of partial TCP send/receive
-   - Prevents ghost and half-open connections
+10. **Connection & Keep-Alive Handling**
+    - Full `PING` / `PONG` support
+    - Inactivity timeout & automatic cleanup
+    - Handles suspended (`Ctrl+Z`) and frozen clients
+    - Safe handling of partial TCP send/receive
+    - Prevents ghost and half-open connections
